@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:provider/provider.dart';
 import 'login_screen.dart';
+import '../provider/register_provider.dart';
+import 'package:suchigo_app/Screens.dart/login_screen.dart';
+
+// replace this with your actual next screen:
+// import 'next_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -11,24 +16,37 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneController = TextEditingController();
-  bool _termsAccepted = false;
+  late TextEditingController _nameController;
+  late TextEditingController _emailController;
+  late TextEditingController _phoneController;
 
-  bool get _isValid {
-    return _nameController.text.trim().isNotEmpty &&
-        _emailController.text.trim().isNotEmpty &&
-        _phoneController.text.trim().isNotEmpty &&
-        _termsAccepted;
-  }
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController.addListener(() => setState(() {}));
-    _emailController.addListener(() => setState(() {}));
-    _phoneController.addListener(() => setState(() {}));
+    _nameController = TextEditingController();
+    _emailController = TextEditingController();
+    _phoneController = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (!_initialized) {
+      final provider = context.read<RegisterProvider>();
+
+      _nameController.text = provider.name;
+      _emailController.text = provider.email;
+      _phoneController.text = provider.phone;
+
+      _nameController.addListener(() => provider.setName(_nameController.text));
+      _emailController.addListener(() => provider.setEmail(_emailController.text));
+      _phoneController.addListener(() => provider.setPhone(_phoneController.text));
+
+      _initialized = true;
+    }
   }
 
   @override
@@ -39,17 +57,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  Future<void> _openUrl(String url) async {
-    final Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not open the link')),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final provider = context.watch<RegisterProvider>();
+
     return Scaffold(
       body: SafeArea(
         child: Center(
@@ -58,134 +69,74 @@ class _RegisterScreenState extends State<RegisterScreen> {
               width: 360,
               margin: const EdgeInsets.symmetric(vertical: 20),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                // borderRadius: BorderRadius.circular(6),
-                // boxShadow: [
-                //   BoxShadow(
-                //     color: Colors.black.withOpacity(0.05),
-                //     blurRadius: 8,
-                //     offset: const Offset(0, 2),
-                //   ),
-                // ],
-              ),
+              decoration: const BoxDecoration(color: Colors.white),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // const SizedBox(height: 6),
-                  // const Text('get', style: TextStyle(color: Color(0xFFBFBFBF), fontSize: 12)),
-                  // const SizedBox(height: 18),
                   const Text(
                     'Registration',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 30),
 
-                    Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD9D9D9),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: TextField(
-                      controller: _nameController,
-                      keyboardType: TextInputType.text,
-                      decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      isCollapsed: true,
-                      hintText: 'Name',
-                      hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                      style: const TextStyle(color: Colors.black),
-                      cursorColor: Colors.black,
-                    ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD9D9D9),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: TextField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      isCollapsed: true,
-                      hintText: 'Email',
-                      hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                      style: const TextStyle(color: Colors.black),
-                      cursorColor: Colors.black,
-                    ),
-                    ),
-                    const SizedBox(height: 12),
-                    Container(
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD9D9D9),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    alignment: Alignment.centerLeft,
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: TextField(
-                      controller: _phoneController,
-                      keyboardType: TextInputType.phone,
-                      decoration: const InputDecoration(
-                      border: InputBorder.none,
-                      isCollapsed: true,
-                      hintText: 'Phone',
-                      hintStyle: TextStyle(color: Colors.grey),
-                      ),
-                      style: const TextStyle(color: Colors.black),
-                      cursorColor: Colors.black,
-                    ),
-                    ),
-                    const SizedBox(height: 16),
+                  _buildInput('Name', _nameController),
+                  const SizedBox(height: 14),
+                  _buildInput('Email', _emailController),
+                  const SizedBox(height: 14),
+                  _buildInput('Phone', _phoneController),
+                  const SizedBox(height: 16),
 
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Checkbox(
-                        value: _termsAccepted,
-                        onChanged: (v) => setState(() => _termsAccepted = v ?? false),
+                        value: provider.termsAccepted,
+                        onChanged: (v) =>
+                            provider.setTermsAccepted(v ?? false),
+                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       const SizedBox(width: 6),
                       Expanded(
-                        child: Text( 
+                        child: Text(
                           'I have read and agree to the terms and conditions stated above',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[700],
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
 
                   SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: _isValid
+                      onPressed: provider.isValid
                           ? () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const LoginScreen()),
+                              // DIRECTLY GO TO NEXT SCREEN
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const LoginScreen(),
+                                ),
                               );
                             }
                           : null,
                       style: ButtonStyle(
-                        backgroundColor: MaterialStateProperty.resolveWith((states) {
-                          if (states.contains(MaterialState.disabled)) return Colors.grey[600];
-                          return Colors.black;
-                        }),
-                        shape: MaterialStateProperty.all(RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(8),
-                        )),
+                        backgroundColor: MaterialStateProperty.resolveWith(
+                          (states) =>
+                              states.contains(MaterialState.disabled)
+                                  ? const Color(0xFFB0B0B0)
+                                  : const Color(0xFF565454),
+                        ),
+                        shape: MaterialStateProperty.all(
+                          RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
                         elevation: MaterialStateProperty.all(4),
                       ),
                       child: const Text(
@@ -199,65 +150,73 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   Row(
                     children: const [
-                      Expanded(child: Divider()),
+                      Expanded(child: Divider(color: Color.fromRGBO(73, 72, 72, 1))),
                       Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8.0),
-                        child: Text('Or', style: TextStyle(color: Colors.grey)),
+                        child: Text(
+                          'Or',
+                          style: TextStyle(
+                              color: Color.fromRGBO(73, 72, 72, 1),
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
-                      Expanded(child: Divider()),
+                      Expanded(child: Divider(color: Color.fromRGBO(73, 72, 72, 1))),
                     ],
                   ),
 
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 60),
 
-                    Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: () => _openUrl('https://www.facebook.com'),
-                        child: SvgPicture.asset(
-                        'assets/icons/fb.svg',
-                        width: 10,
-                        height: 10,
-                        semanticsLabel: 'Facebook sign in',
+                      GestureDetector(
+                        onTap: () {
+                          // you can navigate to a "Continue with Facebook" screen if you want
+                        },
+                        child: Image.asset(
+                          'assets/icons/fb.png',
+                          width: 35,
+                          height: 35,
                         ),
                       ),
-                      ),
-                      const SizedBox(width: 40),
-                      MouseRegion(
-                      cursor: SystemMouseCursors.click,
-                      child: GestureDetector(
-                        onTap: () => _openUrl('https://accounts.google.com'),
+                      const SizedBox(width: 80),
+                      GestureDetector(
+                        onTap: () {
+                          // you can navigate to a "Continue with Google" screen
+                        },
                         child: SvgPicture.asset(
-                        'assets/icons/google.svg',
-                        width: 10,
-                        height: 10,
-                        semanticsLabel: 'Google sign in',
+                          'assets/icons/google.svg',
+                          width: 35,
+                          height: 35,
                         ),
-                      ),
                       ),
                     ],
-                    ),
+                  ),
 
                   const SizedBox(height: 14),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Al Ready have an account?', style: TextStyle(fontSize: 12)),
+                      const Text(
+                        'Already have an account?',
+                        style: TextStyle(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
                       TextButton(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const LoginScreen()),
-                          );
-                        },
-                        child: const Text('Login', style: TextStyle(fontSize: 12, color: Colors.green)),
+                        onPressed: () =>
+                            Navigator.of(context).pushNamed('/login'),
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ],
                   ),
@@ -270,7 +229,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildInput(TextEditingController controller, String hint) {
+  Widget _buildInput(String hint, TextEditingController controller) {
     return Container(
       height: 48,
       decoration: BoxDecoration(
@@ -281,10 +240,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: TextField(
         controller: controller,
-        keyboardType: hint == 'Phone' ? TextInputType.phone : TextInputType.text,
-        decoration: const InputDecoration(
+        keyboardType:
+            hint == 'Phone' ? TextInputType.phone : TextInputType.text,
+        decoration: InputDecoration(
           border: InputBorder.none,
           isCollapsed: true,
+          hintText: hint,
+          hintStyle: const TextStyle(color: Colors.grey),
         ),
         style: const TextStyle(color: Colors.black),
         cursorColor: Colors.black,

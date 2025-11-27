@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:suchigo_app/Screens.dart/signin_screen.dart';
+import 'package:suchigo_app/Screens.dart/login_screen.dart';
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -21,19 +22,10 @@ class WelcomeScreen extends StatelessWidget {
                     children: [
                       Image.asset(
                         'assets/images/logo.png', // <-- replace with your logo asset
-                        height: 30,
+                        height: 80,
                       ),
                       const SizedBox(width: 8),
-                      const Text(
-                        "SUCHIGO",
-                        style: TextStyle(
-                          fontSize: 18,
-                          height: 1.5,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
+                    
                     ],
                   ),
                   const Text(
@@ -64,7 +56,7 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 20),
 
               // Title Text
               const Text(
@@ -117,7 +109,7 @@ class WelcomeScreen extends StatelessWidget {
                   child: const Text(
                     "Get started",
                     style: TextStyle(
-                      fontSize: 22,
+                      fontSize: 20,
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
                     ),
@@ -131,6 +123,10 @@ class WelcomeScreen extends StatelessWidget {
               Center(
                 child: GestureDetector(
                   onTap: () {
+                     Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const LoginScreen()),
+  );
                     // Navigate to login
                   },
                   child: const Text(

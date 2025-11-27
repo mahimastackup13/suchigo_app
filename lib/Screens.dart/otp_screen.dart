@@ -208,7 +208,7 @@ class _OtpScreenState extends State<OtpScreen> {
                   child: Text(
                     "CONTINUE",
                     style: TextStyle(
-                      fontSize: 25,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                       color: isOtpComplete
                           ? Colors.white

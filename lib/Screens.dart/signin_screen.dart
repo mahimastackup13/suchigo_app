@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:suchigo_app/Screens.dart/login_screen.dart';
 import 'otp_screen.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -21,12 +22,10 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
 
-    // ✅ If valid, navigate to OTP Screen
+    // ✅ Navigate to OTP Screen if valid
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => OtpScreen(phoneNumber: number),
-      ),
+      MaterialPageRoute(builder: (_) => OtpScreen(phoneNumber: number)),
     );
   }
 
@@ -44,33 +43,51 @@ class _SignInScreenState extends State<SignInScreen> {
         child: Center(
           child: SingleChildScrollView(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Top Image
                 SizedBox(
-                  height: h * 0.35,
-                  width: double.infinity,
-                  child: Image.asset(
-                    'assets/images/signin.png',
-                    fit: BoxFit.cover,
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.only(
+                        right: 40,
+                      ), // equal space left/right
+                      child: Image.asset(
+                        'assets/images/signin.png',
+                        width: double
+                            .infinity, // fill available width within padding
+                        height: h * 0.35, // about 35% of screen height
+                        fit: BoxFit
+                            .cover, // keeps full image visible and centered
+                        alignment:
+                            Alignment.center, // ensures image stays centered
+                      ),
+                    ),
                   ),
                 ),
 
                 const SizedBox(height: 30),
 
+                // Main Card Container
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20),
-                  padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 30),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 60,
+                    horizontal: 30,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withOpacity(0.08),
                         blurRadius: 10,
                         offset: const Offset(0, 6),
                       ),
                     ],
                   ),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const Text(
                         'Enter your number to continue',
@@ -84,6 +101,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       ),
                       const SizedBox(height: 20),
 
+                      // Phone Number Input
                       TextField(
                         controller: _phoneController,
                         keyboardType: TextInputType.phone,
@@ -91,11 +109,21 @@ class _SignInScreenState extends State<SignInScreen> {
                         decoration: InputDecoration(
                           counterText: "",
                           hintText: 'Enter your number here',
-                          hintStyle: TextStyle(color: Colors.grey[500], fontWeight: FontWeight.bold),
-                          suffixIcon: const Icon(Icons.person_outlined, size: 40, color: Colors.grey),
+                          hintStyle: TextStyle(
+                            color: Colors.grey[500],
+                            fontWeight: FontWeight.bold,
+                          ),
+                          suffixIcon: const Icon(
+                            Icons.person_outlined,
+                            size: 30,
+                            color: Colors.grey,
+                          ),
                           filled: true,
                           fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 12.0),
+                          contentPadding: const EdgeInsets.symmetric(
+                            vertical: 18.0,
+                            horizontal: 16.0,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,
@@ -103,11 +131,12 @@ class _SignInScreenState extends State<SignInScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 26),
+                      const SizedBox(height: 30),
 
+                      // Sign In Button
                       SizedBox(
                         width: 250,
-                        height: 64,
+                        height: 60,
                         child: ElevatedButton(
                           onPressed: _validateAndProceed,
                           style: ElevatedButton.styleFrom(
@@ -128,9 +157,16 @@ class _SignInScreenState extends State<SignInScreen> {
                                   color: Colors.white,
                                 ),
                               ),
-                              const Align(
-                               alignment: AlignmentGeometry.centerRight,
-                                child: Icon(Icons.arrow_circle_right_outlined, size: 35, color: Colors.white),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.only(right: 12.0),
+                                  child: Icon(
+                                    Icons.arrow_circle_right_outlined,
+                                    size: 32,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -140,16 +176,29 @@ class _SignInScreenState extends State<SignInScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 20),
-                const Text(
-                  'Already have an account?',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
+                const SizedBox(height: 25),
+
+                // Already Have Account Text
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                    );
+                  },
+                  child: const Text(
+                    'Already have an account?',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      decoration: TextDecoration.underline,
+                    ),
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 20),
               ],
             ),
           ),

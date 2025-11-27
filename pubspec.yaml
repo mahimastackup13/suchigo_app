@@ -20,6 +20,8 @@ dependencies:
   google_fonts: ^6.2.1
   gap: ^3.0.1
   percent_indicator: ^4.2.5
+  intl: ^0.18.1
+  
 
   # Data & Storage
   sqflite: ^2.4.2
@@ -29,6 +31,9 @@ dependencies:
   provider: ^6.1.5
   material_symbols_icons: ^4.2874.0
   url_launcher: ^6.3.2
+  http: ^1.1.0
+  path_provider: ^2.1.5
+  geolocator: ^11.0.0
 
 dev_dependencies:
   flutter_test:
@@ -43,8 +48,22 @@ flutter:
     - assets/images/earth.png
     - assets/images/Tree.png
     - assets/images/signin.png
+    - assets/images/login.png
+    - assets/images/profilepic.png
+    - assets/images/Qrcodes.png
+    - assets/images/background.jpg
+
     
 
     
     - assets/icons/fb.svg
     - assets/icons/google.svg
+    - assets/icons/fb.png
+    - assets/icons/pic.png
+    - assets/icons/blacktree.png
+    - assets/icons/message.png
+    - assets/icons/HOME (2).png
+    - assets/icons/bill.png
+    - assets/icons/person.png
+    - assets/icons/settings.png
+    

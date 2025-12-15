@@ -1,121 +1,49 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/home_provider.dart';
+
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 
-// The new screen indices will be:
-// 0: HomeContent
-// 1: BillScreen <--- Target for the "Book Now" button
-// 2: SettingsScreen
-// 3: ProfileScreen
-
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomePageState();
-
-  // You can keep the operator overload, though it's not standard practice.
-  operator [](int other) {}
-}
-
-class _HomePageState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-
-  // The screens list contains ALL navigable destinations.
-  // Note: We cannot use const here because HomeContent requires the callback.
-  // The list is defined and populated in the build method.
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
-  // Define the callback function to navigate to the BillScreen (index 1)
-  void _navigateToBillScreen() {
-    // The BillScreen is at index 1 in the screensWithCallback list.
-    _onItemTapped(1);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    // The list of screens with the HomeContent callback included.
+    final homeProvider = context.watch<HomeProvider>();
+
     final List<Widget> screensWithCallback = [
-      HomeContent(onBookNow: _navigateToBillScreen), // Index 0 (Home)
-      const BillScreen(), // Index 1 (Bill - Hidden from Nav Bar)
-      const SettingsScreen(), // Index 2 (Settings)
-      const ProfileScreen(), // Index 3 (Profile)
+      HomeContent(onBookNow: homeProvider.navigateToBillScreen),
+      const BillScreen(),
+      const SettingsScreen(),
+      const ProfileScreen(),
     ];
 
-    // This is the list of items for the actual BottomNavigationBar.
-    // It will only contain Home, Settings, and Profile.
-    // The index values here correspond to the position in the screensWithCallback list.
     final List<BottomNavigationBarItem> bottomNavItems = [
       BottomNavigationBarItem(
         icon: Image.asset('assets/icons/HOME (2).png', width: 26, height: 26),
         label: 'Home',
       ),
-      // BillScreen is intentionally omitted from the BottomNavigationBar,
-      // but is at index 1 in screensWithCallback.
 
       BottomNavigationBarItem(
-        // This is the Settings Item, which corresponds to index 2 (SettingsScreen)
-        // in the screensWithCallback list.
-        icon: Image.asset(
-          'assets/icons/settings.png',
-          width: 26,
-          height: 26,
-        ),
+        icon: Image.asset('assets/icons/settings.png', width: 26, height: 26),
         label: 'Settings',
       ),
       BottomNavigationBarItem(
-        // This is the Profile Item, which corresponds to index 3 (ProfileScreen)
-        // in the screensWithCallback list.
         icon: Image.asset('assets/icons/person.png', width: 26, height: 26),
         label: 'Profile',
       ),
     ];
 
-    // Function to map BottomNavigationBar index to screen index.
-    // Since the BillScreen (index 1) is skipped, the navigation bar indices are 0, 1, 2.
-    // We need to map them to the full screen list: 0, 2, 3.
-    // However, for simplicity and proper state management when switching *back* to Home,
-    // we must allow all screens to be selected, including Bill.
-    // The `_selectedIndex` holds the index of the screen to display (0, 1, 2, or 3).
-    // The `currentIndex` of the nav bar must be managed carefully.
-
-    // Let's adjust the `_onItemTapped` to correctly handle the non-linear indices.
-    void _handleBottomNavTap(int navBarIndex) {
-        int screenIndex = 0; // Default to Home
-
-        if (navBarIndex == 0) {
-            screenIndex = 0; // Home -> Home (Index 0)
-        } else if (navBarIndex == 1) {
-            screenIndex = 2; // Settings -> Settings (Index 2)
-        } else if (navBarIndex == 2) {
-            screenIndex = 3; // Profile -> Profile (Index 3)
-        }
-        _onItemTapped(screenIndex);
-    }
-
-    // Determine the active index for the BottomNavigationBar:
-    // If the selected index is 0, 2, or 3, it should highlight Home (0), Settings (1), or Profile (2).
-    // If the selected index is 1 (BillScreen), we don't want any item highlighted, so we use 0 (Home) as a fallback.
-    int getBottomNavBarCurrentIndex() {
-      if (_selectedIndex == 0) return 0; // Home
-      if (_selectedIndex == 2) return 1; // Settings (is item index 1 in the nav bar)
-      if (_selectedIndex == 3) return 2; // Profile (is item index 2 in the nav bar)
-      return 0; // BillScreen (index 1) or any unexpected index falls back to Home
-    }
-
-
     return Scaffold(
       backgroundColor: Colors.white,
-      body: screensWithCallback[_selectedIndex],
+
+      body: screensWithCallback[homeProvider.selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: getBottomNavBarCurrentIndex(),
-        onTap: _handleBottomNavTap, // Use the custom handler
+        currentIndex: homeProvider.getBottomNavBarCurrentIndex(),
+
+        onTap: homeProvider.handleBottomNavTap,
         type: BottomNavigationBarType.fixed,
         selectedItemColor: const Color(0xFF1E713D),
         unselectedItemColor: Colors.grey.shade500,
@@ -127,10 +55,9 @@ class _HomePageState extends State<HomeScreen> {
 }
 
 class HomeContent extends StatelessWidget {
-  // 1. Define the callback function as a required parameter
   final VoidCallback onBookNow;
 
-  const HomeContent({super.key, required this.onBookNow}); // 2. Require the callback
+  const HomeContent({super.key, required this.onBookNow});
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +67,6 @@ class HomeContent extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header (Unchanged)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -194,7 +120,6 @@ class HomeContent extends StatelessWidget {
                     'assets/icons/message.png',
                     width: 40,
                     height: 40,
-                    // color: const Color(0xFF1E713D),
                   ),
                 ),
               ],
@@ -202,7 +127,6 @@ class HomeContent extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Search Bar (Unchanged)
             Container(
               height: 50,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -224,7 +148,6 @@ class HomeContent extends StatelessWidget {
 
             const SizedBox(height: 24),
 
-            // Trees & Points section (Unchanged)
             Row(
               children: [
                 Expanded(
@@ -315,7 +238,6 @@ class HomeContent extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Waste Activity (Unchanged)
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -366,7 +288,6 @@ class HomeContent extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // Time Filter Buttons - Re-added as they were commented out above the new button
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -382,17 +303,19 @@ class HomeContent extends StatelessWidget {
 
             const SizedBox(height: 20),
 
-            // *** NEW: Book Now Button ***
             Align(
               alignment: Alignment.center,
               child: ElevatedButton(
-                onPressed: onBookNow, // Triggers navigation to BillScreen (Index 1)
+                onPressed: onBookNow,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E713D), // Green color
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  padding: const EdgeInsets.symmetric(horizontal: 60, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 60,
+                    vertical: 12,
+                  ),
                   elevation: 5,
                 ),
                 child: const Text(
@@ -406,9 +329,7 @@ class HomeContent extends StatelessWidget {
               ),
             ),
 
-            const SizedBox(height: 16), // Space between button and ad container
-
-            // Ad section placeholder (Unchanged)
+            const SizedBox(height: 16),
             Container(
               height: 300,
               width: double.infinity,

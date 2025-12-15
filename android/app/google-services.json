@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "20744177268",
+    "project_id": "suchigo-16811",
+    "storage_bucket": "suchigo-16811.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:20744177268:android:b257c3ca07cc105faab321",
+        "android_client_info": {
+          "package_name": "com.example.suchigo_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDiyUTuH81Dh9vx6NCGKBBFY_YN2mEWqY8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

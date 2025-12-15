@@ -1,7 +1,5 @@
-// 
 import 'package:flutter/material.dart';
-import 'package:suchigo_app/Screens.dart/home_screen.dart';
-import 'package:suchigo_app/Screens.dart/pickup_screen.dart';
+import 'home_screen.dart';
 
 class AddressScreen extends StatefulWidget {
   const AddressScreen({super.key});
@@ -23,11 +21,20 @@ class _PickupFormScreenState extends State<AddressScreen> {
   final TextEditingController _bagsController = TextEditingController();
   final TextEditingController _commentsController = TextEditingController();
 
-  String? _selectedState;
-  String? _selectedDistrict;
-  String? _selectedWard;
+  String? _selectedState = "Kerala";
+  String? _selectedDistrict = "Ernakulam";
+  String? _selectedWard = "1";
 
-  // Standard color for the green theme
+  final List<String> _states = ["Kerala", "Tamil Nadu"];
+  final List<String> _districts = [
+    "Ernakulam",
+    "Thrissur",
+    "Kollam",
+    "Chennai",
+    "Coimbatore",
+  ];
+  final List<String> _wards = ["1", "2", "3", "4", "5", "6"];
+
   static const Color _primaryGreen = Color(0xFF4CAF50);
   static const Color _darkGreen = Color(0xFF1E713D);
 
@@ -46,7 +53,26 @@ class _PickupFormScreenState extends State<AddressScreen> {
     super.dispose();
   }
 
-  // Helper widget to build the text field label
+  void _submitForm() async {
+    if (_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Submitting...')));
+
+      // TODO: Handle form submission locally
+
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Pickup scheduled successfully!')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomeScreen()),
+      );
+    }
+  }
+
   Widget _buildLabel(String text) {
     return Padding(
       padding: const EdgeInsets.only(top: 10, bottom: 6),
@@ -57,26 +83,27 @@ class _PickupFormScreenState extends State<AddressScreen> {
     );
   }
 
-  // Helper widget to build the form text field
   Widget _buildTextField(
     TextEditingController controller,
     String hint, {
     int maxLines = 1,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
+      keyboardType: keyboardType,
       decoration: _inputDecoration(hint),
       validator: (value) =>
           value == null || value.isEmpty ? 'Please enter $hint' : null,
     );
   }
 
-  // Helper widget to build the dropdown
   Widget _buildDropdown(
     List<String> items,
     String? selectedValue,
     ValueChanged<String?> onChanged,
+    String label,
   ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
@@ -101,12 +128,11 @@ class _PickupFormScreenState extends State<AddressScreen> {
             .toList(),
         onChanged: onChanged,
         validator: (value) =>
-            value == null || value.isEmpty ? 'Please select a value' : null,
+            value == null || value.isEmpty ? 'Please select a $label' : null,
       ),
     );
   }
 
-  // Helper for InputDecoration styling
   InputDecoration _inputDecoration(String hint) {
     return InputDecoration(
       filled: true,
@@ -131,14 +157,13 @@ class _PickupFormScreenState extends State<AddressScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // 🌿 Cleaned-up Header Section
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
                   vertical: 16,
                 ),
                 decoration: const BoxDecoration(
-                  color: _primaryGreen, // Primary green background
+                  color: _primaryGreen,
                   borderRadius: BorderRadius.only(
                     bottomLeft: Radius.circular(24),
                     bottomRight: Radius.circular(24),
@@ -151,20 +176,20 @@ class _PickupFormScreenState extends State<AddressScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        // Back Arrow
                         IconButton(
-                          onPressed: () => Navigator.of(context).pop(), // Use pop for back navigation
+                          onPressed: () => Navigator.of(context).pop(),
                           icon: const Icon(
                             Icons.arrow_back_ios_new,
                             size: 16,
                             color: Colors.white,
                           ),
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.3), // Soft white background for icon
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.3,
+                            ),
                             shape: const CircleBorder(),
                           ),
                         ),
-                        // Title
                         const Text(
                           "Schedule Pickup",
                           style: TextStyle(
@@ -173,7 +198,6 @@ class _PickupFormScreenState extends State<AddressScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        // Home Icon
                         IconButton(
                           onPressed: () => Navigator.pushReplacement(
                             context,
@@ -187,7 +211,9 @@ class _PickupFormScreenState extends State<AddressScreen> {
                             color: Colors.white,
                           ),
                           style: IconButton.styleFrom(
-                            backgroundColor: Colors.white.withOpacity(0.3),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.3,
+                            ),
                             shape: const CircleBorder(),
                           ),
                         ),
@@ -196,7 +222,6 @@ class _PickupFormScreenState extends State<AddressScreen> {
 
                     const SizedBox(height: 10),
 
-                    // Welcome Card inside the header (Retained)
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
@@ -208,7 +233,7 @@ class _PickupFormScreenState extends State<AddressScreen> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
+                            color: Colors.grey.withValues(alpha: 0.3),
                             blurRadius: 4,
                             offset: const Offset(2, 4),
                           ),
@@ -241,11 +266,9 @@ class _PickupFormScreenState extends State<AddressScreen> {
                   ],
                 ),
               ),
-              // ------------------------------------
 
               const SizedBox(height: 20),
 
-              // Form Section
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: Form(
@@ -257,10 +280,18 @@ class _PickupFormScreenState extends State<AddressScreen> {
                       _buildTextField(_nameController, "Full Name"),
 
                       _buildLabel("Email Address"),
-                      _buildTextField(_emailController, "Email Address"),
+                      _buildTextField(
+                        _emailController,
+                        "Email Address",
+                        keyboardType: TextInputType.emailAddress,
+                      ),
 
                       _buildLabel("Contact Number"),
-                      _buildTextField(_contactController, "Contact Number"),
+                      _buildTextField(
+                        _contactController,
+                        "Contact Number",
+                        keyboardType: TextInputType.phone,
+                      ),
 
                       _buildLabel("Select Pickup Date"),
                       TextFormField(
@@ -275,49 +306,74 @@ class _PickupFormScreenState extends State<AddressScreen> {
                           );
                           if (pickedDate != null) {
                             _dateController.text =
-                                "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                                "${pickedDate.day.toString().padLeft(2, '0')}/${pickedDate.month.toString().padLeft(2, '0')}/${pickedDate.year}";
                           }
                         },
                         decoration: _inputDecoration("Select Date"),
-                        validator: (value) =>
-                            value == null || value.isEmpty ? 'Please select a date' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Please select a date'
+                            : null,
                       ),
                       const SizedBox(height: 10),
 
                       _buildLabel("Pickup Address"),
-                      _buildTextField(_addressController, "Pickup Address"),
+                      _buildTextField(
+                        _addressController,
+                        "Pickup Address",
+                        maxLines: 3,
+                      ),
 
                       _buildLabel("Land mark"),
                       _buildTextField(_landmarkController, "Land mark"),
 
                       _buildLabel("State"),
-                      _buildDropdown(["Kerala", "Tamil Nadu"], _selectedState,
-                          (value) {
+                      _buildDropdown(_states, _selectedState, (value) {
                         setState(() => _selectedState = value);
-                      }),
+                      }, "State"),
 
                       _buildLabel("District"),
                       _buildDropdown(
-                        ["Ernakulam", "Thrissur"],
+                        _districts
+                            .where(
+                              (d) =>
+                                  (_selectedState == "Kerala" &&
+                                      [
+                                        "Ernakulam",
+                                        "Thrissur",
+                                        "Kollam",
+                                      ].contains(d)) ||
+                                  (_selectedState == "Tamil Nadu" &&
+                                      ["Chennai", "Coimbatore"].contains(d)),
+                            )
+                            .toList(),
                         _selectedDistrict,
                         (value) {
                           setState(() => _selectedDistrict = value);
                         },
+                        "District",
                       ),
 
                       _buildLabel("Local Body"),
                       _buildTextField(_localBodyController, "Local Body"),
 
                       _buildLabel("Ward"),
-                      _buildDropdown(["1", "2", "3"], _selectedWard, (value) {
+                      _buildDropdown(_wards, _selectedWard, (value) {
                         setState(() => _selectedWard = value);
-                      }),
+                      }, "Ward"),
 
                       _buildLabel("Pincode"),
-                      _buildTextField(_pincodeController, "Pincode"),
+                      _buildTextField(
+                        _pincodeController,
+                        "Pincode",
+                        keyboardType: TextInputType.number,
+                      ),
 
                       _buildLabel("Number of Bags"),
-                      _buildTextField(_bagsController, "Number of Bags"),
+                      _buildTextField(
+                        _bagsController,
+                        "Number of Bags",
+                        keyboardType: TextInputType.number,
+                      ),
 
                       _buildLabel("Comments"),
                       _buildTextField(
@@ -327,25 +383,16 @@ class _PickupFormScreenState extends State<AddressScreen> {
                       ),
 
                       const SizedBox(height: 20),
-                      // Submit Button
                       Center(
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _darkGreen, // Darker green for button
+                            backgroundColor: _darkGreen,
                             minimumSize: const Size(double.infinity, 45),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          onPressed: () {
-                            if (_formKey.currentState!.validate()) {
-                              // If using named routes, ensure '/home' is correctly defined
-                              Navigator.pushReplacement(
-                                context, 
-                                MaterialPageRoute(builder: (context) => const HomeScreen())
-                              );
-                            }
-                          },
+                          onPressed: _submitForm,
                           child: const Text(
                             "SUBMIT",
                             style: TextStyle(

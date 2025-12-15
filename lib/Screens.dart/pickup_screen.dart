@@ -1,6 +1,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/PickupDetailsProvider.dart';
+
 import 'package:suchigo_app/Screens.dart/address_screen.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
@@ -8,46 +11,46 @@ import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 import 'package:suchigo_app/Screens.dart/track_screen.dart';
 
-class PickupScreen extends StatefulWidget {
+
+class PickupScreen extends StatelessWidget {
   const PickupScreen({super.key});
 
-  @override
-  State<PickupScreen> createState() => _PickupScreenState();
-}
-
-class _PickupScreenState extends State<PickupScreen> {
-  final TextEditingController _addressController = TextEditingController();
-  DateTime? _selectedDate;
-  TimeOfDay? _selectedTime;
-
-  Future<void> _selectDate(BuildContext context) async {
+  Future<void> _selectDate(BuildContext context, PickupDetailsProvider provider) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now(),
+      initialDate: provider.selectedDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2101),
     );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
+    if (picked != null) {
+      provider.setSelectedDate(picked);
     }
   }
 
-  Future<void> _selectTime(BuildContext context) async {
+  
+  Future<void> _selectTime(BuildContext context, PickupDetailsProvider provider) async {
     final TimeOfDay? picked = await showTimePicker(
       context: context,
-      initialTime: TimeOfDay.now(),
+      initialTime: provider.selectedTime ?? TimeOfDay.now(),
     );
-    if (picked != null && picked != _selectedTime) {
-      setState(() {
-        _selectedTime = picked;
-      });
+    if (picked != null) {
+      provider.setSelectedTime(picked);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    // Use context.watch<T>() to listen for changes to the state
+    final pickupProvider = context.watch<PickupDetailsProvider>();
+    // Use context.read<T>() for functions/actions that don't rebuild the widget
+    final pickupAction = context.read<PickupDetailsProvider>();
+
+    // Using a local controller to manage the TextField,
+    // which then updates the provider on change.
+    final TextEditingController addressController = TextEditingController(text: pickupProvider.pickupAddress);
+    addressController.selection = TextSelection.fromPosition(
+        TextPosition(offset: addressController.text.length)); // Keep cursor at end
+
     return Scaffold(
       backgroundColor: const Color(0xFFE6F4E6), // light green background
       body: SafeArea(
@@ -143,7 +146,8 @@ class _PickupScreenState extends State<PickupScreen> {
 
                 // Address field
                 TextField(
-                  controller: _addressController,
+                  controller: addressController,
+                  onChanged: (value) => pickupAction.setPickupAddress(value), // Update Provider on change
                   decoration: InputDecoration(
                     prefixIcon: const Icon(
                       Icons.location_searching_outlined,
@@ -171,7 +175,9 @@ class _PickupScreenState extends State<PickupScreen> {
 
                 // Change location text
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    // Navigate to a dedicated location screen or open a map picker
+                  },
                   child: const Text(
                     "Change location",
                     style: TextStyle(
@@ -218,7 +224,7 @@ class _PickupScreenState extends State<PickupScreen> {
                       children: [
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => _selectDate(context),
+                            onTap: () => _selectDate(context, pickupAction),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 14,
@@ -240,9 +246,10 @@ class _PickupScreenState extends State<PickupScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    _selectedDate != null
+                                    // Use state from the provider
+                                    pickupProvider.selectedDate != null
                                         ? DateFormat('yyyy-MM-dd')
-                                            .format(_selectedDate!)
+                                            .format(pickupProvider.selectedDate!)
                                         : "Select Date",
                                     style: const TextStyle(
                                       color: Colors.black54,
@@ -257,7 +264,7 @@ class _PickupScreenState extends State<PickupScreen> {
                         const SizedBox(width: 12),
                         Expanded(
                           child: GestureDetector(
-                            onTap: () => _selectTime(context),
+                            onTap: () => _selectTime(context, pickupAction),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 14,
@@ -279,8 +286,9 @@ class _PickupScreenState extends State<PickupScreen> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    _selectedTime != null
-                                        ? _selectedTime!.format(context)
+                                    // Use state from the provider
+                                    pickupProvider.selectedTime != null
+                                        ? pickupProvider.selectedTime!.format(context)
                                         : "Select Time",
                                     style: const TextStyle(
                                       color: Colors.black54,
@@ -310,7 +318,9 @@ class _PickupScreenState extends State<PickupScreen> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      // Logic for "Schedule Pickup"
+                    },
                     child: const Text(
                       "Schedule Pickup",
                       style: TextStyle(
@@ -336,6 +346,10 @@ class _PickupScreenState extends State<PickupScreen> {
                       ),
                     ),
                     onPressed: () {
+                      // Call the action method on the provider
+                      pickupAction.confirmPickup(); 
+                      
+                      // Your original navigation logic
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(

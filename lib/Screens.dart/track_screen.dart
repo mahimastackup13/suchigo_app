@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:suchigo_app/Screens.dart/submit_screen.dart';
 import 'package:suchigo_app/Screens.dart/pickup_screen.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
+import 'package:suchigo_app/provider/AddressProvider.dart';
 
-/// ✅ Reusable Bottom Navigation Bar
 class CustomBottomNav extends StatelessWidget {
   final int selectedIndex;
   const CustomBottomNav({super.key, required this.selectedIndex});
 
   void _onItemTapped(BuildContext context, int index) {
-    if (index == selectedIndex) return; // do nothing if already on screen
+    if (index == selectedIndex) return; 
 
     Widget destination;
     switch (index) {
@@ -79,15 +80,12 @@ class AddressScreen1 extends StatefulWidget {
 
 class _AddressScreen1State extends State<AddressScreen1> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _contactController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _addressController = TextEditingController();
-  final TextEditingController _landmarkController = TextEditingController();
 
+  
   @override
   Widget build(BuildContext context) {
+    final addressProvider = Provider.of<AddressProvider>(context, listen: true);
+
     return Scaffold(
       backgroundColor: const Color(0xFFEFF9F1),
       body: SafeArea(
@@ -166,23 +164,7 @@ class _AddressScreen1State extends State<AddressScreen1> {
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              // IconButton(
-                              //   onPressed: () => Navigator.pushReplacement(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //       builder: (context) => const HomeScreen(),
-                              //     ),
-                              //   ),
-                              //   icon: const Icon(
-                              //     Icons.home,
-                              //     size: 16,
-                              //     color: Colors.white,
-                              //   ),
-                              //   style: IconButton.styleFrom(
-                              //     backgroundColor: const Color.fromARGB(148, 197, 193, 193),
-                              //     shape: const CircleBorder(),
-                              //   ),
-                              // ),
+                              // IconButton removed as it was commented out in original
                             ],
                           ),
                         ],
@@ -242,17 +224,34 @@ class _AddressScreen1State extends State<AddressScreen1> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       buildLabel("Full Name"),
-                      buildTextField(_nameController, "Full Name"),
+                      // Use provider setter
+                      buildTextField(
+                        initialValue: addressProvider.name,
+                        onChanged: addressProvider.setName,
+                        hint: "Full Name",
+                      ),
 
                       buildLabel("Email Address"),
-                      buildTextField(_emailController, "Email Address"),
+                      // Use provider setter
+                      buildTextField(
+                        initialValue: addressProvider.email,
+                        onChanged: addressProvider.setEmail,
+                        hint: "Email Address",
+                      ),
 
                       buildLabel("Contact Number"),
-                      buildTextField(_contactController, "Contact Number"),
+                      // Use provider setter
+                      buildTextField(
+                        initialValue: addressProvider.contact,
+                        onChanged: addressProvider.setContact,
+                        hint: "Contact Number",
+                      ),
 
                       buildLabel("Select Pickup Date"),
+                      // Use a custom TextFormField for date picking
                       TextFormField(
-                        controller: _dateController,
+                        // Use provider getter for display
+                        controller: TextEditingController(text: addressProvider.date),
                         readOnly: true,
                         onTap: () async {
                           DateTime? pickedDate = await showDatePicker(
@@ -262,19 +261,33 @@ class _AddressScreen1State extends State<AddressScreen1> {
                             lastDate: DateTime(2100),
                           );
                           if (pickedDate != null) {
-                            _dateController.text =
+                            String formattedDate =
                                 "${pickedDate.day}/${pickedDate.month}/${pickedDate.year}";
+                            // Use provider setter
+                            addressProvider.setDate(formattedDate);
                           }
                         },
                         decoration: inputDecoration("Select Date"),
+                        validator: (value) =>
+                          value == null || value.isEmpty ? 'Please select a date' : null,
                       ),
                       const SizedBox(height: 10),
 
                       buildLabel("Pickup Address"),
-                      buildTextField(_addressController, "Pickup Address"),
+                      // Use provider setter
+                      buildTextField(
+                        initialValue: addressProvider.address,
+                        onChanged: addressProvider.setAddress,
+                        hint: "Pickup Address",
+                      ),
 
                       buildLabel("Land mark"),
-                      buildTextField(_landmarkController, "Land mark"),
+                      // Use provider setter
+                      buildTextField(
+                        initialValue: addressProvider.landmark,
+                        onChanged: addressProvider.setLandmark,
+                        hint: "Land mark",
+                      ),
 
                       const SizedBox(height: 20),
                       Center(
@@ -288,10 +301,12 @@ class _AddressScreen1State extends State<AddressScreen1> {
                           ),
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
+                             
+                              
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const AddressScreen2(),
+                                  builder: (context) => const AddressScreen2 (), 
                                 ),
                               );
                             }
@@ -330,9 +345,14 @@ class _AddressScreen1State extends State<AddressScreen1> {
     );
   }
 
-  Widget buildTextField(TextEditingController controller, String hint) {
+  Widget buildTextField({
+    required String initialValue,
+    required void Function(String) onChanged,
+    required String hint,
+  }) {
     return TextFormField(
-      controller: controller,
+      initialValue: initialValue.isNotEmpty ? initialValue : null,
+      onChanged: onChanged,
       decoration: inputDecoration(hint),
       validator: (value) =>
           value == null || value.isEmpty ? 'Please enter $hint' : null,

@@ -1,4 +1,3 @@
-# 
 name: suchigo_app
 description: "A new Flutter project."
 
@@ -13,32 +12,39 @@ dependencies:
   flutter:
     sdk: flutter
 
-  # UI & Icons
+  # --- UI & Icons ---
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.2.0
   lottie: ^3.3.1
   google_fonts: ^6.2.1
   gap: ^3.0.1
   percent_indicator: ^4.2.5
-  intl: ^0.18.1
-  
-
-  # Data & Storage
-  sqflite: ^2.4.2
-  shared_preferences: ^2.5.3
-
-  # State Management
-  provider: ^6.1.5
   material_symbols_icons: ^4.2874.0
+
+  # --- Date Formatting ---
+  intl: ^0.20.2 
+  
+  # --- Firebase (Core and Auth) ---
+  firebase_core: ^3.0.0 # Updated to use a recent, consistent major version (assuming you want to use the latest)
+  firebase_auth: ^5.0.0 # Updated to use a recent, consistent major version
+  
+  # --- Data & Storage ---
+  sqflite: ^2.4.2
+  # shared_preferences: ^2.5.3 # Commented out as in original
+  
+  # --- State Management / Utilities ---
+  provider: ^6.1.5
   url_launcher: ^6.3.2
   http: ^1.1.0
+  
+  # --- Location/Path ---
   path_provider: ^2.1.5
-  geolocator: ^11.0.0
+  geolocator: ^14.0.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 flutter:
   uses-material-design: true
@@ -53,9 +59,6 @@ flutter:
     - assets/images/Qrcodes.png
     - assets/images/background.jpg
 
-    
-
-    
     - assets/icons/fb.svg
     - assets/icons/google.svg
     - assets/icons/fb.png
@@ -66,4 +69,3 @@ flutter:
     - assets/icons/bill.png
     - assets/icons/person.png
     - assets/icons/settings.png
-    

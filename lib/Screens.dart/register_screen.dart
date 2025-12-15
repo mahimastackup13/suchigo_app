@@ -1,13 +1,9 @@
+// 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
-import 'login_screen.dart';
 import '../provider/register_provider.dart';
-import 'package:suchigo_app/Screens.dart/login_screen.dart';
-
-// replace this with your actual next screen:
-// import 'next_screen.dart';
-
+import 'package:suchigo_app/Screens.dart/login_screen.dart'; 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
@@ -16,18 +12,26 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  late TextEditingController _nameController;
+  // --- UPDATED CONTROLLERS ---
+  late TextEditingController _usernameController;
+  late TextEditingController _firstNameController;
+  late TextEditingController _lastNameController;
   late TextEditingController _emailController;
   late TextEditingController _phoneController;
+  late TextEditingController _passwordController;
 
   bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController();
+    // Initialize all controllers
+    _usernameController = TextEditingController();
+    _firstNameController = TextEditingController();
+    _lastNameController = TextEditingController();
     _emailController = TextEditingController();
     _phoneController = TextEditingController();
+    _passwordController = TextEditingController();
   }
 
   @override
@@ -37,13 +41,39 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!_initialized) {
       final provider = context.read<RegisterProvider>();
 
-      _nameController.text = provider.name;
+      // Set initial values from provider state
+      _usernameController.text = provider.username;
+      _firstNameController.text = provider.firstName;
+      _lastNameController.text = provider.lastName;
       _emailController.text = provider.email;
       _phoneController.text = provider.phone;
+      _passwordController.text = provider.password;
 
-      _nameController.addListener(() => provider.setName(_nameController.text));
-      _emailController.addListener(() => provider.setEmail(_emailController.text));
-      _phoneController.addListener(() => provider.setPhone(_phoneController.text));
+      // Add Listeners for all required fields
+      _usernameController.addListener(() {
+        provider.setUsername(_usernameController.text);
+        provider.clearError();
+      });
+      _firstNameController.addListener(() {
+        provider.setFirstName(_firstNameController.text);
+        provider.clearError();
+      });
+      _lastNameController.addListener(() {
+        provider.setLastName(_lastNameController.text);
+        provider.clearError();
+      });
+      _emailController.addListener(() {
+        provider.setEmail(_emailController.text);
+        provider.clearError();
+      });
+      _phoneController.addListener(() {
+        provider.setPhone(_phoneController.text);
+        provider.clearError();
+      });
+      _passwordController.addListener(() {
+        provider.setPassword(_passwordController.text);
+        provider.clearError();
+      });
 
       _initialized = true;
     }
@@ -51,9 +81,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _usernameController.dispose();
+    _firstNameController.dispose();
+    _lastNameController.dispose();
     _emailController.dispose();
     _phoneController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -79,18 +112,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  _buildInput('Name', _nameController),
+                  // --- UPDATED INPUT FIELDS ---
+                  _buildInput('Username', _usernameController, TextInputType.text),
                   const SizedBox(height: 14),
-                  _buildInput('Email', _emailController),
+                  _buildInput('First Name', _firstNameController, TextInputType.text),
                   const SizedBox(height: 14),
-                  _buildInput('Phone', _phoneController),
+                  _buildInput('Last Name', _lastNameController, TextInputType.text),
+                  const SizedBox(height: 14),
+                  // --- END UPDATED INPUT FIELDS ---
+
+                  _buildInput('Email', _emailController, TextInputType.emailAddress),
+                  const SizedBox(height: 14),
+                  // _buildInput('Phone', _phoneController, TextInputType.phone),
+                  // const SizedBox(height: 14),
+                  _buildInput('Phone (e.g., +919998887776)', _phoneController, TextInputType.phone),
+                  const SizedBox(height: 14),
+                  _buildInput('Password', _passwordController, TextInputType.text, isPassword: true),
                   const SizedBox(height: 16),
+
+                  if (provider.errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10, left: 2),
+                      child: Text(
+                        'Error: ${provider.errorMessage!}',
+                        style: const TextStyle(color: Colors.red, fontSize: 12),
+                      ),
+                    ),
 
                   Row(
                     children: [
                       Checkbox(
                         value: provider.termsAccepted,
-                        onChanged: (v) =>
+                        onChanged: provider.isLoading ? null : (v) => 
                             provider.setTermsAccepted(v ?? false),
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
@@ -114,15 +167,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: provider.isValid
-                          ? () {
-                              // DIRECTLY GO TO NEXT SCREEN
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const LoginScreen(),
-                                ),
-                              );
+                      onPressed: provider.isValid && !provider.isLoading
+                          ? () async {
+                              final success = await provider.registerUser();
+                              if (success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Registration successful! Please login.')),
+                                );
+                                Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => const LoginScreen(),
+                                  ),
+                                );
+                              }
                             }
                           : null,
                       style: ButtonStyle(
@@ -139,19 +197,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         elevation: MaterialStateProperty.all(4),
                       ),
-                      child: const Text(
-                        'CONTINUE',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.0,
-                        ),
-                      ),
+                      child: provider.isLoading
+                          ? const Center(
+                              child: SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : const Text(
+                              'CONTINUE',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.0,
+                              ),
+                            ),
                     ),
                   ),
 
                   const SizedBox(height: 20),
 
+                  // OR Separator
                   Row(
                     children: const [
                       Expanded(child: Divider(color: Color.fromRGBO(73, 72, 72, 1))),
@@ -174,24 +244,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       GestureDetector(
-                        onTap: () {
-                          // you can navigate to a "Continue with Facebook" screen if you want
-                        },
+                        onTap: () {},
                         child: Image.asset(
                           'assets/icons/fb.png',
                           width: 35,
                           height: 35,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.facebook, size: 35, color: Colors.blue),
                         ),
                       ),
                       const SizedBox(width: 80),
                       GestureDetector(
-                        onTap: () {
-                          // you can navigate to a "Continue with Google" screen
-                        },
+                        onTap: () {},
                         child: SvgPicture.asset(
                           'assets/icons/google.svg',
                           width: 35,
                           height: 35,
+                          placeholderBuilder: (context) => const Icon(Icons.g_mobiledata, size: 35, color: Colors.red),
                         ),
                       ),
                     ],
@@ -199,6 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: 14),
 
+                  // Login Link
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -229,7 +299,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  Widget _buildInput(String hint, TextEditingController controller) {
+  // Helper method for input fields
+  Widget _buildInput(String hint, TextEditingController controller, TextInputType type, {bool isPassword = false}) {
     return Container(
       height: 48,
       decoration: BoxDecoration(
@@ -240,8 +311,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: TextField(
         controller: controller,
-        keyboardType:
-            hint == 'Phone' ? TextInputType.phone : TextInputType.text,
+        obscureText: isPassword,
+        keyboardType: type,
         decoration: InputDecoration(
           border: InputBorder.none,
           isCollapsed: true,

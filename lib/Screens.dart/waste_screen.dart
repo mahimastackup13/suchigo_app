@@ -1,7 +1,7 @@
-// Updated WasteScreen with payment popup, QR code, and success flow
 import 'package:flutter/material.dart';
 import 'package:suchigo_app/Screens.dart/collector_screen.dart';
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
+
 
 class WasteScreen extends StatefulWidget {
   const WasteScreen({super.key});

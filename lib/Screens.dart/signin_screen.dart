@@ -1,6 +1,13 @@
+//
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Import Provider
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
 import 'otp_screen.dart';
+// import 'package:suchigo_app/Screens.dart/home_screen.dart'; // Removed as navigation is handled in AuthProvider
+// import 'package:suchigo_app/Screens.dart/register_screen.dart'; // Removed unused import
+// import 'package:firebase_auth/firebase_auth.dart'; // Removed as logic is in AuthProvider
+// import 'package:firebase_core/firebase_core.dart'; // Removed as logic is in main.dart
+import 'package:suchigo_app/provider/auth_provider.dart'; // Import your AuthProvider
 
 class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
@@ -12,7 +19,10 @@ class SignInScreen extends StatefulWidget {
 class _SignInScreenState extends State<SignInScreen> {
   final TextEditingController _phoneController = TextEditingController();
 
-  void _validateAndProceed() {
+  // Set the country code (e.g., for India)
+  final String _countryCode = "+91";
+
+  void _validateAndProceed() async {
     String number = _phoneController.text.trim();
 
     if (number.isEmpty || number.length != 10) {
@@ -22,11 +32,11 @@ class _SignInScreenState extends State<SignInScreen> {
       return;
     }
 
-    // ✅ Navigate to OTP Screen if valid
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => OtpScreen(phoneNumber: number)),
-    );
+    // ⭐ Call the AuthProvider to handle Firebase logic
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Call the function that handles sending the OTP via Firebase
+    await authProvider.signInWithPhoneNumber(context, number, _countryCode);
   }
 
   @override
@@ -45,22 +55,17 @@ class _SignInScreenState extends State<SignInScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Top Image
+                // Top Image (Code remains the same)
                 SizedBox(
                   child: Center(
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                        right: 40,
-                      ), // equal space left/right
+                      padding: const EdgeInsets.only(right: 40),
                       child: Image.asset(
                         'assets/images/signin.png',
-                        width: double
-                            .infinity, // fill available width within padding
-                        height: h * 0.35, // about 35% of screen height
-                        fit: BoxFit
-                            .cover, // keeps full image visible and centered
-                        alignment:
-                            Alignment.center, // ensures image stays centered
+                        width: double.infinity,
+                        height: h * 0.35,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
                       ),
                     ),
                   ),
@@ -113,6 +118,13 @@ class _SignInScreenState extends State<SignInScreen> {
                             color: Colors.grey[500],
                             fontWeight: FontWeight.bold,
                           ),
+                          // Use prefixText so the country code stays inline with the input
+                          prefixText: '$_countryCode ',
+                          prefixStyle: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey[800],
+                          ),
                           suffixIcon: const Icon(
                             Icons.person_outlined,
                             size: 30,
@@ -138,7 +150,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         width: 250,
                         height: 60,
                         child: ElevatedButton(
-                          onPressed: _validateAndProceed,
+                          onPressed:
+                              _validateAndProceed, // Call the updated method
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF545454),
                             shape: RoundedRectangleBorder(

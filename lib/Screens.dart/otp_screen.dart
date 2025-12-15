@@ -1,10 +1,21 @@
+// 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'register_screen.dart';
+// Import your AuthProvider
+import '../provider/auth_provider.dart'; // ⭐ Assume AuthProvider is in this path
 
 class OtpScreen extends StatefulWidget {
   final String phoneNumber;
-  const OtpScreen({super.key, required this.phoneNumber});
+  // ⭐ Add verificationId to receive the ID from Firebase after sending OTP
+  final String verificationId; 
+
+  const OtpScreen({
+    super.key, 
+    required this.phoneNumber, 
+    required this.verificationId, // ⭐ NEW REQUIRED PARAMETER
+  });
 
   @override
   State<OtpScreen> createState() => _OtpScreenState();
@@ -23,12 +34,19 @@ class _OtpScreenState extends State<OtpScreen> {
   void initState() {
     super.initState();
     startTimer();
+    // Add listeners to check completion when text changes
+    for (var controller in otpControllers) {
+      controller.addListener(checkOtpCompletion);
+    }
   }
 
   void startTimer() {
     timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (secondsRemaining > 0) {
-        setState(() => secondsRemaining--);
+        // Use setState conditionally to avoid unnecessary rebuilds
+        if (mounted) {
+          setState(() => secondsRemaining--);
+        }
       } else {
         timer.cancel();
       }
@@ -36,45 +54,90 @@ class _OtpScreenState extends State<OtpScreen> {
   }
 
   void moveToNext(int index, String value) {
-    if (value.length == 1 && index < 5) {
-      FocusScope.of(context).nextFocus();
-    } else if (value.isEmpty && index > 0) {
-      FocusScope.of(context).previousFocus();
+    // Only proceed to the next field if a character was typed
+    if (value.length == 1) {
+      // Move focus to the next field if it exists
+      if (index < 5) {
+        FocusScope.of(context).nextFocus();
+      }
+    } else if (value.isEmpty) {
+      // Move focus to the previous field if the user deletes a character
+      if (index > 0) {
+        FocusScope.of(context).previousFocus();
+      }
     }
-
+    
+    // Call checkOtpCompletion to update button state
     checkOtpCompletion();
   }
 
   void checkOtpCompletion() {
+    // Check if all 6 controllers have text
     bool allFilled = otpControllers.every(
-      (controller) => controller.text.isNotEmpty,
+      (controller) => controller.text.length == 1,
     );
-    setState(() {
-      isOtpComplete = allFilled;
-    });
+
+    // Only update state if the completion status actually changes
+    if (allFilled != isOtpComplete) {
+      setState(() {
+        isOtpComplete = allFilled;
+      });
+    }
   }
 
-  void verifyOtp() {
-    String otp = otpControllers.map((e) => e.text).join();
+  // ⭐ UPDATED FOR FIREBASE AUTHENTICATION
+  Future<void> verifyOtp() async {
+    // Combine the text from all controllers into a single OTP string
+    final String otp = otpControllers.map((e) => e.text).join();
 
     if (otp.length != 6) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text("Enter 6-digit OTP")));
+      if(mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Please enter the full 6-digit OTP")),
+        );
+      }
       return;
     }
+    
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    // ✅ If OTP is 6 digits → Go to Register Screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const RegisterScreen()),
+    // Start loading state (if your provider has one)
+    authProvider.setLoading(true);
+
+    final bool isSuccess = await authProvider.verifySmsCode(
+      context, // Pass context for navigation/snackbar if needed in provider
+      widget.verificationId,
+      otp,
     );
+
+    authProvider.setLoading(false); // Stop loading
+
+    if (isSuccess && mounted) {
+      // Navigate to Register Screen upon successful Firebase sign-in
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const RegisterScreen()),
+      );
+    } else if (mounted) {
+      // Error handling (handled by AuthProvider, but a final fallback)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.errorMessage ?? "Invalid OTP or unexpected error."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      // Clear OTP fields on failure
+      for (var controller in otpControllers) {
+        controller.clear();
+      }
+    }
   }
+
 
   @override
   void dispose() {
     timer?.cancel();
     for (var controller in otpControllers) {
+      controller.removeListener(checkOtpCompletion); // Remove listener
       controller.dispose();
     }
     super.dispose();
@@ -82,6 +145,9 @@ class _OtpScreenState extends State<OtpScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Access the provider to check loading state
+    final authProvider = Provider.of<AuthProvider>(context); 
+    
     String masked =
         "+91 ${widget.phoneNumber.substring(0, 2)}******${widget.phoneNumber.substring(8)}";
 
@@ -97,35 +163,28 @@ class _OtpScreenState extends State<OtpScreen> {
                 style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
-              // Text(
-              //   "We sent the code to $masked",
-              //   style: const TextStyle(
-              //     fontSize: 14,
-              //     fontWeight: FontWeight.w500,
-              //   ),
-              // ),
               Text.rich(
-  TextSpan(
-    children: [
-      const TextSpan(
-        text: "We sent the code to ",
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.w500,
-          color: Colors.grey, // grey text
-        ),
-      ),
-      TextSpan(
-        text: masked,
-        style: const TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.black, // black bold text
-        ),
-      ),
-    ],
-  ),
-),
+                TextSpan(
+                  children: [
+                    const TextSpan(
+                      text: "We sent the code to ",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey, 
+                      ),
+                    ),
+                    TextSpan(
+                      text: masked,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black, 
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
               const SizedBox(height: 20),
 
@@ -147,7 +206,7 @@ class _OtpScreenState extends State<OtpScreen> {
                             offset: const Offset(
                               2,
                               3,
-                            ), // subtle 3D downward-right shadow
+                            ), 
                           ),
                         ],
                       ),
@@ -156,7 +215,8 @@ class _OtpScreenState extends State<OtpScreen> {
                         keyboardType: TextInputType.number,
                         textAlign: TextAlign.center,
                         maxLength: 1,
-                        onChanged: (value) => moveToNext(index, value),
+                        // Call moveToNext on text change to handle focus shift
+                        onChanged: (value) => moveToNext(index, value), 
                         decoration: InputDecoration(
                           counterText: "",
                           border: OutlineInputBorder(
@@ -179,13 +239,28 @@ class _OtpScreenState extends State<OtpScreen> {
 
               const SizedBox(height: 18),
 
-              Text(
-                secondsRemaining > 0
-                    ? "Resend the code in $secondsRemaining seconds"
-                    : "Resend Code",
-                style: TextStyle(
-                  fontSize: 14,
-                  color: secondsRemaining > 0 ? Colors.grey : Colors.blue,
+              // Resend Code Text/Timer
+              GestureDetector(
+                onTap: secondsRemaining == 0
+                    ? () {
+                        // Implement resend logic here
+                        // You will need to call authProvider.signInWithPhoneNumber again
+                        // and update the verificationId
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("Resend logic needs to be implemented")),
+                          );
+                        }
+                      }
+                    : null,
+                child: Text(
+                  secondsRemaining > 0
+                      ? "Resend the code in $secondsRemaining seconds"
+                      : "Resend Code",
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: secondsRemaining > 0 ? Colors.grey : Colors.blue,
+                  ),
                 ),
               ),
 
@@ -196,25 +271,39 @@ class _OtpScreenState extends State<OtpScreen> {
                 width: double.infinity,
                 height: 60,
                 child: ElevatedButton(
-                  onPressed: isOtpComplete ? verifyOtp : null,
+                  // Button is enabled if OTP is complete AND not loading
+                  onPressed: (isOtpComplete && !authProvider.isLoading) 
+                      ? verifyOtp 
+                      : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: isOtpComplete
+                    backgroundColor: (isOtpComplete && !authProvider.isLoading)
                         ? const Color(0xFF545454)
                         : Colors.grey.shade400,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: Text(
-                    "CONTINUE",
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: isOtpComplete
-                          ? Colors.white
-                          : Colors.grey.shade200,
-                    ),
-                  ),
+                  child: authProvider.isLoading
+                      ? const Center(
+                          child: SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 3,
+                            ),
+                          ),
+                        )
+                      : Text(
+                          "CONTINUE",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: (isOtpComplete && !authProvider.isLoading)
+                                ? Colors.white
+                                : Colors.grey.shade200,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 20),

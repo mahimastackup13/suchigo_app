@@ -25,12 +25,12 @@ dependencies:
   intl: ^0.20.2 
   
   # --- Firebase (Core and Auth) ---
-  firebase_core: ^3.0.0 # Updated to use a recent, consistent major version (assuming you want to use the latest)
-  firebase_auth: ^5.0.0 # Updated to use a recent, consistent major version
+  firebase_core: ^3.0.0 
+  firebase_auth: ^5.0.0 
   
   # --- Data & Storage ---
   sqflite: ^2.4.2
-  # shared_preferences: ^2.5.3 # Commented out as in original
+  # shared_preferences: ^2.5.3 
   
   # --- State Management / Utilities ---
   provider: ^6.1.5
@@ -40,11 +40,19 @@ dependencies:
   # --- Location/Path ---
   path_provider: ^2.1.5
   geolocator: ^14.0.2
+  flutter_launcher_icons: ^0.14.4
+  cloud_functions: ^5.6.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+# --- Launcher Icon Configuration ---
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/sochigologo.png"
 
 flutter:
   uses-material-design: true
@@ -69,3 +77,4 @@ flutter:
     - assets/icons/bill.png
     - assets/icons/person.png
     - assets/icons/settings.png
+    - assets/icons/sochigologo.png

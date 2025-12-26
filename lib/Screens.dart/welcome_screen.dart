@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:suchigo_app/Screens.dart/register_screen.dart';
 import 'package:suchigo_app/Screens.dart/signin_screen.dart';
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
 class WelcomeScreen extends StatelessWidget {
@@ -21,7 +22,7 @@ class WelcomeScreen extends StatelessWidget {
                   Row(
                     children: [
                       Image.asset(
-                        'assets/images/logo.png', // <-- replace with your logo asset
+                        'assets/images/logo.png', 
                         height: 80,
                       ),
                       const SizedBox(width: 8),
@@ -41,18 +42,17 @@ class WelcomeScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              // Main Illustration
-              //
+              
               Center(
                 child: Image.asset(
                   'assets/images/Tree.png',
                   width: MediaQuery.of(
                     context,
-                  ).size.width, // fills screen width
+                  ).size.width, 
                   height:
                       MediaQuery.of(context).size.height *
-                      0.45, // 45% of screen height
-                  fit: BoxFit.cover, // makes it fill space nicely
+                      0.45, 
+                  fit: BoxFit.cover, 
                 ),
               ),
 
@@ -84,14 +84,14 @@ class WelcomeScreen extends StatelessWidget {
 
               const Spacer(),
 
-              // Get Started Button
+              
               SizedBox(
                 width: double.infinity,
                 height: 60,
 
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE2F2DF), // light green
+                    backgroundColor: const Color(0xFFE2F2DF), 
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -101,10 +101,10 @@ class WelcomeScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SignInScreen(), // replace with your next screen
+                        builder: (context) => const RegisterScreen(), 
                       ),
                     );
-                    // Navigate to next screen
+                    
                   },
                   child: const Text(
                     "Get started",
@@ -119,7 +119,7 @@ class WelcomeScreen extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              // Already have an account
+              
               Center(
                 child: GestureDetector(
                   onTap: () {
@@ -127,7 +127,7 @@ class WelcomeScreen extends StatelessWidget {
     context,
     MaterialPageRoute(builder: (context) => const LoginScreen()),
   );
-                    // Navigate to login
+                    
                   },
                   child: const Text(
                     "Already have an account",

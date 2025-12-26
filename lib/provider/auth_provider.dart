@@ -1,90 +1,125 @@
-// Hypothetical AuthProvider structure
 
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
-import '../Screens.dart/otp_screen.dart'; 
-// ... other imports
+// import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:cloud_functions/cloud_functions.dart';
+// import 'package:flutter/material.dart';
+// import '../Screens.dart/otp_screen.dart';
 
-class AuthProvider extends ChangeNotifier {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  bool _isLoading = false;
-  String? _errorMessage;
+// class AuthProvider extends ChangeNotifier {
+//   final FirebaseAuth _auth = FirebaseAuth.instance;
+//   final FirebaseFunctions _functions = FirebaseFunctions.instance;
+  
+//   bool _isLoading = false;
+//   String? _errorMessage;
 
-  bool get isLoading => _isLoading;
-  String? get errorMessage => _errorMessage;
+//   bool get isLoading => _isLoading;
+//   String? get errorMessage => _errorMessage;
 
-  void setLoading(bool status) {
-    _isLoading = status;
-    notifyListeners();
-  }
+//   void setLoading(bool status) {
+//     _isLoading = status;
+//     notifyListeners();
+//   }
 
-  Future<void> signInWithPhoneNumber(BuildContext context, String phoneNumber, String countryCode) async {
-    setLoading(true);
-    _errorMessage = null;
+//   // Unified authentication starter
+//   Future<void> startAuthentication(BuildContext context, String input, bool isEmail) async {
+//     setLoading(true);
+//     _errorMessage = null;
 
-    final fullPhoneNumber = countryCode + phoneNumber;
+//     if (isEmail) {
+//       try {
+//         // Call the 'sendEmailOTP' Cloud Function you deployed
+//         await _functions.httpsCallable('sendEmailOTP').call({'email': input});
+//         setLoading(false);
+//         if (context.mounted) {
+//           Navigator.of(context).push(MaterialPageRoute(
+//             builder: (_) => OtpScreen(
+//               identifier: input, 
+//               isEmail: true, 
+//               verificationId: 'email_flow',
+//             ),
+//           ));
+//         }
+//       } catch (e) {
+//         setLoading(false);
+//         _errorMessage = e.toString();
+//         if (context.mounted) {
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             SnackBar(content: Text("Email Error: $_errorMessage")),
+//           );
+//         }
+//       }
+//     } else {
+//       // Standard Phone Auth
+//       await signInWithPhoneNumber(context, input, "+91");
+//     }
+//   }
 
-    await _auth.verifyPhoneNumber(
-      phoneNumber: fullPhoneNumber,
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        // Auto-retrieve/Sign-in on Android
-        // This is usually handled automatically, but if it happens, you'd complete sign-in here.
-        await _auth.signInWithCredential(credential);
-        setLoading(false);
-        // Navigate to HomeScreen or Registration if user is new.
-      },
-      verificationFailed: (FirebaseAuthException e) {
-        setLoading(false);
-        _errorMessage = e.message;
-        notifyListeners();
-        // Show error message via Snackbar
-      },
-      codeSent: (String verificationId, int? resendToken) async {
-        setLoading(false);
-        // ⭐ CRITICAL: Navigate to OtpScreen, passing the verificationId
-        if (context.mounted) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => OtpScreen(
-                phoneNumber: phoneNumber,
-                verificationId: verificationId, // Pass the ID
-              ),
-            ),
-          );
-        }
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {
-        // Handle timeout
-      },
-      timeout: const Duration(seconds: 60),
-    );
-  }
+//   Future<void> signInWithPhoneNumber(BuildContext context, String phoneNumber, String countryCode) async {
+//     final fullPhoneNumber = countryCode + phoneNumber;
 
-  // ⭐ CRITICAL: Method for OtpScreen to call
-  Future<bool> verifySmsCode(BuildContext context, String verificationId, String smsCode) async {
-    try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsCode,
-      );
+//     await _auth.verifyPhoneNumber(
+//       phoneNumber: fullPhoneNumber,
+//       verificationCompleted: (PhoneAuthCredential credential) async {
+//         await _auth.signInWithCredential(credential);
+//         setLoading(false);
+//       },
+//       verificationFailed: (FirebaseAuthException e) {
+//         setLoading(false);
+//         _errorMessage = e.message;
+//         if (context.mounted) {
+//           ScaffoldMessenger.of(context).showSnackBar(
+//             SnackBar(content: Text("Phone Error: ${e.message}")),
+//           );
+//         }
+//       },
+//       codeSent: (String verificationId, int? resendToken) {
+//         setLoading(false);
+//         if (context.mounted) {
+//           Navigator.of(context).push(MaterialPageRoute(
+//             builder: (_) => OtpScreen(
+//               identifier: phoneNumber, 
+//               verificationId: verificationId, 
+//               isEmail: false,
+//             ),
+//           ));
+//         }
+//       },
+//       codeAutoRetrievalTimeout: (String verificationId) {
+//         setLoading(false);
+//       },
+//       timeout: const Duration(seconds: 60),
+//     );
+//   }
 
-      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+//   // Unified OTP verification
+//   Future<bool> verifyOtp(BuildContext context, String verificationId, String code, bool isEmail, String identifier) async {
+//     try {
+//       if (isEmail) {
+//         // Verify Email OTP via Cloud Function
+//         final result = await _functions.httpsCallable('verifyEmailOTP').call({
+//           'email': identifier,
+//           'code': code,
+//         });
 
-      if (userCredential.user != null) {
-        // User successfully signed in
-        _errorMessage = null;
-        notifyListeners();
-        return true;
-      }
-      return false;
-    } on FirebaseAuthException catch (e) {
-      _errorMessage = e.message;
-      notifyListeners();
-      return false;
-    } catch (e) {
-      _errorMessage = 'An unexpected error occurred during verification.';
-      notifyListeners();
-      return false;
-    }
-  }
-}
+//         String customToken = result.data['token'];
+//         await _auth.signInWithCustomToken(customToken);
+//         return true;
+//       } else {
+//         // Verify Phone OTP via Firebase
+//         final credential = PhoneAuthProvider.credential(
+//           verificationId: verificationId, 
+//           smsCode: code,
+//         );
+//         await _auth.signInWithCredential(credential);
+//         return true;
+//       }
+//     } catch (e) {
+//       _errorMessage = e.toString();
+//       if (context.mounted) {
+//         ScaffoldMessenger.of(context).showSnackBar(
+//           SnackBar(content: Text("Verification Failed: $_errorMessage")),
+//         );
+//       }
+//       return false;
+//     }
+//   }
+// }

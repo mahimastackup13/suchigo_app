@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; 
+import 'package:provider/provider.dart';
 import 'package:suchigo_app/Screens.dart/pickup_screen.dart';
 import 'package:suchigo_app/provider/address_details_provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
@@ -31,9 +31,7 @@ class AddressScreen2 extends StatelessWidget {
         backgroundColor: const Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(
-            bottom: Radius.circular(15),
-          ),
+          borderRadius: BorderRadius.vertical(bottom: Radius.circular(15)),
         ),
         toolbarHeight: 80,
       ),
@@ -62,8 +60,7 @@ class AddressScreen2 extends StatelessWidget {
                 ),
 
                 buildLabel("Local Body"),
-                buildTextField(
-                    addressAction.localBodyController, "Local Body"),
+                buildTextField(addressAction.localBodyController, "Local Body"),
 
                 buildLabel("Ward"),
                 buildDropdown(
@@ -108,11 +105,12 @@ class AddressScreen2 extends StatelessWidget {
                           builder: (context) => AlertDialog(
                             title: const Text("Success"),
                             content: const Text(
-                                "Your pickup request was submitted successfully."),
+                              "Your pickup request was submitted successfully.",
+                            ),
                             actions: [
                               TextButton(
                                 onPressed: () {
-                                  Navigator.of(context).pop(); 
+                                  Navigator.of(context).pop();
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -145,7 +143,6 @@ class AddressScreen2 extends StatelessWidget {
       bottomNavigationBar: const CustomBottomNav(selectedIndex: 0),
     );
   }
-
 
   Widget buildLabel(String text) {
     return Padding(
@@ -191,13 +188,16 @@ class AddressScreen2 extends StatelessWidget {
         decoration: const InputDecoration(border: InputBorder.none),
         style: const TextStyle(color: Colors.white),
         items: items
-            .map((e) => DropdownMenuItem(
-                  value: e,
-                  child: Text(e, style: const TextStyle(color: Colors.white)),
-                ))
+            .map(
+              (e) => DropdownMenuItem(
+                value: e,
+                child: Text(e, style: const TextStyle(color: Colors.white)),
+              ),
+            )
             .toList(),
         onChanged: onChanged,
-        validator: (value) => value == null || value.isEmpty ? 'Please select a value' : null,
+        validator: (value) =>
+            value == null || value.isEmpty ? 'Please select a value' : null,
       ),
     );
   }
@@ -216,4 +216,3 @@ class AddressScreen2 extends StatelessWidget {
     );
   }
 }
-

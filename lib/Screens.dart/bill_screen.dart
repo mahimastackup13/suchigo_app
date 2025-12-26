@@ -22,17 +22,17 @@ class BillScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Back button
-                  IconButton(
-                    onPressed: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomeScreen()),
-                    ),
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 16),
-                    style: IconButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(148, 197, 193, 193),
-                      shape: const CircleBorder(),
-                    ),
-                  ),
+                  // IconButton(
+                  //   onPressed: () => Navigator.pushReplacement(
+                  //     context,
+                  //     MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  //   ),
+                  //   icon: const Icon(Icons.arrow_back_ios_new, size: 16),
+                  //   style: IconButton.styleFrom(
+                  //     backgroundColor: const Color.fromARGB(148, 197, 193, 193),
+                  //     shape: const CircleBorder(),
+                  //   ),
+                  // ),
 
                   const SizedBox(height: 20),
 

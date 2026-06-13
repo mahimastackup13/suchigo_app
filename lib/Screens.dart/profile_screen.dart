@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
+import 'package:suchigo_app/Screens.dart/order_history_screen.dart';
+import 'package:suchigo_app/Screens.dart/account_screen.dart';
+import 'package:suchigo_app/Screens.dart/contact_us_screen.dart';
 import 'package:suchigo_app/provider/profile_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -40,28 +43,7 @@ class ProfileScreen extends StatelessWidget {
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Home Button (Navigation works as requested)
-                            // Positioned(
-                            //   top: 16,
-                            //   left: 8,
-                            //   child: IconButton(
-                            //     icon: const Icon(Icons.home_rounded),
-                            //     color: Colors.white,
-                            //     iconSize: 28,
-                            //     tooltip: 'Home',
-                            //     onPressed: () {
-                            //       // Navigates to HomeScreen
-                            //       Navigator.pushReplacement(
-                            //         context,
-                            //         MaterialPageRoute(
-                            //           builder: (context) => const HomeScreen(),
-                            //         ),
-                            //       );
-                            //     },
-                            //   ),
-                            // ),
-
-                            // Decorative Circles (Kept as is)
+                            // Decorative Circles
                             Positioned(
                               top: 40,
                               left: 60,
@@ -133,20 +115,19 @@ class ProfileScreen extends StatelessWidget {
                               ),
                             ),
 
-                            // User Profile Info (Uses Provider)
+                            // User Profile Info
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 CircleAvatar(
                                   radius: 60,
                                   backgroundImage: AssetImage(
-                                    profileProvider
-                                        .profileImagePath, // <-- From Provider
+                                    profileProvider.profileImagePath,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  profileProvider.username, // <-- From Provider
+                                  profileProvider.username,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -155,8 +136,7 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  profileProvider
-                                      .phoneNumber, // <-- From Provider
+                                  profileProvider.phoneNumber,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 15,
@@ -256,7 +236,7 @@ class ProfileItem extends StatelessWidget {
         ),
       ),
       trailing: const Icon(
-        Icons.arrow_forward_ios_rounded, // Added trailing icon for better UI
+        Icons.arrow_forward_ios_rounded,
         color: Colors.grey,
         size: 16,
       ),
@@ -264,10 +244,37 @@ class ProfileItem extends StatelessWidget {
       dense: true,
       horizontalTitleGap: 10,
       onTap: () {
-        Provider.of<ProfileProvider>(
-          context,
-          listen: false,
-        ).handleProfileItemTap(context, text);
+        switch (text) {
+          case "Order History":
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const OrderHistoryScreen(),
+              ),
+            );
+            break;
+          case "Account":
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AccountScreen(),
+              ),
+            );
+            break;
+          case "Contact Us":
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ContactUsScreen(),
+              ),
+            );
+            break;
+          default:
+            Provider.of<ProfileProvider>(
+              context,
+              listen: false,
+            ).handleProfileItemTap(context, text);
+        }
       },
     );
   }

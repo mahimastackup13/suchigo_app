@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; 
+import 'package:provider/provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
 import 'package:suchigo_app/provider/settings_provider.dart';
-
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -35,23 +34,26 @@ class SettingsScreen extends StatelessWidget {
           color: Colors.grey,
           size: 16,
         ),
-        onTap: () async { 
+        onTap: () async {
           if (isLogout) {
-            final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
+            final settingsProvider = Provider.of<SettingsProvider>(
+              context,
+              listen: false,
+            );
 
-            await settingsProvider.logout(); 
+            await settingsProvider.logout();
 
-            if (context.mounted) { 
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    (Route<dynamic> route) => false, 
-                );
+            if (context.mounted) {
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (Route<dynamic> route) => false,
+              );
             }
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-               SnackBar(content: Text("$title tapped!")),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text("$title tapped!")));
           }
         },
       ),
@@ -108,12 +110,14 @@ class SettingsScreen extends StatelessWidget {
                         tooltip: 'Back to Home',
                         onPressed: () {
                           if (Navigator.canPop(context)) {
-                             Navigator.pop(context);
+                            Navigator.pop(context);
                           } else {
-                             Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (context) => const HomeScreen()),
-                              );
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const HomeScreen(),
+                              ),
+                            );
                           }
                         },
                       ),
@@ -218,17 +222,30 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 child: ListView(
                   children: [
-                    _buildSettingItem(context, Icons.lock_outline, "Privacy & Security"),
+                    _buildSettingItem(
+                      context,
+                      Icons.lock_outline,
+                      "Privacy & Security",
+                    ),
                     _buildSettingItem(
                       context,
                       Icons.notifications_outlined,
                       "Notification Preferences",
                     ),
                     _buildSettingItem(context, Icons.language, "Language"),
-                    _buildSettingItem(context, Icons.help_outline, "Help & Support"),
+                    _buildSettingItem(
+                      context,
+                      Icons.help_outline,
+                      "Help & Support",
+                    ),
                     _buildSettingItem(context, Icons.info_outline, "About App"),
                     // Logout now uses the Provider's logic
-                    _buildSettingItem(context, Icons.logout, "Logout", isLogout: true),
+                    _buildSettingItem(
+                      context,
+                      Icons.logout,
+                      "Logout",
+                      isLogout: true,
+                    ),
                   ],
                 ),
               ),

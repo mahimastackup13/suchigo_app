@@ -24,7 +24,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     if (buttonState == 1) return Colors.deepOrangeAccent;
     return Colors.blue;
   }
-void handleButtonTap() {
+
+  void handleButtonTap() {
     setState(() {
       if (buttonState == 0) {
         buttonState = 1; // Accept → Start travelling
@@ -55,16 +56,13 @@ void handleButtonTap() {
             color: Colors.white,
           ),
         ),
-        iconTheme: const IconThemeData(color: Colors.white,
-        size: 32),
-        
+        iconTheme: const IconThemeData(color: Colors.white, size: 32),
       ),
 
       body: SingleChildScrollView(
-        
         child: Padding(
           padding: const EdgeInsets.all(16),
-          
+
           child: Column(
             children: [
               // ************** TOP ORDER CARD **************
@@ -117,8 +115,8 @@ void handleButtonTap() {
                               buttonState == 0
                                   ? "Pending"
                                   : buttonState == 1
-                                      ? "Accepted"
-                                      : "Reached location",
+                                  ? "Accepted"
+                                  : "Reached location",
                               style: const TextStyle(
                                 color: Colors.blue,
                                 fontWeight: FontWeight.w600,
@@ -140,8 +138,10 @@ void handleButtonTap() {
                     const SizedBox(height: 4),
                     const Text(
                       "Bobin Abraham",
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
 
                     const SizedBox(height: 16),
@@ -154,8 +154,10 @@ void handleButtonTap() {
                     const SizedBox(height: 4),
                     const Text(
                       "Home\nTRAK 50, Thejas Nagar, Salis road",
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
 
                     const SizedBox(height: 16),
@@ -168,8 +170,10 @@ void handleButtonTap() {
                     const SizedBox(height: 4),
                     const Text(
                       "Cordoba men’s hostel",
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
 
                     const SizedBox(height: 16),
@@ -182,8 +186,10 @@ void handleButtonTap() {
                     const SizedBox(height: 4),
                     const Text(
                       "Ashraf Bio",
-                      style:
-                          TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
 
                     const SizedBox(height: 16),
@@ -204,10 +210,7 @@ void handleButtonTap() {
                           ),
                         ),
                         SizedBox(width: 6),
-                        Text(
-                          "copy",
-                          style: TextStyle(color: Colors.blue),
-                        ),
+                        Text("copy", style: TextStyle(color: Colors.blue)),
                       ],
                     ),
 
@@ -228,10 +231,7 @@ void handleButtonTap() {
                           ),
                         ),
                         SizedBox(width: 6),
-                        Text(
-                          "copy",
-                          style: TextStyle(color: Colors.blue),
-                        ),
+                        Text("copy", style: TextStyle(color: Colors.blue)),
                       ],
                     ),
 
@@ -277,7 +277,7 @@ void handleButtonTap() {
                         height: 55,
                         width: 55,
                         decoration: BoxDecoration(
-                          color: Colors.lightGreenAccent.shade100,
+                          color: Color(0xFF4CAF50),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(Icons.call, color: Colors.black),
@@ -300,7 +300,9 @@ void handleButtonTap() {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: Text(getButtonText(), style: TextStyle(fontSize: 17)
+                      child: Text(
+                        getButtonText(),
+                        style: TextStyle(fontSize: 17),
                       ),
                     ),
                   ),
@@ -313,11 +315,13 @@ void handleButtonTap() {
                     height: 55,
                     child: ElevatedButton(
                       onPressed: () {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (_) => const CollectorScreen()),
-  );
-},
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CollectorScreen(),
+                          ),
+                        );
+                      },
 
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
@@ -326,8 +330,10 @@ void handleButtonTap() {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: const Text("Drop Order",
-                      style: TextStyle(fontSize: 17),),
+                      child: const Text(
+                        "Drop Order",
+                        style: TextStyle(fontSize: 17),
+                      ),
                     ),
                   ),
 
@@ -339,11 +345,13 @@ void handleButtonTap() {
                     height: 55,
                     child: ElevatedButton(
                       onPressed: () {
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(builder: (_) => const CollectorScreen()),
-  );
-},
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CollectorScreen(),
+                          ),
+                        );
+                      },
 
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.redAccent,
@@ -352,8 +360,10 @@ void handleButtonTap() {
                           borderRadius: BorderRadius.circular(14),
                         ),
                       ),
-                      child: const Text("Request Cancel",
-                       style: TextStyle(fontSize: 17)),
+                      child: const Text(
+                        "Request Cancel",
+                        style: TextStyle(fontSize: 17),
+                      ),
                     ),
                   ),
                 ],

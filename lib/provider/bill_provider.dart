@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:suchigo_app/Screens.dart/address_screen.dart';
 import 'package:suchigo_app/Screens.dart/pickup_screen.dart';
 
 class BillProvider extends ChangeNotifier {
@@ -34,7 +35,7 @@ class BillProvider extends ChangeNotifier {
       // Note: Assumes PickupScreen is correctly imported/accessible.
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const PickupScreen()),
+        MaterialPageRoute(builder: (context) => const AddressScreen()),
       );
     }
   }

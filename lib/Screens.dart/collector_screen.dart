@@ -2,64 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
+import 'package:suchigo_app/Screens.dart/AddOrder_Screen.dart';
 import 'package:suchigo_app/Screens.dart/select_ward_screen.dart';
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
 import 'package:suchigo_app/provider/CollectorProvider.dart';
-
-// ---------------------------------------------------------------------
-// PROVIDER CLASS
-// ---------------------------------------------------------------------
-// class CollectorProvider with ChangeNotifier {
-//   final TextEditingController nameController = TextEditingController();
-//   final TextEditingController wardController = TextEditingController();
-
-//   String? selectedScrapDistrict;
-//   String? selectedDhDistrict;
-//   String? selectedDhLocalbody;
-
-//   final List<String> districts = ["Thrissur", "Ernakulam"];
-//   bool isLoading = false;
-
-//   Future<void> fetchCollectorData() async {
-//     isLoading = true;
-//     notifyListeners();
-
-//     try {
-//       final response = await http.get(
-//         Uri.parse("https://suchigo.pythonanywhere.com/api/locations/"),
-//       );
-//       if (response.statusCode == 200) {
-//         final data = jsonDecode(response.body);
-
-//         nameController.text = data['name'] ?? "";
-//         // Ensure the value exists in our list or default to Ernakulam
-//         selectedScrapDistrict = districts.contains(data['scrap_district'])
-//             ? data['scrap_district']
-//             : "Ernakulam";
-//         selectedDhDistrict = districts.contains(data['dh_district'])
-//             ? data['dh_district']
-//             : "Ernakulam";
-//         selectedDhLocalbody = data['dh_localbody'] ?? "Kalamassery";
-//         wardController.text = data['ward'] ?? "";
-//       }
-//     } catch (e) {
-//       debugPrint("Error fetching data: $e");
-//     } finally {
-//       isLoading = false;
-//       notifyListeners();
-//     }
-//   }
-
-//   void updateScrapDistrict(String? newValue) {
-//     selectedScrapDistrict = newValue;
-//     notifyListeners();
-//   }
-
-//   void updateDhDistrict(String? newValue) {
-//     selectedDhDistrict = newValue;
-//     notifyListeners();
-//   }
-// }
+import 'package:suchigo_app/Screens.dart/welcome_screen.dart';
 
 // ---------------------------------------------------------------------
 // COLLECTOR SCREEN
@@ -81,151 +28,66 @@ class _CollectorScreenState extends State<CollectorScreen> {
     });
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   final provider = context.watch<CollectorProvider>();
-
-  //   return Scaffold(
-  //     backgroundColor: Colors.transparent,
-  //     body: Stack(
-  //       children: [
-  //         // Background Image
-  //         Positioned.fill(
-  //           child: Image.asset(
-  //             "assets/images/background.jpg",
-  //             fit: BoxFit.cover,
-  //           ),
-  //         ),
-
-  //         provider.isLoading
-  //             ? const Center(
-  //                 child: CircularProgressIndicator(color: Colors.white),
-  //               )
-  //             : SafeArea(
-  //                 child: SingleChildScrollView(
-  //                   child: Column(
-  //                     children: [
-  //                       // APP BAR
-  //                       AppBar(
-  //                         backgroundColor: Colors.transparent,
-  //                         elevation: 0,
-  //                         automaticallyImplyLeading: false,
-  //                         title: const Text(
-  //                           "Collector Profile",
-  //                           style: TextStyle(
-  //                             color: Colors.black,
-  //                             fontWeight: FontWeight.bold,
-  //                             fontSize: 24,
-  //                           ),
-  //                         ),
-  //                         actions: [
-  //                           IconButton(
-  //                             icon: const Icon(Icons.logout, color: Colors.red),
-  //                             onPressed: () {
-  //                               Navigator.pushReplacement(
-  //                                 context,
-  //                                 MaterialPageRoute(
-  //                                   builder: (_) => const LoginScreen(),
-  //                                 ),
-  //                               );
-  //                             },
-  //                           ),
-  //                         ],
-  //                       ),
-  //                       const SizedBox(height: 20),
-
-  //                       // Profile Image
-  //                       const Center(
-  //                         child: CircleAvatar(
-  //                           radius: 55,
-  //                           backgroundColor: Colors.white,
-  //                           child: CircleAvatar(
-  //                             radius: 50,
-  //                             backgroundImage: AssetImage(
-  //                               "assets/images/profilepic.png",
-  //                             ),
-  //                           ),
-  //                         ),
-  //                       ),
-  //                       const SizedBox(height: 10),
-
-  //                       // INPUT FIELDS (Using updated buildInfoCard)
-  //                       buildInfoCard(
-  //                         title: "Name :",
-  //                         isTextField: true,
-  //                         controller: provider.nameController,
-  //                       ),
-  //                       buildInfoCard(
-  //                         title: "Scrap District :",
-  //                         isDropdown: true,
-  //                         dropdownValue: provider.selectedScrapDistrict,
-  //                         items: provider.districts,
-  //                         onChanged: provider.updateScrapDistrict,
-  //                       ),
-  //                       buildInfoCard(
-  //                         title: "DH District :",
-  //                         isDropdown: true,
-  //                         dropdownValue: provider.selectedDhDistrict,
-  //                         items: provider.districts,
-  //                         onChanged: provider.updateDhDistrict,
-  //                       ),
-  //                       buildInfoCard(
-  //                         title: "DH Localbody :",
-  //                         isTextField: true,
-  //                         controller: TextEditingController(
-  //                           text: provider.selectedDhLocalbody,
-  //                         ),
-  //                       ),
-  //                       buildInfoCard(
-  //                         title: "Ward :",
-  //                         isTextField: true,
-  //                         controller: provider.wardController,
-  //                       ),
   @override
-Widget build(BuildContext context) {
-  final provider = context.watch<CollectorProvider>();
+  Widget build(BuildContext context) {
+    final provider = context.watch<CollectorProvider>();
 
-  return Scaffold(
-    backgroundColor: Colors.transparent,
-    // --- ADDED SAVE BUTTON ---
-    floatingActionButton: FloatingActionButton.extended(
-      backgroundColor: const Color(0xFFD4E277),
-      onPressed: () async {
-        bool success = await provider.updateCollectorData();
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(success ? "Profile Saved!" : "Failed to save profile"),
-              backgroundColor: success ? Colors.green : Colors.red,
-            ),
-          );
-        }
-      },
-      icon: const Icon(Icons.save, color: Colors.black),
-      label: const Text("Save Changes", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-    ),
-    body: Stack(
-      children: [
-        Positioned.fill(
-          child: Image.asset(
-            "assets/images/background.jpg",
-            fit: BoxFit.cover,
-          ),
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      // --- ADDED SAVE BUTTON ---
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor:Color.fromARGB(239, 38, 82, 44),
+        onPressed: () async {
+          bool success = await provider.updateCollectorData();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  success ? "Profile Saved!" : "Failed to save profile",
+                ),
+                backgroundColor: success ? Color(0xFF4CAF50) : Colors.red,
+              ),
+            );
+          }
+        },
+        icon: const Icon(Icons.save, color: Colors.black),
+        label: const Text(
+          "Save Changes",
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        provider.isLoading
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
-            : SafeArea(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      AppBar(
+      ),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color.from(alpha: 1, red: 0.024, green: 0.035, blue: 0.106),
+                    Color(0xFF4CAF50),
+                  ], // green to blue shade
+                ),
+              ),
+            ),
+          ),
+          provider.isLoading
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                )
+              : SafeArea(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        AppBar(
                           backgroundColor: Colors.transparent,
                           elevation: 0,
                           automaticallyImplyLeading: false,
                           title: const Text(
                             "Collector Profile",
                             style: TextStyle(
-                              color: Colors.black,
+                              color: Color(0xFF4CAF50),
                               fontWeight: FontWeight.bold,
                               fontSize: 24,
                             ),
@@ -237,59 +99,66 @@ Widget build(BuildContext context) {
                                 Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (_) => const LoginScreen(),
+                                    builder: (_) => const WelcomeScreen(),
                                   ),
                                 );
                               },
                             ),
                           ],
                         ),
-                      
-                      const SizedBox(height: 10),
 
-                      buildInfoCard(
-                        title: "Name :",
-                        isTextField: true,
-                        controller: provider.nameController,
-                      ),
-                      buildInfoCard(
-                        title: "Scrap District :",
-                        isDropdown: true,
-                        dropdownValue: provider.selectedScrapDistrict,
-                        items: provider.districts,
-                        onChanged: provider.updateScrapDistrict,
-                      ),
-                      buildInfoCard(
-                        title: "DH District :",
-                        isDropdown: true,
-                        dropdownValue: provider.selectedDhDistrict,
-                        items: provider.districts,
-                        onChanged: provider.updateDhDistrict,
-                      ),
-                      // Added a controller to Localbody so it's editable via HTTP request
-                      buildInfoCard(
-                        title: "DH Localbody :",
-                        isTextField: true,
-                        controller: TextEditingController(text: provider.selectedDhLocalbody)..selection = TextSelection.collapsed(offset: provider.selectedDhLocalbody?.length ?? 0),
-                      ),
-                      buildInfoCard(
-                        title: "Ward :",
-                        isTextField: true,
-                        controller: provider.wardController,
-                      ),
+                        const SizedBox(height: 10),
+
+                        buildInfoCard(
+                          title: "Name :",
+                          isTextField: true,
+                          controller: provider.nameController,
+                        ),
+                        buildInfoCard(
+                          title: "Scrap District :",
+                          isDropdown: true,
+                          dropdownValue: provider.selectedScrapDistrict,
+                          items: provider.districts,
+                          onChanged: provider.updateScrapDistrict,
+                        ),
+                        buildInfoCard(
+                          title: "DH District :",
+                          isDropdown: true,
+                          dropdownValue: provider.selectedDhDistrict,
+                          items: provider.districts,
+                          onChanged: provider.updateDhDistrict,
+                        ),
+                        // Added a controller to Localbody so it's editable via HTTP request
+                        buildInfoCard(
+                          title: "DH Localbody :",
+                          isTextField: true,
+                          controller:
+                              TextEditingController(
+                                  text: provider.selectedDhLocalbody,
+                                )
+                                ..selection = TextSelection.collapsed(
+                                  offset:
+                                      provider.selectedDhLocalbody?.length ?? 0,
+                                ),
+                        ),
+                        buildInfoCard(
+                          title: "Ward :",
+                          isTextField: true,
+                          controller: provider.wardController,
+                        ),
 
                         const SizedBox(height: 15),
                         sectionTitle("Sanitary Orders"),
                         orderButtonGrid(
                           context: context,
-                          color: const Color(0xFFD1E39C),
+                          color: Color.fromRGBO(156, 198, 158, 1),
                         ),
 
                         const SizedBox(height: 15),
                         sectionTitle("Scrap Orders"),
                         orderButtonGrid(
                           context: context,
-                          color: const Color(0xFFFFCC80),
+                          color: const Color.fromRGBO(172, 192, 179, 1),
                         ),
 
                         const SizedBox(height: 30),
@@ -382,7 +251,7 @@ Widget build(BuildContext context) {
                   vertical: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFD4E277),
+                  color: Color.fromARGB(255, 27, 47, 28),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text(

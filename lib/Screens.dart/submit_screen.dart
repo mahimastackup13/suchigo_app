@@ -1,9 +1,9 @@
+//
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:suchigo_app/Screens.dart/pickup_screen.dart';
 import 'package:suchigo_app/provider/address_details_provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
-import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 
@@ -28,7 +28,7 @@ class AddressScreen2 extends StatelessWidget {
           "Pickup Details",
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: Color(0xFF4CAF50),
         foregroundColor: Colors.white,
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(15)),
@@ -110,12 +110,13 @@ class AddressScreen2 extends StatelessWidget {
                             actions: [
                               TextButton(
                                 onPressed: () {
-                                  Navigator.of(context).pop();
-                                  Navigator.pushReplacement(
+                                  // Use pushAndRemoveUntil to clear the stack and go to HomeScreen
+                                  Navigator.pushAndRemoveUntil(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => const HomeScreen(),
                                     ),
+                                    (route) => false,
                                   );
                                 },
                                 child: const Text("OK"),
@@ -178,13 +179,13 @@ class AddressScreen2 extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF4CAF50),
+        color: Color(0xFF4CAF50),
         borderRadius: BorderRadius.circular(6),
       ),
       child: DropdownButtonFormField<String>(
         value: selectedValue,
         icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-        dropdownColor: const Color(0xFF4CAF50),
+        dropdownColor: Color(0xFF4CAF50),
         decoration: const InputDecoration(border: InputBorder.none),
         style: const TextStyle(color: Colors.white),
         items: items
@@ -205,7 +206,7 @@ class AddressScreen2 extends StatelessWidget {
   InputDecoration inputDecoration(String hint) {
     return InputDecoration(
       filled: true,
-      fillColor: const Color(0xFF4CAF50),
+      fillColor: Color(0xFF4CAF50),
       hintText: hint,
       hintStyle: const TextStyle(color: Colors.white70),
       border: OutlineInputBorder(

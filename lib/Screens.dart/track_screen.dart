@@ -13,7 +13,7 @@ class CustomBottomNav extends StatelessWidget {
   const CustomBottomNav({super.key, required this.selectedIndex});
 
   void _onItemTapped(BuildContext context, int index) {
-    if (index == selectedIndex) return; 
+    if (index == selectedIndex) return;
 
     Widget destination;
     switch (index) {
@@ -81,7 +81,6 @@ class AddressScreen1 extends StatefulWidget {
 class _AddressScreen1State extends State<AddressScreen1> {
   final _formKey = GlobalKey<FormState>();
 
-  
   @override
   Widget build(BuildContext context) {
     final addressProvider = Provider.of<AddressProvider>(context, listen: true);
@@ -100,7 +99,10 @@ class _AddressScreen1State extends State<AddressScreen1> {
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 800),
                   curve: Curves.easeInOut,
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 20,
+                  ),
                   decoration: const BoxDecoration(
                     color: Color(0xFF4CAF50),
                     borderRadius: BorderRadius.only(
@@ -126,27 +128,32 @@ class _AddressScreen1State extends State<AddressScreen1> {
                                   color: Colors.white,
                                 ),
                                 style: IconButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(255, 15, 48, 137),
+                                  backgroundColor: const Color.fromARGB(
+                                    255,
+                                    15,
+                                    48,
+                                    137,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 10),
-                              IconButton(
-                                onPressed: () => Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => const PickupScreen(),
-                                  ),
-                                ),
-                                icon: const Icon(
-                                  Icons.arrow_back_ios_new,
-                                  size: 16,
-                                  color: Colors.white,
-                                ),
-                                style: IconButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(148, 197, 193, 193),
-                                  shape: const CircleBorder(),
-                                ),
-                              ),
+                              // IconButton(
+                              //   onPressed: () => Navigator.pushReplacement(
+                              //     context,
+                              //     MaterialPageRoute(
+                              //       builder: (context) => const PickupScreen(),
+                              //     ),
+                              //   ),
+                              //   icon: const Icon(
+                              //     Icons.arrow_back_ios_new,
+                              //     size: 16,
+                              //     color: Colors.white,
+                              //   ),
+                              //   style: IconButton.styleFrom(
+                              //     backgroundColor: const Color.fromARGB(148, 197, 193, 193),
+                              //     shape: const CircleBorder(),
+                              //   ),
+                              // ),
                             ],
                           ),
 
@@ -160,7 +167,12 @@ class _AddressScreen1State extends State<AddressScreen1> {
                                   color: Colors.white,
                                 ),
                                 style: IconButton.styleFrom(
-                                  backgroundColor: const Color.fromARGB(255, 15, 48, 137),
+                                  backgroundColor: const Color.fromARGB(
+                                    255,
+                                    15,
+                                    48,
+                                    137,
+                                  ),
                                 ),
                               ),
                               const SizedBox(height: 10),
@@ -174,7 +186,10 @@ class _AddressScreen1State extends State<AddressScreen1> {
                       // Welcome Card
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 14,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
@@ -251,7 +266,9 @@ class _AddressScreen1State extends State<AddressScreen1> {
                       // Use a custom TextFormField for date picking
                       TextFormField(
                         // Use provider getter for display
-                        controller: TextEditingController(text: addressProvider.date),
+                        controller: TextEditingController(
+                          text: addressProvider.date,
+                        ),
                         readOnly: true,
                         onTap: () async {
                           DateTime? pickedDate = await showDatePicker(
@@ -268,8 +285,9 @@ class _AddressScreen1State extends State<AddressScreen1> {
                           }
                         },
                         decoration: inputDecoration("Select Date"),
-                        validator: (value) =>
-                          value == null || value.isEmpty ? 'Please select a date' : null,
+                        validator: (value) => value == null || value.isEmpty
+                            ? 'Please select a date'
+                            : null,
                       ),
                       const SizedBox(height: 10),
 
@@ -301,12 +319,10 @@ class _AddressScreen1State extends State<AddressScreen1> {
                           ),
                           onPressed: () {
                             if (_formKey.currentState!.validate()) {
-                             
-                              
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const AddressScreen2 (), 
+                                  builder: (context) => const AddressScreen2(),
                                 ),
                               );
                             }
@@ -362,7 +378,7 @@ class _AddressScreen1State extends State<AddressScreen1> {
   InputDecoration inputDecoration(String hint) {
     return InputDecoration(
       filled: true,
-      fillColor: const Color(0xFF4CAF50),
+      fillColor: Color(0xFF4CAF50),
       hintText: hint,
       hintStyle: const TextStyle(color: Colors.white70),
       border: OutlineInputBorder(

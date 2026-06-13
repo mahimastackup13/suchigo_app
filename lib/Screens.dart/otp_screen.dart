@@ -1,5 +1,6 @@
 // // 
 // import 'dart:async';
+// import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:flutter/material.dart';
 // import 'package:provider/provider.dart';
 // import 'register_screen.dart';
@@ -200,4 +201,8 @@
 //       ),
 //     );
 //   }
+// }
+
+// extension on AuthProvider {
+//   Future<bool> verifyOtp(BuildContext context, String verificationId, String otp, bool isEmail, String identifier) {}
 // }

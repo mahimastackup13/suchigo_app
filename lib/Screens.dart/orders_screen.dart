@@ -250,7 +250,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
             width: 10,
             height: 10,
             decoration: const BoxDecoration(
-              color: Color(0xFFB1C85A),
+              color: Color(0xFF4CAF50),
               shape: BoxShape.circle,
             ),
           ),
@@ -272,8 +272,8 @@ class _OrdersScreenState extends State<OrdersScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 52,
-        height: 52,
+        width: 42,
+        height: 42,
         decoration: BoxDecoration(
           color: Colors.black,
           borderRadius: BorderRadius.circular(12),

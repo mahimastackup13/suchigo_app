@@ -1,0 +1,8 @@
+Analyzing main.dart...                                          
+
+warning - Unused import: 'package:suchigo_app/Screens.dart/AddOrder_Screen.dart' - lib\main.dart:5:8 - unused_import
+warning - Unused import: 'package:suchigo_app/Screens.dart/home_screen.dart' - lib\main.dart:7:8 - unused_import
+warning - Unused import: 'package:suchigo_app/Screens.dart/signin_screen.dart' - lib\main.dart:10:8 - unused_import
+warning - Unused import: 'package:suchigo_app/provider/auth_provider.dart' - lib\main.dart:18:8 - unused_import
+   info - Don't invoke 'print' in production code - lib\main.dart:34:5 - avoid_print
+

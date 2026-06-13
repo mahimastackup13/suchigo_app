@@ -1,7 +1,6 @@
 import java.util.Properties
 import java.io.FileInputStream
 
-// 1. Load the keystore properties at the top
 val keystoreProperties = Properties()
 val keystorePropertiesFile = rootProject.file("key.properties")
 if (keystorePropertiesFile.exists()) {
@@ -16,10 +15,10 @@ plugins {
 }
 
 android {
-    // Replace with your actual domain package name
-    namespace = "com.suchigo.app" 
+    namespace = "com.suchigo.suchigo_app"
+
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "27.0.12077973"  // ← ADD THIS (hardcode instead of flutter.ndkVersion)
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -31,7 +30,6 @@ android {
     }
 
     defaultConfig {
-        // MUST be unique on the Play Store
         applicationId = "com.suchigo.suchigo_app"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
@@ -50,10 +48,7 @@ android {
 
     buildTypes {
         getByName("release") {
-            // Link the release configuration
             signingConfig = signingConfigs.getByName("release")
-            
-            // Production optimizations
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

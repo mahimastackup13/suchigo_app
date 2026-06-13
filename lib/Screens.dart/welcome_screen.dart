@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:suchigo_app/Screens.dart/register_screen.dart';
 import 'package:suchigo_app/Screens.dart/signin_screen.dart';
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
+import 'package:suchigo_app/Screens.dart/collector_screen.dart';
+
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -15,26 +17,35 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Top Row: Logo + Skip
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
-                    children: [
-                      Image.asset(
-                        'assets/images/logo.png', 
-                        height: 80,
-                      ),
-                      const SizedBox(width: 8),
-                    
-                    ],
+                    // children: [
+                    //   Image.asset(
+                    //   'assets/images/logo.png',
+                    //   height: 80,
+                    //   ),
+                    //   const SizedBox(width: 8),
+
+                    // ],
                   ),
-                  const Text(
-                    "Skip",
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.bold,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      "Skip",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -42,17 +53,12 @@ class WelcomeScreen extends StatelessWidget {
 
               const SizedBox(height: 20),
 
-              
               Center(
                 child: Image.asset(
-                  'assets/images/Tree.png',
-                  width: MediaQuery.of(
-                    context,
-                  ).size.width, 
-                  height:
-                      MediaQuery.of(context).size.height *
-                      0.45, 
-                  fit: BoxFit.cover, 
+                  'assets/images/tree (2).png',
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height * 0.45,
+                  fit: BoxFit.cover,
                 ),
               ),
 
@@ -84,14 +90,13 @@ class WelcomeScreen extends StatelessWidget {
 
               const Spacer(),
 
-              
               SizedBox(
                 width: double.infinity,
-                height: 60,
+                height: 48,
 
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFE2F2DF), 
+                    backgroundColor: const Color(0xFFE2F2DF),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -101,11 +106,11 @@ class WelcomeScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const RegisterScreen(), 
+                        builder: (context) => const LoginScreen(),
                       ),
                     );
-                    
                   },
+                  
                   child: const Text(
                     "Get started",
                     style: TextStyle(
@@ -119,27 +124,27 @@ class WelcomeScreen extends StatelessWidget {
 
               const SizedBox(height: 10),
 
-              
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                     Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const LoginScreen()),
-  );
-                    
-                  },
-                  child: const Text(
-                    "Already have an account",
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      decoration: TextDecoration.underline,
-                    ),
-                  ),
-                ),
-              ),
+              // Center(
+              //   child: GestureDetector(
+              //     onTap: () {
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(
+              //           builder: (context) => const CollectorScreen(),
+              //         ),
+              //       );
+              //     },
+              //     child: const Text(
+              //       "Already have an account",
+              //       style: TextStyle(
+              //         fontSize: 13,
+              //         fontWeight: FontWeight.bold,
+              //         color: Colors.black,
+              //         decoration: TextDecoration.underline,
+              //       ),
+              //     ),
+              //   ),
+              // ),
 
               const SizedBox(height: 10),
             ],

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:suchigo_app/Screens.dart/collector_screen.dart';
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
 
-
 class WasteScreen extends StatefulWidget {
   const WasteScreen({super.key});
 
@@ -196,8 +195,8 @@ class _WasteScreenState extends State<WasteScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: wasteType == w
-                                ? const Color.fromARGB(255, 106, 139, 49)
-                                : const Color(0xFFC8E69A),
+                                ? Color(0xFF4CAF50)
+                                : const Color.fromARGB(255, 154, 190, 230),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Text(
@@ -440,7 +439,7 @@ class _WasteScreenState extends State<WasteScreen> {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: Color(0xFF4CAF50),
                             padding: const EdgeInsets.symmetric(
                               horizontal: 30,
                               vertical: 12,

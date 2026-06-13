@@ -80,8 +80,7 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
           children: [
             const SizedBox(height: 15),
 
-          
-             Container(
+            Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 15),
               color: Colors.black,
@@ -115,8 +114,7 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: const BoxDecoration(
                   color: Colors.white,
-                  borderRadius:
-                      BorderRadius.vertical(top: Radius.circular(25)),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(25)),
                 ),
                 child: Column(
                   children: [
@@ -127,8 +125,7 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
                         Expanded(
                           child: Container(
                             height: 48,
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 14),
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
                             decoration: BoxDecoration(
                               color: const Color(0xFFF3F3F3),
                               borderRadius: BorderRadius.circular(12),
@@ -155,24 +152,20 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
                         GestureDetector(
                           onTap: () {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text("Accepted clicked"),
-                              ),
+                              const SnackBar(content: Text("Accepted clicked")),
                             );
                           },
                           child: Container(
                             height: 48,
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 22),
+                            padding: const EdgeInsets.symmetric(horizontal: 22),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFC8D97D),
+                              color: Color(0xFF4CAF50),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Center(
                               child: Text(
                                 "Accepted",
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold),
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
                           ),
@@ -184,17 +177,19 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
 
                     /// GO TO ORDERS BUTTON (Clickable)
                     GestureDetector(
-                       onTap: () {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const OrdersScreen()),
-    );
-  },
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const OrdersScreen(),
+                          ),
+                        );
+                      },
                       child: Container(
                         width: double.infinity,
                         height: 55,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFC8D97D),
+                          color: Color(0xFF4CAF50),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: const Center(
@@ -237,16 +232,15 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
       onTap: () {
         // TODO: Navigate to specific ward details
         Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const OrdersScreen()),
-    );
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Clicked ${data['name']}")),
+          context,
+          MaterialPageRoute(builder: (context) => const OrdersScreen()),
         );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Clicked ${data['name']}")));
       },
       child: Container(
-        padding:
-            const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),
         decoration: const BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.black12)),
         ),
@@ -254,8 +248,7 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
           children: [
             Text(
               "$index.  ${data['name']}",
-              style: const TextStyle(
-                  fontSize: 16, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
             ),
             const Spacer(),
 
@@ -277,8 +270,7 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
     return Container(
       width: 38,
       height: 38,
-      decoration:
-          BoxDecoration(color: color, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: color, shape: BoxShape.circle),
       child: Center(
         child: Text(
           "$count",

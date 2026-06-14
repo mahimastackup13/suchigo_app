@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:suchigo_app/provider/home_provider.dart';
 
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
-import 'package:suchigo_app/Screens.dart/profile_screen.dart';
+import 'package:suchigo_app/Screens.dart/profile_screen.dartfv';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {

@@ -12,7 +12,7 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profileState = ref.watch(profileNotifierProvider);
+    final profileState = ref.watch(profileProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -170,7 +170,7 @@ class ProfileScreen extends ConsumerWidget {
                           child: IconButton(
                             icon: const Icon(Icons.refresh, color: Colors.white),
                             onPressed: () {
-                              ref.read(profileNotifierProvider.notifier).loadProfile(forceRefresh: true);
+                              ref.read(profileProvider.notifier).loadProfile(forceRefresh: true);
                             },
                           ),
                         )

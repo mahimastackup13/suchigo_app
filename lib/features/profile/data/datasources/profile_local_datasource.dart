@@ -7,7 +7,7 @@ import 'package:suchigo_app/features/profile/data/models/profile_model.dart';
 class ProfileLocalDataSource {
   final LocalDb _localDb;
 
-  ProfileLocalDataSource({required LocalDb localDb}) : _localDb = localDb;
+  ProfileLocalDataSource(this._localDb);
 
   Future<Result<ProfileModel>> getCachedProfile() async {
     final result = await _localDb.query(LocalDbTables.users, limit: 1);

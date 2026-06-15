@@ -18,7 +18,7 @@ void main() {
 
   setUp(() {
     mockApiClient = MockApiClient();
-    dataSource = ProfileRemoteDataSource(apiClient: mockApiClient);
+    dataSource = ProfileRemoteDataSource(mockApiClient);
   });
 
   group('fetchProfile', () {

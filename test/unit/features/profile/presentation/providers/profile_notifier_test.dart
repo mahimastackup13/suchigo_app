@@ -41,7 +41,7 @@ void main() {
         .thenAnswer((_) async => Success(tProfile));
     
     final container = createContainer();
-    final state = container.read(profileNotifierProvider);
+    final state = container.read(profileProvider);
     
     expect(state, isA<ProfileLoading>());
   });
@@ -53,9 +53,9 @@ void main() {
     final container = createContainer();
     
     // Wait for the microtask from build() to finish
-    await container.read(profileNotifierProvider.notifier).loadProfile();
+    await container.read(profileProvider.notifier).loadProfile();
     
-    final state = container.read(profileNotifierProvider);
+    final state = container.read(profileProvider);
     expect(state, isA<ProfileLoaded>());
     expect((state as ProfileLoaded).profile, tProfile);
   });
@@ -67,9 +67,9 @@ void main() {
 
     final container = createContainer();
     
-    await container.read(profileNotifierProvider.notifier).loadProfile();
+    await container.read(profileProvider.notifier).loadProfile();
     
-    final state = container.read(profileNotifierProvider);
+    final state = container.read(profileProvider);
     expect(state, isA<ProfileError>());
     expect((state as ProfileError).error, tError);
   });

@@ -23,7 +23,7 @@ void main() {
 
   setUp(() {
     mockLocalDb = MockLocalDb();
-    dataSource = ProfileLocalDataSource(localDb: mockLocalDb);
+    dataSource = ProfileLocalDataSource(mockLocalDb);
   });
 
   group('getCachedProfile', () {

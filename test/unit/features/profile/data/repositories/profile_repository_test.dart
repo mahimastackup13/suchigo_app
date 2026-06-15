@@ -26,10 +26,7 @@ void main() {
   setUp(() {
     mockRemote = MockRemoteDataSource();
     mockLocal = MockLocalDataSource();
-    repository = ProfileRepository(
-      remoteDataSource: mockRemote,
-      localDataSource: mockLocal,
-    );
+    repository = ProfileRepository(mockRemote, mockLocal);
   });
 
   group('getProfile', () {

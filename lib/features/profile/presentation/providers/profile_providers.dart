@@ -16,22 +16,18 @@ LocalDb localDb(Ref ref) {
 
 @Riverpod(keepAlive: true)
 ProfileLocalDataSource profileLocalDataSource(Ref ref) {
-  return ProfileLocalDataSource(
-    localDb: ref.watch(localDbProvider),
-  );
+  return ProfileLocalDataSource(ref.watch(localDbProvider));
 }
 
 @Riverpod(keepAlive: true)
 ProfileRemoteDataSource profileRemoteDataSource(Ref ref) {
-  return ProfileRemoteDataSource(
-    apiClient: ref.watch(apiClientProvider),
-  );
+  return ProfileRemoteDataSource(ref.watch(apiClientProvider));
 }
 
 @Riverpod(keepAlive: true)
 ProfileRepository profileRepository(Ref ref) {
   return ProfileRepository(
-    remoteDataSource: ref.watch(profileRemoteDataSourceProvider),
-    localDataSource: ref.watch(profileLocalDataSourceProvider),
+    ref.watch(profileRemoteDataSourceProvider),
+    ref.watch(profileLocalDataSourceProvider),
   );
 }

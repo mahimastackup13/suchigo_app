@@ -8,11 +8,7 @@ class ProfileRepository {
   final ProfileRemoteDataSource _remoteDataSource;
   final ProfileLocalDataSource _localDataSource;
 
-  ProfileRepository({
-    required ProfileRemoteDataSource remoteDataSource,
-    required ProfileLocalDataSource localDataSource,
-  })  : _remoteDataSource = remoteDataSource,
-        _localDataSource = localDataSource;
+  ProfileRepository(this._remoteDataSource, this._localDataSource);
 
   /// Gets the profile. Uses remote first, falls back to local cache if offline.
   Future<Result<ProfileModel>> getProfile({bool forceRefresh = false}) async {

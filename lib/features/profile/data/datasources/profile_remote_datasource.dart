@@ -7,7 +7,7 @@ import 'package:suchigo_app/features/profile/data/models/profile_model.dart';
 class ProfileRemoteDataSource {
   final ApiClient _apiClient;
 
-  ProfileRemoteDataSource({required ApiClient apiClient}) : _apiClient = apiClient;
+  ProfileRemoteDataSource(this._apiClient);
 
   Future<Result<ProfileModel>> fetchProfile() async {
     final uri = ApiConstants.authUri(ApiConstants.profilePath);

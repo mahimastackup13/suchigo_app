@@ -1,133 +1,143 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/order_history_screen.dart';
 import 'package:suchigo_app/Screens.dart/account_screen.dart';
 import 'package:suchigo_app/Screens.dart/contact_us_screen.dart';
-import 'package:suchigo_app/provider/profile_provider.dart';
+import 'package:suchigo_app/features/profile/presentation/providers/profile_notifier.dart';
+import 'package:suchigo_app/features/profile/presentation/states/profile_state.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer<ProfileProvider>(
-      builder: (context, profileProvider, child) {
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: Column(
-              children: [
-                Expanded(
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // --- Header Background Container ---
-                      Container(
-                        height: MediaQuery.of(context).size.height * 0.35,
-                        width: double.infinity,
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF1E713D),
-                              Color.fromARGB(235, 137, 208, 139),
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: Radius.circular(80),
-                            bottomRight: Radius.circular(80),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileState = ref.watch(profileNotifierProvider);
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // --- Header Background Container ---
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.35,
+                    width: double.infinity,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFF1E713D),
+                          Color.fromARGB(235, 137, 208, 139),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(80),
+                        bottomRight: Radius.circular(80),
+                      ),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Decorative Circles
+                        Positioned(
+                          top: 40,
+                          left: 60,
+                          child: Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withOpacity(0.15),
+                                  Colors.white.withOpacity(0.05),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
                           ),
                         ),
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Decorative Circles
-                            Positioned(
-                              top: 40,
-                              left: 60,
-                              child: Container(
-                                width: 80,
-                                height: 80,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.white.withOpacity(0.15),
-                                      Colors.white.withOpacity(0.05),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                ),
+                        Positioned(
+                          top: 100,
+                          right: 40,
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withOpacity(0.2),
+                                  Colors.white.withOpacity(0.05),
+                                ],
                               ),
                             ),
-                            Positioned(
-                              top: 100,
-                              right: 40,
-                              child: Container(
-                                width: 60,
-                                height: 60,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.white.withOpacity(0.2),
-                                      Colors.white.withOpacity(0.05),
-                                    ],
-                                  ),
-                                ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 30,
+                          right: 100,
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withOpacity(0.1),
+                                  Colors.white.withOpacity(0.03),
+                                ],
                               ),
                             ),
-                            Positioned(
-                              bottom: 30,
-                              right: 100,
-                              child: Container(
-                                width: 100,
-                                height: 100,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.white.withOpacity(0.1),
-                                      Colors.white.withOpacity(0.03),
-                                    ],
-                                  ),
-                                ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 20,
+                          left: 40,
+                          child: Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.white.withOpacity(0.12),
+                                  Colors.white.withOpacity(0.04),
+                                ],
                               ),
                             ),
-                            Positioned(
-                              bottom: 20,
-                              left: 40,
-                              child: Container(
-                                width: 70,
-                                height: 70,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      Colors.white.withOpacity(0.12),
-                                      Colors.white.withOpacity(0.04),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                          ),
+                        ),
 
-                            // User Profile Info
-                            Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                CircleAvatar(
-                                  radius: 60,
-                                  backgroundImage: AssetImage(
-                                    profileProvider.profileImagePath,
-                                  ),
-                                ),
-                                const SizedBox(height: 12),
+                        // User Profile Info
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const CircleAvatar(
+                              radius: 60,
+                              backgroundImage: AssetImage(
+                                'assets/icons/pic.png',
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            if (profileState is ProfileLoading)
+                              const CircularProgressIndicator(color: Colors.white)
+                            else if (profileState is ProfileError)
+                              Text(
+                                profileState.error.message,
+                                style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                              )
+                            else if (profileState is ProfileLoaded)
+                              ...[
                                 Text(
-                                  profileProvider.username,
+                                  profileState.profile.name.isNotEmpty ? profileState.profile.name : 'Unknown User',
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
@@ -136,83 +146,101 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  profileProvider.phoneNumber,
+                                  profileState.profile.phone.isNotEmpty ? profileState.profile.phone : profileState.profile.email,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 15,
                                   ),
                                 ),
+                                if (profileState.isOffline)
+                                  const Padding(
+                                    padding: EdgeInsets.only(top: 4.0),
+                                    child: Text(
+                                      '(Offline)',
+                                      style: TextStyle(color: Colors.white70, fontSize: 12),
+                                    ),
+                                  ),
                               ],
-                            ),
                           ],
                         ),
-                      ),
-
-                      // --- Profile Items Container ---
-                      Positioned(
-                        left: 40,
-                        right: 40,
-                        top: 300,
-                        bottom: 120,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.grey.withOpacity(0.25),
-                                spreadRadius: 1,
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                        
+                        Positioned(
+                          top: 40,
+                          right: 20,
+                          child: IconButton(
+                            icon: const Icon(Icons.refresh, color: Colors.white),
+                            onPressed: () {
+                              ref.read(profileNotifierProvider.notifier).loadProfile(forceRefresh: true);
+                            },
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: SingleChildScrollView(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: const [
-                                  SizedBox(height: 8),
-                                  ProfileItem(
-                                    icon: Icons.account_balance_wallet_outlined,
-                                    text: "SuchiGo Wallet",
-                                  ),
-                                  ProfileItem(
-                                    icon: Icons.history_outlined,
-                                    text: "Order History",
-                                  ),
-                                  ProfileItem(
-                                    icon: Icons.person_outline,
-                                    text: "Account",
-                                  ),
-                                  ProfileItem(
-                                    icon: Icons.phone_outlined,
-                                    text: "Contact Us",
-                                  ),
-                                  ProfileItem(
-                                    icon: Icons.card_giftcard_outlined,
-                                    text: "My Rewards",
-                                  ),
-                                  ProfileItem(
-                                    icon: Icons.more_vert,
-                                    text: "More....",
-                                  ),
-                                  SizedBox(height: 16),
-                                ],
+                        )
+                      ],
+                    ),
+                  ),
+
+                  // --- Profile Items Container ---
+                  Positioned(
+                    left: 40,
+                    right: 40,
+                    top: 300,
+                    bottom: 120,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.25),
+                            spreadRadius: 1,
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: const [
+                              SizedBox(height: 8),
+                              ProfileItem(
+                                icon: Icons.account_balance_wallet_outlined,
+                                text: "SuchiGo Wallet",
                               ),
-                            ),
+                              ProfileItem(
+                                icon: Icons.history_outlined,
+                                text: "Order History",
+                              ),
+                              ProfileItem(
+                                icon: Icons.person_outline,
+                                text: "Account",
+                              ),
+                              ProfileItem(
+                                icon: Icons.phone_outlined,
+                                text: "Contact Us",
+                              ),
+                              ProfileItem(
+                                icon: Icons.card_giftcard_outlined,
+                                text: "My Rewards",
+                              ),
+                              ProfileItem(
+                                icon: Icons.more_vert,
+                                text: "More....",
+                              ),
+                              SizedBox(height: 16),
+                            ],
                           ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 }
@@ -270,10 +298,9 @@ class ProfileItem extends StatelessWidget {
             );
             break;
           default:
-            Provider.of<ProfileProvider>(
-              context,
-              listen: false,
-            ).handleProfileItemTap(context, text);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("$text tapped!")),
+            );
         }
       },
     );

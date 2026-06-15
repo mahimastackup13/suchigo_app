@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'package:suchigo_app/Screens.dart/AddOrder_Screen.dart';
@@ -18,9 +19,7 @@ import 'package:suchigo_app/provider/bill_provider.dart';
 import 'package:suchigo_app/provider/home_provider.dart';
 import 'package:suchigo_app/provider/pickup_provider.dart';
 import 'package:suchigo_app/provider/profile_provider.dart';
-import 'package:suchigo_app/provider/register_provider.dart';
 import 'package:suchigo_app/provider/location_provider.dart';
-import 'package:suchigo_app/provider/login_provider.dart';
 import 'package:suchigo_app/provider/settings_provider.dart';
 
 Future<void> main() async {
@@ -34,21 +33,21 @@ Future<void> main() async {
   }
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => LoginProvider()),
-        ChangeNotifierProvider(create: (_) => RegisterProvider()),
-        ChangeNotifierProvider(create: (_) => HomeProvider()),
-        ChangeNotifierProvider(create: (_) => ProfileProvider()),
-        ChangeNotifierProvider(create: (_) => SettingsProvider()),
-        ChangeNotifierProvider(create: (_) => LocationProvider()),
-        ChangeNotifierProvider(create: (_) => BillProvider()),
-        ChangeNotifierProvider(create: (_) => PickupProvider()),
-        ChangeNotifierProvider(create: (_) => CollectorProvider()),
-        ChangeNotifierProvider(create: (_) => AddressProvider()),
-        ChangeNotifierProvider(create: (_) => AddressDetailsProvider()),
-      ],
-      child: const SuchiGoApp(),
+    ProviderScope(
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => HomeProvider()),
+          ChangeNotifierProvider(create: (_) => ProfileProvider()),
+          ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ChangeNotifierProvider(create: (_) => LocationProvider()),
+          ChangeNotifierProvider(create: (_) => BillProvider()),
+          ChangeNotifierProvider(create: (_) => PickupProvider()),
+          ChangeNotifierProvider(create: (_) => CollectorProvider()),
+          ChangeNotifierProvider(create: (_) => AddressProvider()),
+          ChangeNotifierProvider(create: (_) => AddressDetailsProvider()),
+        ],
+        child: const SuchiGoApp(),
+      ),
     ),
   );
 }

@@ -35,7 +35,7 @@ dependencies:
   # --- State Management / Utilities ---
   provider: ^6.1.5
   url_launcher: ^6.3.2
-  http: ^1.1.0
+  http: ^1.6.0
   
   # --- Location/Path ---
   path_provider: ^2.1.5
@@ -43,11 +43,21 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   # google_mobile_ads: ^7.0.0
   cloud_functions: ^5.6.2
+  flutter_secure_storage: ^10.3.1
+  shared_preferences: ^2.5.5
+  path: ^1.9.1
+  connectivity_plus: ^7.1.1
+  flutter_riverpod: ^3.3.2
+  riverpod_annotation: ^4.0.3
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  mocktail: ^1.0.5
+  sqflite_common_ffi: ^2.4.2
+  riverpod_generator: ^4.0.4
+  build_runner: ^2.15.0
 
 # --- Launcher Icon Configuration ---
 flutter_launcher_icons:

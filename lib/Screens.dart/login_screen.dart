@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import 'package:suchigo_app/Screens.dart/collector_screen.dart';
-import 'package:suchigo_app/Screens.dart/register_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
-import '../provider/login_provider.dart';
+import 'package:suchigo_app/Screens.dart/register_screen.dart';
+import 'package:suchigo_app/features/auth/presentation/providers/auth_notifier.dart';
+import 'package:suchigo_app/features/auth/presentation/states/auth_state.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _LoginPageState();
+  ConsumerState<LoginScreen> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginScreen> {
+class _LoginPageState extends ConsumerState<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
@@ -45,40 +45,38 @@ class _LoginPageState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
+    FocusScope.of(context).unfocus();
 
-    final loginProvider = Provider.of<LoginProvider>(context, listen: false);
-
-    final isSuccess = await loginProvider.login(
-      _usernameController.text.trim(),
-      _passwordController.text,
-    );
-
-    if (!mounted) return;
-
-    if (isSuccess) {
-      // ✅ Navigate to HomeScreen and remove all previous routes
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-        (route) => false,
-      );
-    } else {
-      final error = loginProvider.errorMessage ?? 'Login failed. Try again.';
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(error),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), 
-        ),
-      );
-      loginProvider.clearErrorMessage();
-    }
+    await ref.read(authProvider.notifier).login(
+          _usernameController.text.trim(),
+          _passwordController.text,
+        );
   }
 
   @override
   Widget build(BuildContext context) {
-    final loginProvider = Provider.of<LoginProvider>(context);
+    final authState = ref.watch(authProvider);
+    final isLoading = authState is AuthLoading;
+
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (next is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error.message),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      } else if (next is AuthAuthenticated) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (route) => false,
+        );
+      }
+    });
+
     final h = MediaQuery.of(context).size.height;
     const primaryGreen = Color(0xFF1E713D);
     const buttonGreen = Color(0xFF4C6B4C);
@@ -241,7 +239,7 @@ class _LoginPageState extends State<LoginScreen> {
 
                       // Login button
                       GestureDetector(
-                        onTap: (_isButtonActive && !loginProvider.isLoading)
+                        onTap: (_isButtonActive && !isLoading)
                             ? _login
                             : null,
                         child: AnimatedContainer(
@@ -249,13 +247,11 @@ class _LoginPageState extends State<LoginScreen> {
                           width: 220,
                           height: 58,
                           decoration: BoxDecoration(
-                            color: (_isButtonActive &&
-                                    !loginProvider.isLoading)
+                            color: (_isButtonActive && !isLoading)
                                 ? buttonGreen
                                 : Colors.grey.shade300,
                             borderRadius: BorderRadius.circular(30),
-                            boxShadow: (_isButtonActive &&
-                                    !loginProvider.isLoading)
+                            boxShadow: (_isButtonActive && !isLoading)
                                 ? [
                                     BoxShadow(
                                       color: buttonGreen.withOpacity(0.35),
@@ -266,7 +262,7 @@ class _LoginPageState extends State<LoginScreen> {
                                 : [],
                           ),
                           child: Center(
-                            child: loginProvider.isLoading
+                            child: isLoading
                                 ? const SizedBox(
                                     width: 24,
                                     height: 24,

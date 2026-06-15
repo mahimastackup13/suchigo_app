@@ -1,18 +1,18 @@
-// 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:provider/provider.dart';
-import '../provider/register_provider.dart';
-import 'package:suchigo_app/Screens.dart/login_screen.dart'; 
-class RegisterScreen extends StatefulWidget {
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:suchigo_app/Screens.dart/login_screen.dart';
+import 'package:suchigo_app/features/auth/presentation/providers/auth_notifier.dart';
+import 'package:suchigo_app/features/auth/presentation/states/auth_state.dart';
+
+class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() => _RegisterScreenState();
+  ConsumerState<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> {
-  // --- UPDATED CONTROLLERS ---
+class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   late TextEditingController _usernameController;
   late TextEditingController _firstNameController;
   late TextEditingController _lastNameController;
@@ -20,63 +20,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
   late TextEditingController _phoneController;
   late TextEditingController _passwordController;
 
-  bool _initialized = false;
+  bool _termsAccepted = false;
 
   @override
   void initState() {
     super.initState();
-    // Initialize all controllers
     _usernameController = TextEditingController();
     _firstNameController = TextEditingController();
     _lastNameController = TextEditingController();
     _emailController = TextEditingController();
     _phoneController = TextEditingController();
     _passwordController = TextEditingController();
+
+    _usernameController.addListener(_onTextChanged);
+    _emailController.addListener(_onTextChanged);
+    _passwordController.addListener(_onTextChanged);
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    if (!_initialized) {
-      final provider = context.read<RegisterProvider>();
-
-      // Set initial values from provider state
-      _usernameController.text = provider.username;
-      _firstNameController.text = provider.firstName;
-      _lastNameController.text = provider.lastName;
-      _emailController.text = provider.email;
-      _phoneController.text = provider.phone;
-      _passwordController.text = provider.password;
-
-      // Add Listeners for all required fields
-      _usernameController.addListener(() {
-        provider.setUsername(_usernameController.text);
-        provider.clearError();
-      });
-      _firstNameController.addListener(() {
-        provider.setFirstName(_firstNameController.text);
-        provider.clearError();
-      });
-      _lastNameController.addListener(() {
-        provider.setLastName(_lastNameController.text);
-        provider.clearError();
-      });
-      _emailController.addListener(() {
-        provider.setEmail(_emailController.text);
-        provider.clearError();
-      });
-      _phoneController.addListener(() {
-        provider.setPhone(_phoneController.text);
-        provider.clearError();
-      });
-      _passwordController.addListener(() {
-        provider.setPassword(_passwordController.text);
-        provider.clearError();
-      });
-
-      _initialized = true;
-    }
+  void _onTextChanged() {
+    setState(() {}); // trigger rebuild to evaluate button state
   }
 
   @override
@@ -90,9 +52,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  bool get _isValid {
+    return _usernameController.text.trim().isNotEmpty &&
+        _emailController.text.trim().isNotEmpty &&
+        _passwordController.text.trim().isNotEmpty &&
+        _termsAccepted;
+  }
+
+  Future<void> _register() async {
+    FocusScope.of(context).unfocus();
+    await ref.read(authProvider.notifier).register(
+          _usernameController.text.trim(),
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<RegisterProvider>();
+    final authState = ref.watch(authProvider);
+    final isLoading = authState is AuthLoading;
+
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (next is AuthError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.error.message),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      } else if (next is AuthAuthenticated) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registration successful! Please login.'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
+        );
+      }
+    });
 
     return Scaffold(
       body: SafeArea(
@@ -112,39 +116,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // --- UPDATED INPUT FIELDS ---
                   _buildInput('Username', _usernameController, TextInputType.text),
                   const SizedBox(height: 14),
                   _buildInput('First Name', _firstNameController, TextInputType.text),
                   const SizedBox(height: 14),
                   _buildInput('Last Name', _lastNameController, TextInputType.text),
                   const SizedBox(height: 14),
-                  // --- END UPDATED INPUT FIELDS ---
 
                   _buildInput('Email', _emailController, TextInputType.emailAddress),
                   const SizedBox(height: 14),
-                  // _buildInput('Phone', _phoneController, TextInputType.phone),
-                  // const SizedBox(height: 14),
                   _buildInput('Phone (e.g., +919998887776)', _phoneController, TextInputType.phone),
                   const SizedBox(height: 14),
                   _buildInput('Password', _passwordController, TextInputType.text, isPassword: true),
                   const SizedBox(height: 16),
 
-                  if (provider.errorMessage != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10, left: 2),
-                      child: Text(
-                        'Error: ${provider.errorMessage!}',
-                        style: const TextStyle(color: Colors.red, fontSize: 12),
-                      ),
-                    ),
-
                   Row(
                     children: [
                       Checkbox(
-                        value: provider.termsAccepted,
-                        onChanged: provider.isLoading ? null : (v) => 
-                            provider.setTermsAccepted(v ?? false),
+                        value: _termsAccepted,
+                        onChanged: isLoading
+                            ? null
+                            : (v) => setState(() => _termsAccepted = v ?? false),
                         materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
                       const SizedBox(width: 6),
@@ -167,28 +159,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton(
-                      onPressed: provider.isValid && !provider.isLoading
-                          ? () async {
-                              final success = await provider.registerUser();
-                              if (success && mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Registration successful! Please login.')),
-                                );
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => const LoginScreen(),
-                                  ),
-                                );
-                              }
-                            }
-                          : null,
+                      onPressed: _isValid && !isLoading ? _register : null,
                       style: ButtonStyle(
                         backgroundColor: MaterialStateProperty.resolveWith(
-                          (states) =>
-                              states.contains(MaterialState.disabled)
-                                  ? const Color(0xFFB0B0B0)
-                                  : const Color(0xFF565454),
+                          (states) => states.contains(MaterialState.disabled)
+                              ? const Color(0xFFB0B0B0)
+                              : const Color(0xFF565454),
                         ),
                         shape: MaterialStateProperty.all(
                           RoundedRectangleBorder(
@@ -197,7 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         elevation: MaterialStateProperty.all(4),
                       ),
-                      child: provider.isLoading
+                      child: isLoading
                           ? const Center(
                               child: SizedBox(
                                 width: 20,
@@ -278,8 +254,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                       TextButton(
-                        onPressed: () =>
-                            Navigator.of(context).pushNamed('/login'),
+                        onPressed: () => Navigator.of(context).pushNamed('/login'),
                         child: const Text(
                           'Login',
                           style: TextStyle(

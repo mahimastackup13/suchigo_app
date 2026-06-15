@@ -10,8 +10,9 @@ class ProfileRemoteDataSource {
   ProfileRemoteDataSource({required ApiClient apiClient}) : _apiClient = apiClient;
 
   Future<Result<ProfileModel>> fetchProfile() async {
+    final uri = ApiConstants.authUri(ApiConstants.profilePath);
     final result = await _apiClient.get(
-      ApiConstants.profilePath,
+      uri,
       requiresAuth: true,
       retry: true,
     );

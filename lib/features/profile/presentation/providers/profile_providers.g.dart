@@ -96,7 +96,7 @@ final class ProfileLocalDataSourceProvider
 }
 
 String _$profileLocalDataSourceHash() =>
-    r'6f2f67f0ea273a9893df016905d2ca6e7e7b4b68';
+    r'edbdf350f24d1136a58f0c7be2195a374ffcdf6c';
 
 @ProviderFor(profileRemoteDataSource)
 final profileRemoteDataSourceProvider = ProfileRemoteDataSourceProvider._();
@@ -144,7 +144,7 @@ final class ProfileRemoteDataSourceProvider
 }
 
 String _$profileRemoteDataSourceHash() =>
-    r'f2373c5306061f913d21572e93ed0c5c6c77e55c';
+    r'b43ce2c68942ae01dd69c2dd750be7dd76fbd137';
 
 @ProviderFor(profileRepository)
 final profileRepositoryProvider = ProfileRepositoryProvider._();
@@ -191,4 +191,4 @@ final class ProfileRepositoryProvider
   }
 }
 
-String _$profileRepositoryHash() => r'2ad4153d478991432883170820602cb7ac938220';
+String _$profileRepositoryHash() => r'5575ae7fad330f6f2b630d004ab698ee0fc8bb63';

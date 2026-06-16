@@ -116,13 +116,13 @@ import 'package:suchigo_app/Screens.dart/track_screen.dart';
   //                   border: OutlineInputBorder(
   //                     borderRadius: BorderRadius.circular(8),
   //                     borderSide: BorderSide(
-  //                       color: Colors.grey.withOpacity(0.4),
+  //                       color: Colors.grey.withValues(alpha: 0.4),
   //                     ),
   //                   ),
   //                   enabledBorder: OutlineInputBorder(
   //                     borderRadius: BorderRadius.circular(8),
   //                     borderSide: BorderSide(
-  //                       color: Colors.grey.withOpacity(0.4),
+  //                       color: Colors.grey.withValues(alpha: 0.4),
   //                     ),
   //                   ),
   //                 ),
@@ -191,7 +191,7 @@ import 'package:suchigo_app/Screens.dart/track_screen.dart';
   //                               color: const Color(0xFFE6F4E6),
   //                               borderRadius: BorderRadius.circular(8),
   //                               border: Border.all(
-  //                                 color: Colors.grey.withOpacity(0.4),
+  //                                 color: Colors.grey.withValues(alpha: 0.4),
   //                               ),
   //                             ),
   //                             child: Row(
@@ -231,7 +231,7 @@ import 'package:suchigo_app/Screens.dart/track_screen.dart';
   //                               color: const Color(0xFFE6F4E6),
   //                               borderRadius: BorderRadius.circular(8),
   //                               border: Border.all(
-  //                                 color: Colors.grey.withOpacity(0.4),
+  //                                 color: Colors.grey.withValues(alpha: 0.4),
   //                               ),
   //                             ),
   //                             child: Row(

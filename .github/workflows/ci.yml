@@ -1,0 +1,112 @@
+name: SuchiGo CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────────
+  # Quality Gate
+  # ─────────────────────────────────────────────────────────────────────
+  quality:
+    name: Analyze & Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup FVM
+        uses: lmcarreiro/setup-fvm@v1
+        with:
+          flutter-version: "3.44.2"
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: fvm flutter pub get
+
+      - name: Verify formatting
+        run: fvm dart format --set-exit-if-changed lib/ test/
+
+      - name: Analyze
+        run: fvm flutter analyze --fatal-infos
+
+      - name: Run tests
+        run: fvm flutter test --coverage
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Android Build (debug — PR gate only)
+  # ─────────────────────────────────────────────────────────────────────
+  build-android:
+    name: Build Android APK
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup FVM
+        uses: lmcarreiro/setup-fvm@v1
+        with:
+          flutter-version: "3.44.2"
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+
+      - name: Install dependencies
+        run: fvm flutter pub get
+
+      - name: Build APK (debug)
+        run: fvm flutter build apk --debug
+
+  # ─────────────────────────────────────────────────────────────────────
+  # Web Build
+  # ─────────────────────────────────────────────────────────────────────
+  build-web:
+    name: Build Web
+    runs-on: ubuntu-latest
+    needs: quality
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup FVM
+        uses: lmcarreiro/setup-fvm@v1
+        with:
+          flutter-version: "3.44.2"
+
+      - name: Cache pub packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+
+      - name: Install dependencies
+        run: fvm flutter pub get
+
+      - name: Build Web (Skwasm renderer)
+        run: fvm flutter build web --release --wasm

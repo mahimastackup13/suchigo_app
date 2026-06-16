@@ -55,8 +55,8 @@ class ProfileScreen extends ConsumerWidget {
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.white.withOpacity(0.15),
-                                  Colors.white.withOpacity(0.05),
+                                  Colors.white.withValues(alpha: 0.15),
+                                  Colors.white.withValues(alpha: 0.05),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
@@ -74,8 +74,8 @@ class ProfileScreen extends ConsumerWidget {
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.white.withOpacity(0.2),
-                                  Colors.white.withOpacity(0.05),
+                                  Colors.white.withValues(alpha: 0.2),
+                                  Colors.white.withValues(alpha: 0.05),
                                 ],
                               ),
                             ),
@@ -91,8 +91,8 @@ class ProfileScreen extends ConsumerWidget {
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.white.withOpacity(0.1),
-                                  Colors.white.withOpacity(0.03),
+                                  Colors.white.withValues(alpha: 0.1),
+                                  Colors.white.withValues(alpha: 0.03),
                                 ],
                               ),
                             ),
@@ -108,8 +108,8 @@ class ProfileScreen extends ConsumerWidget {
                               shape: BoxShape.circle,
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.white.withOpacity(0.12),
-                                  Colors.white.withOpacity(0.04),
+                                  Colors.white.withValues(alpha: 0.12),
+                                  Colors.white.withValues(alpha: 0.04),
                                 ],
                               ),
                             ),
@@ -131,7 +131,7 @@ class ProfileScreen extends ConsumerWidget {
                               const CircularProgressIndicator(color: Colors.white)
                             else if (profileState is ProfileError)
                               Text(
-                                profileState.error.message,
+                                profileState.error.userMessage,
                                 style: const TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
                               )
                             else if (profileState is ProfileLoaded)
@@ -190,7 +190,7 @@ class ProfileScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.25),
+                            color: Colors.grey.withValues(alpha: 0.25),
                             spreadRadius: 1,
                             blurRadius: 10,
                             offset: const Offset(0, 4),

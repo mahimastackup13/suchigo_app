@@ -61,6 +61,34 @@ class ApiClient {
     );
   }
 
+  /// Sends a GET request to [uri] and returns a JSON array response.
+  ///
+  /// Use this for endpoints that return a top-level JSON array (e.g. /api/bills/).
+  /// The result is typed as [List<Map<String, dynamic>>].
+  Future<Result<List<Map<String, dynamic>>>> getList(
+    Uri uri, {
+    bool requiresAuth = true,
+    bool retry = true,
+  }) async {
+    final mapResult = await _execute(
+      method: 'GET',
+      uri: uri,
+      requiresAuth: requiresAuth,
+      retry: retry,
+      builder: (headers) => http.Request('GET', uri)..headers.addAll(headers),
+    );
+
+    return mapResult.map((data) {
+      if (data.containsKey('data') && data['data'] is List) {
+        return (data['data'] as List)
+            .whereType<Map<String, dynamic>>()
+            .toList();
+      }
+      // Response was already a Map (object), not a list — return as single-item list
+      return [data];
+    });
+  }
+
   /// Sends a POST request to [uri] with a JSON [body].
   Future<Result<Map<String, dynamic>>> post(
     Uri uri, {

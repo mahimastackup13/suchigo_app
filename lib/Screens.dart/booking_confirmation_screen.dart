@@ -227,7 +227,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: _white.withOpacity(0.2),
+                      color: _white.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -260,7 +260,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
         border: Border.all(color: _greenBorder),
         boxShadow: [
           BoxShadow(
-            color: _green.withOpacity(0.06),
+            color: _green.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -425,7 +425,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: _green.withOpacity(0.25),
+            color: _green.withValues(alpha: 0.25),
             blurRadius: 14,
             offset: const Offset(0, 5),
           ),
@@ -526,7 +526,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
         color: _white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -589,7 +589,7 @@ class _SectionCard extends StatelessWidget {
         border: Border.all(color: const Color(0xFFC8E6C9)),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2E7D32).withOpacity(0.05),
+            color: const Color(0xFF2E7D32).withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),

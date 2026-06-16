@@ -21,4 +21,15 @@ class ConnectivityService {
     // Using contains since result is now a List<ConnectivityResult> in newer versions
     return !result.contains(ConnectivityResult.none);
   }
+
+  /// Reactive stream of connectivity changes.
+  ///
+  /// Emits `true` when connected, `false` when disconnected.
+  /// Used by [OfflineBanner] to react to network state transitions.
+  Stream<bool> get connectivityStream {
+    return _connectivity.onConnectivityChanged.map(
+      (results) => !results.contains(ConnectivityResult.none),
+    );
+  }
 }
+

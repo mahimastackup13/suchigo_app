@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:suchigo_app/provider/home_provider.dart';
 
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
-import 'package:suchigo_app/Screens.dart/profile_screen.dartfv';
+import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -43,7 +43,7 @@ class HomeScreen extends StatelessWidget {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -447,7 +447,7 @@ class _GreenHeader extends StatelessWidget {
                         height: 5,
                         width: 90,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.3),
+                          color: Colors.white.withValues(alpha: 0.3),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: FractionallySizedBox(
@@ -476,7 +476,7 @@ class _GreenHeader extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
@@ -562,7 +562,7 @@ class _AdBanner extends StatelessWidget {
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.08),
+                color: Colors.white.withValues(alpha: 0.08),
               ),
             ),
           ),
@@ -574,7 +574,7 @@ class _AdBanner extends StatelessWidget {
               height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.06),
+                color: Colors.white.withValues(alpha: 0.06),
               ),
             ),
           ),
@@ -596,7 +596,7 @@ class _AdBanner extends StatelessWidget {
                 //         vertical: 4,
                 //       ),
                 //       decoration: BoxDecoration(
-                //         color: Colors.white.withOpacity(0.2),
+                //         color: Colors.white.withValues(alpha: 0.2),
                 //         borderRadius: BorderRadius.circular(20),
                 //       ),
                 //       child: const Text(
@@ -636,7 +636,7 @@ class _AdBanner extends StatelessWidget {
                 //   width: 110,
                 //   height: 160,
                 //   decoration: BoxDecoration(
-                //     color: Colors.white.withOpacity(0.15),
+                //     color: Colors.white.withValues(alpha: 0.15),
                 //     borderRadius: BorderRadius.circular(12),
                 //   ),
                 //   child: Column(
@@ -757,7 +757,7 @@ class _WasteCategoryRow extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withValues(alpha: 0.05),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

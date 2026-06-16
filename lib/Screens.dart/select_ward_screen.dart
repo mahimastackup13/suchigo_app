@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:suchigo_app/Screens.dart/collector_screen.dart';
-import 'package:suchigo_app/Screens.dart/Orders_Screen.dart';
+import 'package:suchigo_app/Screens.dart/Ord_Screen.dart';
 
 class SelectWardScreen extends StatefulWidget {
   const SelectWardScreen({super.key});

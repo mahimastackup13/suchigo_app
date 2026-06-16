@@ -158,7 +158,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         boxShadow: selected
                             ? [
                                 BoxShadow(
-                                  color: _green.withOpacity(0.25),
+                                  color: _green.withValues(alpha: 0.25),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -253,7 +253,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -321,7 +321,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.25),
+          color: Colors.white.withValues(alpha: 0.25),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white, size: 16),
@@ -335,7 +335,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 10,
             offset: const Offset(0, -2),
           ),
@@ -387,7 +387,7 @@ class _OrderCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -450,7 +450,7 @@ class _OrderCard extends StatelessWidget {
                     vertical: 5,
                   ),
                   decoration: BoxDecoration(
-                    color: order.statusColor.withOpacity(0.1),
+                    color: order.statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(

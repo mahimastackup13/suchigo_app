@@ -1,78 +1,117 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-import 'package:suchigo_app/Screens.dart/AddOrder_Screen.dart';
-import 'package:suchigo_app/Screens.dart/collector_screen.dart';
-import 'package:suchigo_app/Screens.dart/home_screen.dart';
-import 'package:suchigo_app/Screens.dart/login_screen.dart';
-import 'package:suchigo_app/Screens.dart/register_screen.dart';
-import 'package:suchigo_app/Screens.dart/signin_screen.dart';
-import 'package:suchigo_app/Screens.dart/spalsh_screen.dart';
-import 'package:suchigo_app/Screens.dart/welcome_screen.dart';
-
-import 'package:suchigo_app/provider/AddressProvider.dart';
-import 'package:suchigo_app/provider/CollectorProvider.dart';
-import 'package:suchigo_app/provider/address_details_provider.dart';
-import 'package:suchigo_app/provider/bill_provider.dart';
-import 'package:suchigo_app/provider/home_provider.dart';
-import 'package:suchigo_app/provider/pickup_provider.dart';
-import 'package:suchigo_app/provider/profile_provider.dart';
-import 'package:suchigo_app/provider/location_provider.dart';
-import 'package:suchigo_app/provider/settings_provider.dart';
+import 'package:suchigo_app/core/constants/app_colors.dart';
+import 'package:suchigo_app/core/constants/app_typography.dart';
+import 'package:suchigo_app/core/storage/local_db.dart';
+import 'package:suchigo_app/core/utils/app_logger.dart';
+import 'package:suchigo_app/routing/app_router.dart';
+import 'package:suchigo_app/shared/widgets/app_lifecycle_observer.dart';
+import 'package:suchigo_app/firebase_options.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Firebase initialisation
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e, stack) {
-    debugPrint("Firebase initialization failed: $e");
-    debugPrint("$stack");
+    AppLogger.error('Firebase initialization failed', error: e, stackTrace: stack);
   }
 
-  runApp(
-    ProviderScope(
-      child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => HomeProvider()),
-          ChangeNotifierProvider(create: (_) => ProfileProvider()),
-          ChangeNotifierProvider(create: (_) => SettingsProvider()),
-          ChangeNotifierProvider(create: (_) => LocationProvider()),
-          ChangeNotifierProvider(create: (_) => BillProvider()),
-          ChangeNotifierProvider(create: (_) => PickupProvider()),
-          ChangeNotifierProvider(create: (_) => CollectorProvider()),
-          ChangeNotifierProvider(create: (_) => AddressProvider()),
-          ChangeNotifierProvider(create: (_) => AddressDetailsProvider()),
-        ],
-        child: const SuchiGoApp(),
-      ),
-    ),
-  );
+  // Pre-warm local SQLite database
+  try {
+    final db = LocalDb();
+    await db.open();
+    AppLogger.info('LocalDb initialised');
+  } catch (e, stack) {
+    AppLogger.error('LocalDb init failed', error: e, stackTrace: stack);
+  }
+
+  runApp(const ProviderScope(child: SuchiGoApp()));
 }
 
-class SuchiGoApp extends StatelessWidget {
+class SuchiGoApp extends ConsumerStatefulWidget {
   const SuchiGoApp({super.key});
 
   @override
+  ConsumerState<SuchiGoApp> createState() => _SuchiGoAppState();
+}
+
+class _SuchiGoAppState extends ConsumerState<SuchiGoApp> {
+  late AppLifecycleObserver _lifecycleObserver;
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycleObserver = AppLifecycleObserver(ref);
+    WidgetsBinding.instance.addObserver(_lifecycleObserver);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(_lifecycleObserver);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    final router = ref.watch(appRouterProvider);
+
+    return MaterialApp.router(
       title: 'SuchiGo',
       debugShowCheckedModeBanner: false,
+
+      // Theme
       theme: ThemeData(
         useMaterial3: true,
-        scaffoldBackgroundColor: Colors.white,
-        fontFamily: 'Poppins',
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.primary,
+          primary: AppColors.primary,
+          surface: AppColors.surface,
+        ),
+        scaffoldBackgroundColor: AppColors.scaffoldBackground,
+        textTheme: AppTypography.textTheme,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.surface,
+          foregroundColor: AppColors.textPrimary,
+          elevation: 0,
+        ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.primary,
+            minimumSize: const Size(double.infinity, 52),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(14),
+            ),
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.divider),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppColors.divider),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide:
+                const BorderSide(color: AppColors.primary, width: 2),
+          ),
+          filled: true,
+          fillColor: AppColors.surface,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
       ),
-      home: const WelcomeScreen(),
-      routes: {
-        '/register': (context) => const RegisterScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/collector': (context) => const CollectorScreen(),
-        '/home': (context) => const HomeScreen(),
-        // '/welcome': (context) => const WelcomeScreen(),
-      },
+
+      // Router
+      routerConfig: router,
     );
   }
 }

@@ -62,7 +62,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
       if (next is AuthError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(next.error.message),
+            content: Text(next.error.userMessage),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
             shape:
@@ -118,7 +118,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 16,
                       offset: const Offset(0, 6),
                     ),
@@ -254,7 +254,7 @@ class _LoginPageState extends ConsumerState<LoginScreen> {
                             boxShadow: (_isButtonActive && !isLoading)
                                 ? [
                                     BoxShadow(
-                                      color: buttonGreen.withOpacity(0.35),
+                                      color: buttonGreen.withValues(alpha: 0.35),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
                                     )

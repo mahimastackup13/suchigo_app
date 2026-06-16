@@ -1,276 +1,119 @@
-// import 'dart:async';
-// import 'package:flutter/material.dart';
-// import 'package:suchigo_app/Screens.dart/welcome_screen.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:suchigo_app/core/constants/app_colors.dart';
+import 'package:suchigo_app/core/constants/app_strings.dart';
+import 'package:suchigo_app/core/constants/app_typography.dart';
+import 'package:suchigo_app/features/auth/presentation/providers/auth_notifier.dart';
+import 'package:suchigo_app/features/auth/presentation/states/auth_state.dart';
+import 'package:suchigo_app/routing/app_routes.dart';
 
-// class SplashScreen extends StatefulWidget {
-//   const SplashScreen({super.key});
+/// Session-restoring splash screen.
+///
+/// On mount, triggers [AuthNotifier.restoreSession]. The GoRouter redirect
+/// rule reacts to auth state changes and navigates automatically — this screen
+/// only needs to kick off restoration and display the brand animation.
+class SplashScreen extends ConsumerStatefulWidget {
+  const SplashScreen({super.key});
 
-//   @override
-//   State<SplashScreen> createState() => _SplashScreenState();
-// }
+  @override
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+}
 
-// class _SplashScreenState extends State<SplashScreen>
-//     with SingleTickerProviderStateMixin {
-//   late AnimationController _controller;
+class _SplashScreenState extends ConsumerState<SplashScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnim;
+  late Animation<double> _scaleAnim;
+  bool _sessionRestored = false;
 
-//   late Animation<Offset> _topSlideAnim;
-//   late Animation<Offset> _bottomSlideAnim;
-//   late Animation<double> _logoScaleAnim;
-//   late Animation<double> _logoFadeAnim;
-//   late Animation<Offset> _logoSlideAnim;
-//   late Animation<double> _word1FadeAnim;
-//   late Animation<double> _word2FadeAnim;
-//   late Animation<double> _word3FadeAnim;
-//   late Animation<double> _word1ScaleAnim;
-//   late Animation<double> _word2ScaleAnim;
-//   late Animation<double> _word3ScaleAnim;
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
 
-//   @override
-//   void initState() {
-//     super.initState();
+    _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
+    _scaleAnim = Tween<double>(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
 
-//     // Total animation time is 2000 milliseconds (2 seconds)
-//     _controller = AnimationController(
-//       vsync: this,
-//       duration: const Duration(milliseconds: 3000),
-//     );
+    _controller.forward();
 
-//     // 1. Sliding Green Shape (Top Left)
-//     // _topSlideAnim =
-//     //     Tween<Offset>(begin: const Offset(1.0, 1.0), end: Offset.zero).animate(
-//     //       CurvedAnimation(
-//     //         parent: _controller,
-//     //         curve: const Interval(0.0, 0.6, curve: Curves.easeInOutCubic),
-//     //       ),
-//     //     );
+    // Kick off session restoration after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(authProvider.notifier).restoreSession();
+    });
+  }
 
-//     // // 2. Sliding Blue Shape (Bottom Right)
-//     // _bottomSlideAnim =
-//     //     Tween<Offset>(
-//     //       begin: const Offset(-1.0, -1.0),
-//     //       end: Offset.zero,
-//     //     ).animate(
-//     //       CurvedAnimation(
-//     //         parent: _controller,
-//     //         curve: const Interval(0.0, 0.6, curve: Curves.easeInOutCubic),
-//     //       ),
-//     //     );
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
-//     // 3. Logo Sliding, Scaling and Fading
-//     _logoSlideAnim =
-//         Tween<Offset>(begin: const Offset(-2.0, 0.0), end: Offset.zero).animate(
-//           CurvedAnimation(
-//             parent: _controller,
-//             curve: const Interval(0.2, 0.6, curve: Curves.easeOutCubic),
-//           ),
-//         );
-//     _logoFadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-//       CurvedAnimation(
-//         parent: _controller,
-//         curve: const Interval(0.3, 0.6, curve: Curves.easeIn),
-//       ),
-//     );
-//     _logoScaleAnim = Tween<double>(begin: 0.7, end: 1.0).animate(
-//       CurvedAnimation(
-//         parent: _controller,
-//         curve: const Interval(0.3, 0.6, curve: Curves.easeOutBack),
-//       ),
-//     );
+  @override
+  Widget build(BuildContext context) {
+    // React to auth state — GoRouter redirect handles navigation
+    ref.listen<AuthState>(authProvider, (previous, next) {
+      if (!_sessionRestored &&
+          (next is AuthAuthenticated || next is AuthUnauthenticated)) {
+        _sessionRestored = true;
+        // GoRouter redirect logic handles the actual navigation
+      }
+    });
 
-//     // 4. Staggered Words
-//     _word1FadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-//       CurvedAnimation(
-//         parent: _controller,
-//         curve: const Interval(0.5, 0.7, curve: Curves.easeIn),
-//       ),
-//     );
-//     _word1ScaleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-//       CurvedAnimation(
-//         parent: _controller,
-//         curve: const Interval(0.5, 0.7, curve: Curves.easeOutBack),
-//       ),
-//     );
-
-//     _word2FadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-//       CurvedAnimation(
-//         parent: _controller,
-//         curve: const Interval(0.6, 0.8, curve: Curves.easeIn),
-//       ),
-//     );
-//     _word2ScaleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-//       CurvedAnimation(
-//         parent: _controller,
-//         curve: const Interval(0.6, 0.8, curve: Curves.easeOutBack),
-//       ),
-//     );
-
-//     _word3FadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-//       CurvedAnimation(
-//         parent: _controller,
-//         curve: const Interval(0.7, 1.0, curve: Curves.easeIn),
-//       ),
-//     );
-//     _word3ScaleAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
-//       CurvedAnimation(
-//         parent: _controller,
-//         curve: const Interval(0.7, 1.0, curve: Curves.easeOutBack),
-//       ),
-//     );
-
-//     // Start the animation
-//     _controller.forward();
-
-//     // Navigate to the next screen after the animation finishes and a short pause
-//     Timer(const Duration(milliseconds: 3500), () {
-//       Navigator.pushReplacement(
-//         context,
-//         MaterialPageRoute(builder: (context) => const WelcomeScreen()),
-//       );
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     _controller.dispose();
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     final size = MediaQuery.of(context).size;
-
-//     return Scaffold(
-//       backgroundColor: Colors.white,
-//       body: Stack(
-//         children: [
-//           // Background Elements
-//           // Top Left Green Shape
-//           SlideTransition(
-//             position: _topSlideAnim,
-//             child: Align(
-//               alignment: Alignment.topLeft,
-//               child: Container(
-//                 height: size.height * 0.35,
-//                 width: size.width * 0.8,
-//                 decoration: const BoxDecoration(
-//                   gradient: LinearGradient(
-//                     colors: [
-//                       Color(0xFF388E3C),
-//                       Color(0xFF81C784),
-//                     ], // SuchiGo Green shades
-//                     begin: Alignment.topLeft,
-//                     end: Alignment.bottomRight,
-//                   ),
-//                   borderRadius: BorderRadius.only(
-//                     bottomRight: Radius.circular(300),
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ),
-
-//           // Bottom Right Blue Shape
-//           SlideTransition(
-//             position: _bottomSlideAnim,
-//             child: Align(
-//               alignment: Alignment.bottomRight,
-//               child: Container(
-//                 height: size.height * 0.35,
-//                 width: size.width * 0.8,
-//                 decoration: const BoxDecoration(
-//                   gradient: LinearGradient(
-//                     colors: [
-//                       Color(0xFF64B5F6),
-//                       Color(0xFF1976D2),
-//                     ], // SuchiGo Blue shades
-//                     begin: Alignment.topLeft,
-//                     end: Alignment.bottomRight,
-//                   ),
-//                   borderRadius: BorderRadius.only(
-//                     topLeft: Radius.circular(300),
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ),
-
-//           // Foreground Content: Logo and Words
-//           Center(
-//             child: Column(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               children: [
-//                 // Animated Logo
-//                 SlideTransition(
-//                   position: _logoSlideAnim,
-//                   child: FadeTransition(
-//                     opacity: _logoFadeAnim,
-//                     child: ScaleTransition(
-//                       scale: _logoScaleAnim,
-//                       child: Image.asset(
-//                         'assets/images/logo.png', // Main SuchiGo logo
-//                         width: 250,
-//                       ),
-//                     ),
-//                   ),
-//                 ),
-//                 const SizedBox(height: 10),
-
-//                 // Animated Tagline (Staggered Words)
-//                 Row(
-//                   mainAxisAlignment: MainAxisAlignment.center,
-//                   children: [
-//                     ScaleTransition(
-//                       scale: _word1ScaleAnim,
-//                       child: FadeTransition(
-//                         opacity: _word1FadeAnim,
-//                         child: const Text(
-//                           'Schedule. ',
-//                           style: TextStyle(
-//                             color: Color(0xFF424242), // Dark grey
-//                             fontSize: 16,
-//                             fontWeight: FontWeight.w600,
-//                             letterSpacing: 1.0,
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                     ScaleTransition(
-//                       scale: _word2ScaleAnim,
-//                       child: FadeTransition(
-//                         opacity: _word2FadeAnim,
-//                         child: const Text(
-//                           'Collect. ',
-//                           style: TextStyle(
-//                             color: Color(0xFF424242),
-//                             fontSize: 16,
-//                             fontWeight: FontWeight.w600,
-//                             letterSpacing: 1.0,
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                     ScaleTransition(
-//                       scale: _word3ScaleAnim,
-//                       child: FadeTransition(
-//                         opacity: _word3FadeAnim,
-//                         child: const Text(
-//                           'Sustain.',
-//                           style: TextStyle(
-//                             color: Color(0xFF424242),
-//                             fontSize: 16,
-//                             fontWeight: FontWeight.w600,
-//                             letterSpacing: 1.0,
-//                           ),
-//                         ),
-//                       ),
-//                     ),
-//                   ],
-//                 ),
-//               ],
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
+    return Scaffold(
+      backgroundColor: AppColors.surface,
+      body: Center(
+        child: FadeTransition(
+          opacity: _fadeAnim,
+          child: ScaleTransition(
+            scale: _scaleAnim,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/logo.png',
+                  width: 220,
+                  errorBuilder: (_, __, ___) => const Icon(
+                    Icons.eco,
+                    size: 100,
+                    color: AppColors.primary,
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  AppStrings.appName,
+                  style: AppTypography.display.copyWith(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  AppStrings.appTagline,
+                  style: AppTypography.bodySmall.copyWith(
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 48),
+                const SizedBox(
+                  width: 32,
+                  height: 32,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

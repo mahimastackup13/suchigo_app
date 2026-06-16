@@ -4,79 +4,81 @@
 /// [baseUrlAuth] should be injected via `--dart-define` instead of
 /// hardcoded, but the paths remain constant.
 ///
-/// Discovered backend topology (from API Contract Report):
-/// - Auth server:     suchigoapi.pythonanywhere.com
+/// Verified backend topology (from Postman API collection):
+/// - Primary API:     suchigoapi.pythonanywhere.com
 /// - Location server: suchigo.pythonanywhere.com
-/// - Waste server:    clone2026.pythonanywhere.com (partially broken)
+/// - Collector:       separate local instance
 abstract final class ApiConstants {
   // ---------------------------------------------------------------------------
   // Base URLs
   // ---------------------------------------------------------------------------
 
-  /// Auth and user management backend.
-  /// Override via: `--dart-define=AUTH_BASE_URL=https://...`
+  /// Primary API backend (auth, profile, bills, pickups, addresses, settings).
   static const String baseUrlAuth = String.fromEnvironment(
     'AUTH_BASE_URL',
     defaultValue: 'https://suchigoapi.pythonanywhere.com',
   );
 
   /// Collector and location management backend.
-  /// Override via: `--dart-define=LOCATION_BASE_URL=https://...`
   static const String baseUrlLocation = String.fromEnvironment(
     'LOCATION_BASE_URL',
     defaultValue: 'https://suchigo.pythonanywhere.com',
   );
 
-  /// Waste entries backend (note: /api/waste-entries/ returned 404 in testing).
-  /// Override via: `--dart-define=WASTE_BASE_URL=https://...`
-  static const String baseUrlWaste = String.fromEnvironment(
-    'WASTE_BASE_URL',
-    defaultValue: 'https://clone2026.pythonanywhere.com',
-  );
-
   // ---------------------------------------------------------------------------
-  // Auth Endpoints
+  // Auth Endpoints (no authentication required)
   // ---------------------------------------------------------------------------
 
   /// POST — authenticate user, receive token.
   static const String loginPath = '/api/login/';
 
   /// POST — register new user account.
+  /// Body: username, email, password, first_name, last_name
   static const String registerPath = '/api/register/';
 
   // ---------------------------------------------------------------------------
-  // Location / Collector Endpoints
+  // User Endpoints (require Token auth)
+  // ---------------------------------------------------------------------------
+
+  /// GET — fetch authenticated user profile.
+  static const String profilePath = '/api/profile/';
+
+  /// GET — home dashboard data.
+  static const String homePath = '/api/home/';
+
+  /// GET — user application settings.
+  static const String settingsPath = '/api/settings/';
+
+  // ---------------------------------------------------------------------------
+  // Bills Endpoints (require Token auth)
+  // ---------------------------------------------------------------------------
+
+  /// GET — list all bills. POST — create a new bill.
+  static const String billsPath = '/api/bills/';
+
+  // ---------------------------------------------------------------------------
+  // Pickups Endpoints (require Token auth)
+  // ---------------------------------------------------------------------------
+
+  /// GET — list all scheduled pickups. POST — schedule a new pickup.
+  static const String pickupsPath = '/api/pickups/';
+
+  // ---------------------------------------------------------------------------
+  // Addresses Endpoints (require Token auth)
+  // ---------------------------------------------------------------------------
+
+  /// GET — list saved addresses. POST — add a new address.
+  static const String addressesPath = '/api/addresses/';
+
+  // ---------------------------------------------------------------------------
+  // Collector / Location Endpoints
   // ---------------------------------------------------------------------------
 
   /// GET — list all collector locations.
-  /// POST — create/update a collector location record.
   static const String locationsPath = '/api/locations/';
 
-  // ---------------------------------------------------------------------------
-  // Waste Endpoints (partially broken — verify before use)
-  // ---------------------------------------------------------------------------
-
-  /// GET — list waste entries. POST — create waste entry.
+  /// GET/POST — waste entries (separate collector backend).
   static const String wasteEntriesPath = '/api/waste-entries/';
-
-  // ---------------------------------------------------------------------------
-  // Future Endpoints (not yet implemented server-side)
-  // ---------------------------------------------------------------------------
-
-  /// POST — submit booking. GET — list user's bookings.
-  static const String bookingsPath = '/api/bookings/';
-
-  /// GET — list order history.
-  static const String ordersPath = '/api/orders/';
-
-  /// GET — list billing records.
-  static const String billsPath = '/api/bills/';
-
-  /// GET — fetch user profile. PUT — update user profile.
-  static const String profilePath = '/api/profile/';
-
-  /// GET — list available wards.
-  static const String wardsPath = '/api/wards/';
 
   // ---------------------------------------------------------------------------
   // Timeouts
@@ -95,15 +97,12 @@ abstract final class ApiConstants {
   };
 
   // ---------------------------------------------------------------------------
-  // Helpers
+  // URI Builders
   // ---------------------------------------------------------------------------
 
-  /// Constructs a full URL for an auth endpoint.
+  /// Constructs a full [Uri] for the primary API backend.
   static Uri authUri(String path) => Uri.parse('$baseUrlAuth$path');
 
-  /// Constructs a full URL for a location endpoint.
+  /// Constructs a full [Uri] for the location/collector backend.
   static Uri locationUri(String path) => Uri.parse('$baseUrlLocation$path');
-
-  /// Constructs a full URL for a waste endpoint.
-  static Uri wasteUri(String path) => Uri.parse('$baseUrlWaste$path');
 }

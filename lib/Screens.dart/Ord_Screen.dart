@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:suchigo_app/provider/register_provider.dart';
 import 'package:suchigo_app/provider/waste_provider.dart';
 import 'package:suchigo_app/provider/location_provider.dart';
 

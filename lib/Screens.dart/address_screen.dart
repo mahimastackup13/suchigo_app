@@ -435,7 +435,7 @@ class _AddressScreenState extends State<AddressScreen> {
                   borderRadius: BorderRadius.circular(14),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     ),
@@ -478,7 +478,7 @@ class _AddressScreenState extends State<AddressScreen> {
         width: 36,
         height: 36,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.25),
+          color: Colors.white.withValues(alpha: 0.25),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white, size: 16),

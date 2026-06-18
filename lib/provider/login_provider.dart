@@ -4,6 +4,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:suchigo_app/services/secure_storage_service.dart';
 
 class LoginProvider extends ChangeNotifier {
   // Your API endpoint for login.
@@ -40,8 +41,20 @@ class LoginProvider extends ChangeNotifier {
         // Successful login
         final responseBody = jsonDecode(response.body);
         
-        // 1. You should save the returned token/user data here.
-        // For example: String token = responseBody['token'];
+        String token = responseBody['token'] ?? responseBody['access'] ?? 'dummy_token_for_testing';
+        await SecureStorageService.saveToken(token);
+        
+        // Use the username from the API response if available, otherwise the entered one
+        String savedUsername = responseBody['username'] ?? username;
+        await SecureStorageService.saveUsername(savedUsername);
+
+        // Save phone number if provided
+        if (responseBody.containsKey('phone_number') && responseBody['phone_number'] != null) {
+          await SecureStorageService.savePhoneNumber(responseBody['phone_number']);
+        } else if (responseBody.containsKey('phone') && responseBody['phone'] != null) {
+          await SecureStorageService.savePhoneNumber(responseBody['phone']);
+        }
+
         print('Login Successful: ${responseBody}');
         notifyListeners();
         return true;
@@ -86,5 +99,11 @@ class LoginProvider extends ChangeNotifier {
   void clearErrorMessage() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  Future<void> logout(BuildContext context) async {
+    await SecureStorageService.clearAll();
+    // Use pushAndRemoveUntil to clear navigation stack
+    Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
   }
 }

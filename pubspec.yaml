@@ -30,19 +30,24 @@ dependencies:
   
   # --- Data & Storage ---
   sqflite: ^2.4.2
-  # shared_preferences: ^2.5.3 
+  shared_preferences: ^2.2.3 
+  flutter_secure_storage: ^9.2.1
   
   # --- State Management / Utilities ---
   provider: ^6.1.5
   url_launcher: ^6.3.2
   http: ^1.1.0
+  dio: ^5.4.3+1
   
   # --- Location/Path ---
   path_provider: ^2.1.5
   geolocator: ^14.0.2
+  geocoding: ^3.0.0
   flutter_launcher_icons: ^0.14.4
   # google_mobile_ads: ^7.0.0
   cloud_functions: ^5.6.2
+
+
 
 dev_dependencies:
   flutter_test:

@@ -37,6 +37,7 @@
             android:name="flutterEmbedding"
             android:value="2" />
 
+
     </application>
 
     <!-- Queries required by Flutter text processing plugin -->

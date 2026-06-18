@@ -10,6 +10,8 @@ import 'package:suchigo_app/Screens.dart/register_screen.dart';
 import 'package:suchigo_app/Screens.dart/signin_screen.dart';
 import 'package:suchigo_app/Screens.dart/spalsh_screen.dart';
 import 'package:suchigo_app/Screens.dart/welcome_screen.dart';
+import 'package:suchigo_app/Screens.dart/splash_screen_auth.dart';
+import 'package:suchigo_app/services/api_client.dart';
 
 import 'package:suchigo_app/provider/AddressProvider.dart';
 import 'package:suchigo_app/provider/CollectorProvider.dart';
@@ -59,6 +61,7 @@ class SuchiGoApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: navigatorKey,
       title: 'SuchiGo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -66,7 +69,7 @@ class SuchiGoApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         fontFamily: 'Poppins',
       ),
-      home: const WelcomeScreen(),
+      home: const SplashScreenAuth(),
       routes: {
         '/register': (context) => const RegisterScreen(),
         '/login': (context) => const LoginScreen(),

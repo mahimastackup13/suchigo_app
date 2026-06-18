@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/booking_confirmation_screen.dart';
 import 'home_screen.dart';
+import 'package:suchigo_app/Screens.dart/location_picker_screen.dart';
 
 class AddressScreen extends StatefulWidget {
   const AddressScreen({super.key});
@@ -98,6 +99,8 @@ class _AddressScreenState extends State<AddressScreen> {
     int maxLines = 1,
     TextInputType keyboard = TextInputType.text,
     List<TextInputFormatter>? formatters,
+    bool readOnly = false,
+    VoidCallback? onTap,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
@@ -106,6 +109,8 @@ class _AddressScreenState extends State<AddressScreen> {
         maxLines: maxLines,
         keyboardType: keyboard,
         inputFormatters: formatters,
+        readOnly: readOnly,
+        onTap: onTap,
         style: const TextStyle(fontSize: 14, color: Colors.black87),
         decoration: InputDecoration(
           hintText: hint,
@@ -308,8 +313,22 @@ class _AddressScreenState extends State<AddressScreen> {
                     // Location
                     _buildField(
                       controller: _locationController,
-                      hint: 'Location',
+                      hint: 'Tap to pick location on map',
                       required: false,
+                      readOnly: true,
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const LocationPickerScreen(),
+                          ),
+                        );
+                        if (result != null && result is Map<String, dynamic>) {
+                          setState(() {
+                            _locationController.text = result['address'] ?? '';
+                          });
+                        }
+                      },
                     ),
 
                     const SizedBox(height: 28),

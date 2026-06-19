@@ -83,7 +83,7 @@ class _BillScreenState extends State<BillScreen> {
               children: [
                 // ── Top Section (Illustration & Text) ──────────────────────────
                 const SizedBox(height: 10),
-                
+
                 // Illustration (Scaled down slightly to save space)
                 SizedBox(height: 150, child: _BinIllustration()),
 
@@ -160,7 +160,7 @@ class _BillScreenState extends State<BillScreen> {
                           const SizedBox(height: 16),
 
                           // ── Responsive Waste Category Grid ──────────────────
-                          // We use Expanded Rows/Columns so it perfectly fills the 
+                          // We use Expanded Rows/Columns so it perfectly fills the
                           // remaining screen height without scrolling!
                           Expanded(
                             child: Column(
@@ -171,16 +171,26 @@ class _BillScreenState extends State<BillScreen> {
                                       Expanded(
                                         child: _WasteCategoryCard(
                                           category: categories[0],
-                                          isSelected: billProvider.selectedOption == categories[0].value,
-                                          onTap: () => billProvider.setSelectedOption(categories[0].value),
+                                          isSelected:
+                                              billProvider.selectedOption ==
+                                              categories[0].value,
+                                          onTap: () =>
+                                              billProvider.setSelectedOption(
+                                                categories[0].value,
+                                              ),
                                         ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: _WasteCategoryCard(
                                           category: categories[1],
-                                          isSelected: billProvider.selectedOption == categories[1].value,
-                                          onTap: () => billProvider.setSelectedOption(categories[1].value),
+                                          isSelected:
+                                              billProvider.selectedOption ==
+                                              categories[1].value,
+                                          onTap: () =>
+                                              billProvider.setSelectedOption(
+                                                categories[1].value,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -193,16 +203,26 @@ class _BillScreenState extends State<BillScreen> {
                                       Expanded(
                                         child: _WasteCategoryCard(
                                           category: categories[2],
-                                          isSelected: billProvider.selectedOption == categories[2].value,
-                                          onTap: () => billProvider.setSelectedOption(categories[2].value),
+                                          isSelected:
+                                              billProvider.selectedOption ==
+                                              categories[2].value,
+                                          onTap: () =>
+                                              billProvider.setSelectedOption(
+                                                categories[2].value,
+                                              ),
                                         ),
                                       ),
                                       const SizedBox(width: 12),
                                       Expanded(
                                         child: _WasteCategoryCard(
                                           category: categories[3],
-                                          isSelected: billProvider.selectedOption == categories[3].value,
-                                          onTap: () => billProvider.setSelectedOption(categories[3].value),
+                                          isSelected:
+                                              billProvider.selectedOption ==
+                                              categories[3].value,
+                                          onTap: () =>
+                                              billProvider.setSelectedOption(
+                                                categories[3].value,
+                                              ),
                                         ),
                                       ),
                                     ],
@@ -219,7 +239,8 @@ class _BillScreenState extends State<BillScreen> {
                             padding: const EdgeInsets.only(bottom: 24),
                             child: Builder(
                               builder: (context) {
-                                final enabled = billProvider.selectedOption != null;
+                                final enabled =
+                                    billProvider.selectedOption != null;
                                 return AnimatedOpacity(
                                   opacity: enabled ? 1.0 : 0.5,
                                   duration: const Duration(milliseconds: 250),
@@ -228,7 +249,9 @@ class _BillScreenState extends State<BillScreen> {
                                       borderRadius: BorderRadius.circular(30),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: Color(0xFF4CAF50).withOpacity(0.35),
+                                          color: Color(
+                                            0xFF4CAF50,
+                                          ).withOpacity(0.35),
                                           blurRadius: 20,
                                           offset: const Offset(0, 8),
                                         ),
@@ -236,20 +259,30 @@ class _BillScreenState extends State<BillScreen> {
                                     ),
                                     child: ElevatedButton(
                                       onPressed: enabled
-                                          ? () => billProvider.continueToPickup(context)
+                                          ? () => billProvider.continueToPickup(
+                                              context,
+                                            )
                                           : null,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: Color(0xFF4CAF50),
-                                        disabledBackgroundColor: const Color(0xFF1A7A40).withOpacity(0.5),
+                                        disabledBackgroundColor: const Color(
+                                          0xFF1A7A40,
+                                        ).withOpacity(0.5),
                                         foregroundColor: Colors.white,
                                         elevation: 0,
-                                        minimumSize: const Size(double.infinity, 52),
+                                        minimumSize: const Size(
+                                          double.infinity,
+                                          52,
+                                        ),
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(30),
+                                          borderRadius: BorderRadius.circular(
+                                            30,
+                                          ),
                                         ),
                                       ),
                                       child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: const [
                                           Text(
                                             'Continue',
@@ -260,7 +293,10 @@ class _BillScreenState extends State<BillScreen> {
                                             ),
                                           ),
                                           SizedBox(width: 8),
-                                          Icon(Icons.arrow_forward_rounded, size: 18),
+                                          Icon(
+                                            Icons.arrow_forward_rounded,
+                                            size: 18,
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -444,7 +480,7 @@ class _TabButton extends StatelessWidget {
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -497,8 +533,8 @@ class _WasteCategoryCard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? Color(0xFF4CAF50).withOpacity(0.25)
-                  : Colors.black.withOpacity(0.05),
+                  ? Color(0xFF4CAF50).withValues(alpha: 0.25)
+                  : Colors.black.withValues(alpha: 0.05),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -513,7 +549,7 @@ class _WasteCategoryCard extends StatelessWidget {
               height: 52,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withOpacity(0.2)
+                    ? Colors.white.withValues(alpha: 0.2)
                     : const Color(0xFFF1F8F2),
                 shape: BoxShape.circle,
               ),
@@ -554,7 +590,7 @@ class _WasteCategoryCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   color: isSelected
-                      ? Colors.white.withOpacity(0.8)
+                      ? Colors.white.withValues(alpha: 0.8)
                       : Colors.grey.shade500,
                   height: 1.4,
                 ),

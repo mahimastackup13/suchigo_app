@@ -5,6 +5,7 @@ import 'package:suchigo_app/provider/home_provider.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
+import 'package:suchigo_app/Screens.dart/location_picker_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -65,10 +66,17 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends StatefulWidget {
   final VoidCallback onBookNow;
 
   const HomeContent({super.key, required this.onBookNow});
+
+  @override
+  State<HomeContent> createState() => _HomeContentState();
+}
+
+class _HomeContentState extends State<HomeContent> {
+  String _selectedLocation = "Add location";
 
   @override
   Widget build(BuildContext context) {
@@ -83,17 +91,31 @@ class HomeContent extends StatelessWidget {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // ── Search Bar (overlapping header) ──────────────────────
-                    Transform.translate(
-                      offset: const Offset(0, -20),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 15, left: 16, right: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Search Bar (Clickable) ──────────────────────
+                      GestureDetector(
+                        onTap: () async {
+                          final result = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const LocationPickerScreen(),
+                            ),
+                          );
+                          if (result != null &&
+                              result is Map<String, dynamic>) {
+                            setState(() {
+                              _selectedLocation =
+                                  result['address'] ?? "Location Selected";
+                            });
+                          }
+                        },
                         child: Container(
                           height: 52,
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(14),
@@ -105,6 +127,7 @@ class HomeContent extends StatelessWidget {
                               ),
                             ],
                           ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
                           child: Row(
                             children: [
                               Icon(
@@ -113,228 +136,223 @@ class HomeContent extends StatelessWidget {
                                 size: 22,
                               ),
                               const SizedBox(width: 10),
-                              Text(
-                                "Add location",
-                                style: TextStyle(
-                                  color: Colors.grey.shade500,
-                                  fontSize: 15,
+                              Expanded(
+                                child: Text(
+                                  _selectedLocation,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: _selectedLocation == "Add location"
+                                        ? Colors.grey.shade500
+                                        : Colors.black87,
+                                    fontSize: 15,
+                                    fontWeight:
+                                        _selectedLocation == "Add location"
+                                        ? FontWeight.normal
+                                        : FontWeight.w500,
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ),
 
-                    // Negative margin to pull content up
-                    Transform.translate(
-                      offset: const Offset(0, -14),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ── Ad Banner ─────────────────────────────────────
-                            _AdBanner(),
+                      const SizedBox(height: 25),
 
-                            const SizedBox(height: 20),
+                      // ── Ad Banner ─────────────────────────────────────
+                      _AdBanner(),
 
-                            // ── Waste Category Icons ──────────────────────────
-                            _WasteCategoryRow(),
+                      const SizedBox(height: 20),
 
-                            const SizedBox(height: 20),
+                      // ── Waste Category Icons ──────────────────────────
+                      _WasteCategoryRow(),
 
-                            // ── Stat Cards ────────────────────────────────────
-                            Row(
-                              children: [
-                                // Trees card
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 18,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFE6F5EC),
-                                      borderRadius: BorderRadius.circular(18),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 44,
-                                          height: 44,
-                                          decoration: const BoxDecoration(
-                                            color: Colors.black,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.park_rounded,
-                                            color: Colors.white,
-                                            size: 24,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        const Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              "Trees",
-                                              style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w600,
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                            SizedBox(height: 2),
-                                            Text(
-                                              "11,235",
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
+                      const SizedBox(height: 20),
 
-                                const SizedBox(width: 14),
-
-                                // 300 Pks card
-                                Expanded(
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 18,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: BorderRadius.circular(18),
-                                      border: Border.all(
-                                        color: Colors.grey.shade200,
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.04,
-                                          ),
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.baseline,
-                                          textBaseline: TextBaseline.alphabetic,
-                                          children: [
-                                            Text(
-                                              "300",
-                                              style: TextStyle(
-                                                fontSize: 30,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black,
-                                              ),
-                                            ),
-                                            SizedBox(width: 5),
-                                            Text(
-                                              "Pks",
-                                              style: TextStyle(
-                                                fontSize: 14,
-                                                color: Colors.black54,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          "50KG GIVES",
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            const SizedBox(height: 20),
-
-                            // ── Waste Activity Card ────────────────────────────
-                            Container(
-                              padding: const EdgeInsets.all(18),
+                      // ── Stat Cards ────────────────────────────────────
+                      Row(
+                        children: [
+                          // Trees card
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 18,
+                              ),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE6F5EC),
                                 borderRadius: BorderRadius.circular(18),
                               ),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  const Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          "Your waste activity",
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                            color: Colors.black,
-                                          ),
-                                        ),
-                                        SizedBox(height: 6),
-                                        Text(
-                                          "Great job! You've received\n50kg this month!",
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            color: Colors.black87,
-                                            height: 1.5,
-                                          ),
-                                        ),
-                                      ],
+                                  Container(
+                                    width: 44,
+                                    height: 44,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.black,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.park_rounded,
+                                      color: Colors.white,
+                                      size: 24,
                                     ),
                                   ),
-                                  SizedBox(
-                                    height: 60,
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.end,
-                                      children: const [
-                                        _Bar(height: 12),
-                                        SizedBox(width: 5),
-                                        _Bar(height: 22),
-                                        SizedBox(width: 5),
-                                        _Bar(height: 36),
-                                        SizedBox(width: 5),
-                                        _Bar(height: 50),
-                                      ],
+                                  const SizedBox(width: 12),
+                                  const Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Trees",
+                                        style: TextStyle(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                      SizedBox(height: 2),
+                                      Text(
+                                        "11,235",
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(width: 14),
+
+                          // 300 Pks card
+                          Expanded(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 18,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(color: Colors.grey.shade200),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.04),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        "300",
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                          height: 1.0,
+                                        ),
+                                      ),
+                                      SizedBox(width: 5),
+                                      Padding(
+                                        padding: EdgeInsets.only(bottom: 2.0),
+                                        child: Text(
+                                          "Pks",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Colors.black54,
+                                            fontWeight: FontWeight.w500,
+                                            height: 1.0,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    "50KG GIVES",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.black87,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
+                          ),
+                        ],
+                      ),
 
-                            const SizedBox(height: 100),
+                      const SizedBox(height: 20),
+
+                      // ── Waste Activity Card ────────────────────────────
+                      Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE6F5EC),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    "Your waste activity",
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  SizedBox(height: 6),
+                                  Text(
+                                    "Great job! You've received\n50kg this month!",
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.black87,
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(
+                              height: 60,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: const [
+                                  _Bar(height: 12),
+                                  SizedBox(width: 5),
+                                  _Bar(height: 22),
+                                  SizedBox(width: 5),
+                                  _Bar(height: 36),
+                                  SizedBox(width: 5),
+                                  _Bar(height: 50),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+
+                      const SizedBox(height: 100),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -366,7 +384,7 @@ class HomeContent extends StatelessWidget {
                   ],
                 ),
                 child: ElevatedButton(
-                  onPressed: onBookNow,
+                  onPressed: widget.onBookNow,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.transparent,
                     foregroundColor: Colors.white,
@@ -482,16 +500,19 @@ class _GreenHeader extends StatelessWidget {
                     child: Row(
                       children: [
                         Container(
-                          width: 30,
-                          height: 30,
+                          width: 36,
+                          height: 36,
                           decoration: const BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.recycling_rounded,
-                            color:Color(0xFF4CAF50),
-                            size: 18,
+                          child: Center(
+                            child: Image.asset(
+                              'assets/images/logo.png',
+                              width: 26,
+                              height: 26,
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 6),

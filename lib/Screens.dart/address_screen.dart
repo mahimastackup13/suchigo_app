@@ -4,6 +4,8 @@ import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/booking_confirmation_screen.dart';
 import 'home_screen.dart';
 import 'package:suchigo_app/Screens.dart/location_picker_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/home_provider.dart';
 
 class AddressScreen extends StatefulWidget {
   const AddressScreen({super.key});
@@ -31,34 +33,16 @@ class _AddressScreenState extends State<AddressScreen> {
   static const Color _headerGreen = Color(0xFF4CAF50);
 
   final List<String> _districts = [
-    'Thiruvananthapuram',
-    'Kollam',
-    'Pathanamthitta',
-    'Alappuzha',
-    'Kottayam',
-    'Idukki',
     'Ernakulam',
     'Thrissur',
-    'Palakkad',
-    'Malappuram',
-    'Kozhikode',
-    'Wayanad',
-    'Kannur',
-    'Kasaragod',
   ];
 
   final List<String> _localBodies = [
-    'Thiruvananthapuram Corporation',
-    'Kollam Corporation',
     'Kochi Corporation',
     'Thrissur Corporation',
-    'Kannur Municipality',
-    'Palakkad Municipality',
-    'Attingal Municipality',
-    'Varkala Municipality',
   ];
 
-  final List<String> _wards = List.generate(50, (i) => 'Ward ${i + 1}');
+  final List<String> _wards = List.generate(20, (i) => 'Ward ${i + 1}');
 
   @override
   void dispose() {
@@ -102,9 +86,7 @@ class _AddressScreenState extends State<AddressScreen> {
     bool readOnly = false,
     VoidCallback? onTap,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: TextFormField(
+    return TextFormField(
         controller: controller,
         maxLines: maxLines,
         keyboardType: keyboard,
@@ -149,8 +131,7 @@ class _AddressScreenState extends State<AddressScreen> {
         validator: required
             ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
             : null,
-      ),
-    );
+      );
   }
 
   // ── Underline dropdown ──────────────────────────────────────────────────────
@@ -161,9 +142,7 @@ class _AddressScreenState extends State<AddressScreen> {
     required ValueChanged<String?> onChanged,
     bool required = true,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: DropdownButtonFormField<String>(
+    return DropdownButtonFormField<String>(
         value: value,
         isExpanded: true,
         icon: const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 22),
@@ -218,32 +197,31 @@ class _AddressScreenState extends State<AddressScreen> {
         validator: required
             ? (v) => (v == null || v.isEmpty) ? 'Required' : null
             : null,
-      ),
-    );
+      );
   }
 
   // ── Section divider ─────────────────────────────────────────────────────────
   Widget _divider() =>
-      Divider(color: Colors.grey.shade200, thickness: 1, height: 28);
+      Divider(color: Colors.grey.shade200, thickness: 1, height: 16);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           // ── Green header ─────────────────────────────────────────────
           _buildHeader(),
 
-          // ── Scrollable form ──────────────────────────────────────────
+          // ── Non-scrollable form ──────────────────────────────────────────
           Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
               child: Form(
                 key: _formKey,
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Full Name
                     _buildField(controller: _nameController, hint: 'Full Name'),
@@ -267,7 +245,7 @@ class _AddressScreenState extends State<AddressScreen> {
                     _buildField(
                       controller: _addressController,
                       hint: 'Pickup Address',
-                      maxLines: 2,
+                      maxLines: 1,
                       required: false,
                     ),
 
@@ -331,8 +309,6 @@ class _AddressScreenState extends State<AddressScreen> {
                       },
                     ),
 
-                    const SizedBox(height: 28),
-
                     // Submit button
                     SizedBox(
                       width: double.infinity,
@@ -382,8 +358,6 @@ class _AddressScreenState extends State<AddressScreen> {
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 24),
                   ],
                 ),
               ),
@@ -416,10 +390,7 @@ class _AddressScreenState extends State<AddressScreen> {
                 children: [
                   _headerIconBtn(
                     icon: Icons.arrow_back_ios_new_rounded,
-                    onTap: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const BillScreen()),
-                    ),
+                    onTap: () => Navigator.pop(context),
                   ),
                   const Text(
                     'Schedule Pickup',
@@ -432,10 +403,10 @@ class _AddressScreenState extends State<AddressScreen> {
                   ),
                   _headerIconBtn(
                     icon: Icons.home_rounded,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HomeScreen()),
-                    ),
+                    onTap: () {
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                      Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(0);
+                    },
                   ),
                 ],
               ),

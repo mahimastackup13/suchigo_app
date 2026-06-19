@@ -4,6 +4,8 @@ import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/home_provider.dart';
 
 // ─────────────────────────────────────────────
 //  DATA MODEL
@@ -119,26 +121,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     if (index == _currentNavIndex) return;
     setState(() => _currentNavIndex = index);
 
-    Widget destination;
-    switch (index) {
-      case 0:
-        destination = const HomeScreen();
-        break;
-      case 1:
-        destination = const BillScreen();
-        break;
-      case 2:
-        destination = const SettingsScreen();
-        break;
-      case 3:
-        destination = const ProfileScreen();
-        break;
-      default:
-        destination = const HomeScreen();
-    }
-
+    Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(index);
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => destination),
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
       (route) => false,
     );
   }
@@ -474,10 +459,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
           width: double.infinity,
           height: 52,
           child: ElevatedButton.icon(
-            onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const HomeScreen()),
-              (route) => false,
-            ),
+            onPressed: () {
+              Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(0);
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
             icon: const Icon(Icons.home_rounded, size: 20),
             label: const Text(
               'Back to Home',

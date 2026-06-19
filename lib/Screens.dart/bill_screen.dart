@@ -77,228 +77,205 @@ class _BillScreenState extends State<BillScreen> {
       builder: (context, billProvider, _) {
         return Scaffold(
           backgroundColor: Colors.white,
-          body: Stack(
-            children: [
-              // ── Main Scrollable Content ──────────────────────────────
-              CustomScrollView(
-                physics: const BouncingScrollPhysics(),
-                slivers: [
-                  // ── White top section: back + illustration + title ──
-                  SliverToBoxAdapter(
-                    child: Container(
-                      color: Colors.white,
-                      child: SafeArea(
-                        bottom: false,
-                        child: Column(
-                          children: [
-                            // Back button row
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Padding(
-                                padding: const EdgeInsets.only(
-                                  left: 8,
-                                  top: 4,
-                                  bottom: 4,
-                                ),
-                                // child: IconButton(
-                                //   icon: const Icon(
-                                //     Icons.arrow_back_rounded,
-                                //     color: Colors.black87,
-                                //     size: 24,
-                                //   ),
-                                //   onPressed: () =>
-                                //       Navigator.of(context).pushAndRemoveUntil(
-                                //         MaterialPageRoute(
-                                //           builder: (_) => const HomeScreen(),
-                                //         ),
-                                //         (route) => false,
-                                //       ),
-                                // ),
-                              ),
-                            ),
+          body: SafeArea(
+            bottom: false, // We handle bottom padding in the button
+            child: Column(
+              children: [
+                // ── Top Section (Illustration & Text) ──────────────────────────
+                const SizedBox(height: 10),
+                
+                // Illustration (Scaled down slightly to save space)
+                SizedBox(height: 150, child: _BinIllustration()),
 
-                            // ── Illustration ──────────────────────────
-                            SizedBox(height: 180, child: _BinIllustration()),
+                const SizedBox(height: 12),
 
-                            const SizedBox(height: 16),
+                // Title
+                const Text(
+                  'WASTE DETAILS',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF4CAF50),
+                    letterSpacing: 1.5,
+                  ),
+                ),
 
-                            // ── Title ─────────────────────────────────
-                            const Text(
-                              'WASTE DETAILS',
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w900,
-                                color: Color(0xFF4CAF50),
-                                letterSpacing: 2,
-                              ),
-                            ),
+                const SizedBox(height: 4),
 
-                            const SizedBox(height: 8),
-
-                            Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                              ),
-                              child: Text(
-                                'Help us understand what you\'re disposing of so we can come prepared.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey.shade500,
-                                  height: 1.6,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ),
-
-                            const SizedBox(height: 24),
-                          ],
-                        ),
-                      ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    'Help us understand what you\'re disposing of so we can come prepared.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                      height: 1.4,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
+                ),
 
-                  // ── Green rounded card section ──────────────────────
-                  SliverToBoxAdapter(
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        color: Color(0xFFE8F5E9),
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(32),
-                          topRight: Radius.circular(32),
-                        ),
+                const SizedBox(height: 16),
+
+                // ── Bottom Section (Tabs, Grid, Button) ──────────────────────
+                Expanded(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFE8F5E9),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(32),
+                        topRight: Radius.circular(32),
                       ),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Column(
                         children: [
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 20),
 
-                          // ── Tab Selector ────────────────────────────
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: Container(
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFC8E6C9),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Row(
-                                children: [
-                                  _TabButton(
-                                    label: 'Residential',
-                                    selected: _selectedTab == 0,
-                                    onTap: () =>
-                                        setState(() => _selectedTab = 0),
+                          // Tab Selector
+                          Container(
+                            height: 44, // Reduced height
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFC8E6C9),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Row(
+                              children: [
+                                _TabButton(
+                                  label: 'Residential',
+                                  selected: _selectedTab == 0,
+                                  onTap: () => setState(() => _selectedTab = 0),
+                                ),
+                                _TabButton(
+                                  label: 'Commercial',
+                                  selected: _selectedTab == 1,
+                                  onTap: () => setState(() => _selectedTab = 1),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // ── Responsive Waste Category Grid ──────────────────
+                          // We use Expanded Rows/Columns so it perfectly fills the 
+                          // remaining screen height without scrolling!
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: _WasteCategoryCard(
+                                          category: categories[0],
+                                          isSelected: billProvider.selectedOption == categories[0].value,
+                                          onTap: () => billProvider.setSelectedOption(categories[0].value),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _WasteCategoryCard(
+                                          category: categories[1],
+                                          isSelected: billProvider.selectedOption == categories[1].value,
+                                          onTap: () => billProvider.setSelectedOption(categories[1].value),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  _TabButton(
-                                    label: 'Commercial',
-                                    selected: _selectedTab == 1,
-                                    onTap: () =>
-                                        setState(() => _selectedTab = 1),
+                                ),
+                                const SizedBox(height: 12),
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: _WasteCategoryCard(
+                                          category: categories[2],
+                                          isSelected: billProvider.selectedOption == categories[2].value,
+                                          onTap: () => billProvider.setSelectedOption(categories[2].value),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: _WasteCategoryCard(
+                                          category: categories[3],
+                                          isSelected: billProvider.selectedOption == categories[3].value,
+                                          onTap: () => billProvider.setSelectedOption(categories[3].value),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
 
                           const SizedBox(height: 20),
 
-                          // ── Waste Category Grid ──────────────────────
+                          // ── Continue Button ─────────────────────────────────
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: GridView.builder(
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate:
-                                  const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 14,
-                                    mainAxisSpacing: 14,
-                                    childAspectRatio: 1.0,
+                            padding: const EdgeInsets.only(bottom: 24),
+                            child: Builder(
+                              builder: (context) {
+                                final enabled = billProvider.selectedOption != null;
+                                return AnimatedOpacity(
+                                  opacity: enabled ? 1.0 : 0.5,
+                                  duration: const Duration(milliseconds: 250),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Color(0xFF4CAF50).withOpacity(0.35),
+                                          blurRadius: 20,
+                                          offset: const Offset(0, 8),
+                                        ),
+                                      ],
+                                    ),
+                                    child: ElevatedButton(
+                                      onPressed: enabled
+                                          ? () => billProvider.continueToPickup(context)
+                                          : null,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xFF4CAF50),
+                                        disabledBackgroundColor: const Color(0xFF1A7A40).withOpacity(0.5),
+                                        foregroundColor: Colors.white,
+                                        elevation: 0,
+                                        minimumSize: const Size(double.infinity, 52),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(30),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: const [
+                                          Text(
+                                            'Continue',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                          SizedBox(width: 8),
+                                          Icon(Icons.arrow_forward_rounded, size: 18),
+                                        ],
+                                      ),
+                                    ),
                                   ),
-                              itemCount: categories.length,
-                              itemBuilder: (context, index) {
-                                final cat = categories[index];
-                                final isSelected =
-                                    billProvider.selectedOption == cat.value;
-                                return _WasteCategoryCard(
-                                  category: cat,
-                                  isSelected: isSelected,
-                                  onTap: () =>
-                                      billProvider.setSelectedOption(cat.value),
                                 );
                               },
                             ),
                           ),
-
-                          // Space for floating button
-                          const SizedBox(height: 100),
                         ],
                       ),
                     ),
                   ),
-                ],
-              ),
-
-              // ── Floating Continue Button ─────────────────────────────
-              Positioned(
-                bottom: 28,
-                left: 40,
-                right: 40,
-                child: Consumer<BillProvider>(
-                  builder: (context, billProvider, _) {
-                    final enabled = billProvider.selectedOption != null;
-                    return AnimatedOpacity(
-                      opacity: enabled ? 1.0 : 0.5,
-                      duration: const Duration(milliseconds: 250),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color:Color(0xFF4CAF50).withOpacity(0.35),
-                              blurRadius: 20,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: ElevatedButton(
-                          onPressed: enabled
-                              ? () => billProvider.continueToPickup(context)
-                              : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFF4CAF50),
-                            disabledBackgroundColor: const Color(
-                              0xFF1A7A40,
-                            ).withOpacity(0.5),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            minimumSize: const Size(double.infinity, 52),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text(
-                                'Continue',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Icon(Icons.arrow_forward_rounded, size: 18),
-                            ],
-                          ),
-                        ),
-                      ),
-                    );
-                  },
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -509,8 +486,7 @@ class _WasteCategoryCard extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
-        constraints: const BoxConstraints(minWidth: 120, maxWidth: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected ? Color(0xFF4CAF50) : Colors.white,
           borderRadius: BorderRadius.circular(18),

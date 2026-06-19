@@ -33,7 +33,7 @@ class BillProvider extends ChangeNotifier {
       
       // Navigate to the next screen (PickupScreen)
       // Note: Assumes PickupScreen is correctly imported/accessible.
-      Navigator.pushReplacement(
+      Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const AddressScreen()),
       );

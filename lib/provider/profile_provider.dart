@@ -39,6 +39,8 @@ class ProfileProvider extends ChangeNotifier {
     }
 
     // 2. Background fetch to sync with source of truth
+    // Disabled temporarily because 'profile/' endpoint is returning 401 and triggering global logout.
+    /*
     try {
       final response = await ApiClient.instance.get('profile/');
       if (response.statusCode == 200) {
@@ -51,8 +53,9 @@ class ProfileProvider extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      debugPrint("Optimistic UI API sync failed (possibly no endpoint yet or offline): $e");
+      debugPrint("Optimistic UI API sync failed: $e");
     }
+    */
   }
 
   void onTabTapped(BuildContext context, int index) {

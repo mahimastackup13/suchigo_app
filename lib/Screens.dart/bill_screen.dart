@@ -255,7 +255,7 @@ class _BillScreenState extends State<BillScreen> {
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
-                              color:Color(0xFF4CAF50).withOpacity(0.35),
+                              color:Color(0xFF4CAF50).withValues(alpha: 0.35),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),
@@ -269,7 +269,7 @@ class _BillScreenState extends State<BillScreen> {
                             backgroundColor: Color(0xFF4CAF50),
                             disabledBackgroundColor: const Color(
                               0xFF1A7A40,
-                            ).withOpacity(0.5),
+                            ).withValues(alpha: 0.5),
                             foregroundColor: Colors.white,
                             elevation: 0,
                             minimumSize: const Size(double.infinity, 52),
@@ -467,7 +467,7 @@ class _TabButton extends StatelessWidget {
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -521,8 +521,8 @@ class _WasteCategoryCard extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? Color(0xFF4CAF50).withOpacity(0.25)
-                  : Colors.black.withOpacity(0.05),
+                  ? Color(0xFF4CAF50).withValues(alpha: 0.25)
+                  : Colors.black.withValues(alpha: 0.05),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -537,7 +537,7 @@ class _WasteCategoryCard extends StatelessWidget {
               height: 52,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? Colors.white.withOpacity(0.2)
+                    ? Colors.white.withValues(alpha: 0.2)
                     : const Color(0xFFF1F8F2),
                 shape: BoxShape.circle,
               ),
@@ -578,7 +578,7 @@ class _WasteCategoryCard extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   color: isSelected
-                      ? Colors.white.withOpacity(0.8)
+                      ? Colors.white.withValues(alpha: 0.8)
                       : Colors.grey.shade500,
                   height: 1.4,
                 ),

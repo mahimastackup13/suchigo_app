@@ -19,6 +19,7 @@ class _BillScreenState extends State<BillScreen> {
       title: 'SANITARY WASTE',
       subtitle: 'Diaper, Sanitary Pad,\nExpired Medicine, Hair Waste',
       value: 1,
+      isDisable: false,
     ),
     _WasteCategory(
       icon: Icons.delete_outline_rounded,
@@ -518,84 +519,121 @@ class _WasteCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDisabled = category.isDisable;
+    final bool isActiveSelected = isSelected && !isDisabled;
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: isDisabled ? null : onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Color(0xFF4CAF50) : Colors.white,
+          color: isDisabled
+              ? const Color(0xFFF4F4F4)
+              : isActiveSelected
+              ? const Color(0xFF4CAF50)
+              : Colors.white,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isSelected ? Color(0xFF4CAF50) : Colors.grey.shade200,
+            color: isDisabled
+                ? Colors.grey.shade300
+                : isActiveSelected
+                ? const Color(0xFF4CAF50)
+                : Colors.grey.shade200,
             width: 1.5,
           ),
           boxShadow: [
             BoxShadow(
-              color: isSelected
-                  ? Color(0xFF4CAF50).withValues(alpha: 0.25)
-                  : Colors.black.withValues(alpha: 0.05),
-              blurRadius: 12,
+              color: isActiveSelected
+                  ? const Color(0xFF4CAF50).withOpacity(0.25)
+                  : Colors.black.withOpacity(isDisabled ? 0.02 : 0.05),
+              blurRadius: isDisabled ? 6 : 12,
               offset: const Offset(0, 4),
             ),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Stack(
           children: [
-            // Icon circle
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? Colors.white.withValues(alpha: 0.2)
-                    : const Color(0xFFF1F8F2),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                category.icon,
-                size: 26,
-                color: isSelected ? Colors.white : Color(0xFF4CAF50),
-              ),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Icon circle
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: isDisabled
+                        ? Colors.grey.shade300
+                        : isActiveSelected
+                        ? Colors.white.withValues(alpha: 0.2)
+                        : const Color(0xFFF1F8F2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    category.icon,
+                    size: 26,
+                    color: isDisabled
+                        ? Colors.grey.shade600
+                        : isActiveSelected
+                        ? Colors.white
+                        : const Color(0xFF4CAF50),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // Title
+                Flexible(
+                  child: Text(
+                    category.title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.4,
+                      color: isDisabled
+                          ? Colors.grey.shade600
+                          : isActiveSelected
+                          ? Colors.white
+                          : Colors.black87,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 5),
+
+                // Subtitle
+                Flexible(
+                  child: Text(
+                    category.subtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isDisabled
+                          ? Colors.grey.shade500
+                          : isActiveSelected
+                          ? Colors.white.withValues(alpha: 0.8)
+                          : Colors.grey.shade500,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ],
             ),
-
-            const SizedBox(height: 10),
-
-            // Title
-            Flexible(
-              child: Text(
-                category.title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.4,
-                  color: isSelected ? Colors.white : Colors.black87,
+            if (isDisabled)
+              Positioned(
+                top: 8,
+                right: 8,
+                child: Icon(
+                  Icons.lock_outline,
+                  size: 18,
+                  color: Colors.grey.shade600,
                 ),
               ),
-            ),
-
-            const SizedBox(height: 5),
-
-            // Subtitle
-            Flexible(
-              child: Text(
-                category.subtitle,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isSelected
-                      ? Colors.white.withValues(alpha: 0.8)
-                      : Colors.grey.shade500,
-                  height: 1.4,
-                ),
-              ),
-            ),
           ],
         ),
       ),
@@ -610,11 +648,13 @@ class _WasteCategory {
   final String title;
   final String subtitle;
   final int value;
+  final bool isDisable;
 
   const _WasteCategory({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.value,
+    this.isDisable = true,
   });
 }

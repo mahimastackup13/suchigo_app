@@ -4,9 +4,9 @@ import 'package:suchigo_app/services/api_client.dart';
 import 'package:suchigo_app/services/secure_storage_service.dart';
 
 class ProfileProvider extends ChangeNotifier {
-  String _username = "John Doe";
-  String _phoneNumber = "+917736905991";
-  String _profileImagePath = 'assets/icons/pic.png';
+  String _username = "user";
+  String _phoneNumber = "+910000000000";
+  final _profileImagePath;
 
   String get username => _username;
   String get phoneNumber => _phoneNumber;
@@ -15,7 +15,7 @@ class ProfileProvider extends ChangeNotifier {
   int _selectedIndex = 3;
   int get selectedIndex => _selectedIndex;
 
-  ProfileProvider() {
+  ProfileProvider({profileImagePath}) : _profileImagePath = profileImagePath {
     _hydrateProfile();
   }
 
@@ -23,7 +23,7 @@ class ProfileProvider extends ChangeNotifier {
     // 1. Optimistic UI: Load from local cache first
     final localUsername = await SecureStorageService.getUsername();
     final localPhone = await SecureStorageService.getPhoneNumber();
-    
+
     bool updatedLocal = false;
     if (localUsername != null && localUsername.isNotEmpty) {
       _username = localUsername;
@@ -33,7 +33,7 @@ class ProfileProvider extends ChangeNotifier {
       _phoneNumber = localPhone;
       updatedLocal = true;
     }
-    
+
     if (updatedLocal) {
       notifyListeners();
     }

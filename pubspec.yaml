@@ -74,9 +74,10 @@ flutter:
     - assets/images/background.jpg
     - assets/images/tree (2).png
     - assets/images/waste.png
-    - assets/images/homesuchi2.png
+    # - assets/images/homesuchi2.png
     - assets/images/haza.png
-    
+    - assets/images/advt 01.jpg.jpeg
+
 
 
     - assets/icons/fb.svg

@@ -6,7 +6,7 @@
 //   // -----------------------------------------------------------
 //   // 1. STATE MANAGEMENT
 //   // -----------------------------------------------------------
-//   static const String _registerUrl = 'https://suchigoapi.pythonanywhere.com/api/register/';
+//   static const String _registerUrl = 'https://suchigoapis.pythonanywhere.com/api/register/';
 
 //   String _name = '';
 //   String _email = '';
@@ -138,7 +138,7 @@ class RegisterProvider with ChangeNotifier {
   // -----------------------------------------------------------
   // 1. STATE MANAGEMENT
   // -----------------------------------------------------------
-  static const String _registerUrl = 'https://suchigoapi.pythonanywhere.com/api/register/';
+  static const String _registerUrl = 'https://suchigoapis.pythonanywhere.com/api/register/';
 
   String _username = ''; 
   String _firstName = ''; 

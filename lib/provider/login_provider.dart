@@ -8,7 +8,7 @@ import 'package:suchigo_app/services/secure_storage_service.dart';
 
 class LoginProvider extends ChangeNotifier {
   // Your API endpoint for login.
-  static const String _loginUrl = 'https://suchigoapi.pythonanywhere.com/api/login/';
+  static const String _loginUrl = 'https://suchigoapis.pythonanywhere.com/api/login/';
   
   bool _isLoading = false;
   String? _errorMessage;

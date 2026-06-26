@@ -119,19 +119,39 @@ class ProfileScreen extends StatelessWidget {
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                CircleAvatar(
-                                  radius: 60,
-                                  backgroundImage: AssetImage(
-                                    profileProvider.profileImagePath,
-                                  ),
-                                ),
+                                // CircleAvatar(
+                                //   radius: 60,
+                                //   backgroundColor: Colors.white24,
+                                //   backgroundImage:
+                                //       profileProvider.profileImagePath !=
+                                //               null &&
+                                //           profileProvider
+                                //               .profileImagePath
+                                //               .isNotEmpty
+                                //       ? AssetImage(
+                                //           profileProvider.profileImagePath,
+                                //         )
+                                //       : null,
+                                //   child:
+                                //       profileProvider.profileImagePath ==
+                                //               null ||
+                                //           profileProvider
+                                //               .profileImagePath
+                                //               .isEmpty
+                                //       ? const Icon(
+                                //           Icons.account_circle,
+                                //           size: 60,
+                                //           color: Colors.white70,
+                                //         )
+                                //       : null,
+                                // ),
                                 const SizedBox(height: 12),
                                 Text(
                                   profileProvider.username,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 25,
+                                    fontSize: 40,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -256,17 +276,13 @@ class ProfileItem extends StatelessWidget {
           case "Account":
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const AccountScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const AccountScreen()),
             );
             break;
           case "Contact Us":
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => const ContactUsScreen(),
-              ),
+              MaterialPageRoute(builder: (context) => const ContactUsScreen()),
             );
             break;
           default:

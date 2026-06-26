@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:suchigo_app/provider/home_provider.dart';
+import 'package:suchigo_app/provider/profile_provider.dart';
 
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
@@ -417,6 +418,7 @@ class _HomeContentState extends State<HomeContent> {
 class _GreenHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final profileProvider = context.watch<ProfileProvider>();
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -435,23 +437,25 @@ class _GreenHeader extends StatelessWidget {
               // Avatar + Name + Progress
               Row(
                 children: [
-                  Container(
-                    width: 46,
-                    height: 46,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: const CircleAvatar(
-                      backgroundImage: AssetImage('assets/icons/pic.png'),
-                    ),
-                  ),
+                  // Container(
+                  //   width: 46,
+                  //   height: 46,
+                  //   decoration: BoxDecoration(
+                  //     shape: BoxShape.circle,
+                  //     border: Border.all(color: Colors.white, width: 2),
+                  //   ),
+                  //   child: const CircleAvatar(
+                  //     backgroundImage: AssetImage('assets/icons/pic.png'),
+                  //   ),
+                  // ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "SACHIN",
+                      Text(
+                        profileProvider.username.isNotEmpty
+                            ? profileProvider.username
+                            : "User Name",
                         style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
@@ -560,7 +564,7 @@ class _AdBanner extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(25),
         image: const DecorationImage(
-          image: AssetImage('assets/images/homesuchi2.png'),
+          image: AssetImage('assets/images/advt 01.jpg.jpeg'),
           fit: BoxFit.cover,
           alignment: Alignment.center,
         ),

@@ -18,6 +18,7 @@ class _AddressScreenState extends State<AddressScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _nameController = TextEditingController();
+  final _pickupDateController = TextEditingController();
   final _contactController = TextEditingController();
   final _emailController = TextEditingController();
   final _addressController = TextEditingController();
@@ -26,16 +27,15 @@ class _AddressScreenState extends State<AddressScreen> {
   final _localBodyController = TextEditingController();
 
   String? _selectedDistrict;
+  String? _selectedState;
   String? _selectedLocalBody;
   String? _selectedWard;
 
   static const Color _darkGreen = Color(0xFF1E713D);
   static const Color _headerGreen = Color(0xFF4CAF50);
 
-  final List<String> _districts = [
-    'Ernakulam',
-    'Thrissur',
-  ];
+  final List<String> _districts = ['Ernakulam', 'Thrissur'];
+  final List<String> _state = ['Kerala', 'Tamilnadu'];
 
   final List<String> _localBodies = [
     'Kochi Corporation',
@@ -87,51 +87,48 @@ class _AddressScreenState extends State<AddressScreen> {
     VoidCallback? onTap,
   }) {
     return TextFormField(
-        controller: controller,
-        maxLines: maxLines,
-        keyboardType: keyboard,
-        inputFormatters: formatters,
-        readOnly: readOnly,
-        onTap: onTap,
-        style: const TextStyle(fontSize: 14, color: Colors.black87),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-          suffixIcon: required
-              ? const Padding(
-                  padding: EdgeInsets.only(right: 4, top: 12),
-                  child: Text(
-                    '*',
-                    style: TextStyle(color: Colors.red, fontSize: 16),
-                  ),
-                )
-              : null,
-          suffixIconConstraints: const BoxConstraints(
-            minWidth: 20,
-            minHeight: 20,
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
-          ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: _darkGreen, width: 1.5),
-          ),
-          errorBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.red, width: 1),
-          ),
-          focusedErrorBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.red, width: 1.5),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 10,
-            horizontal: 0,
-          ),
-          errorStyle: const TextStyle(fontSize: 10, height: 0.8),
-        ),
-        validator: required
-            ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboard,
+      inputFormatters: formatters,
+      readOnly: readOnly,
+      onTap: onTap,
+      style: const TextStyle(fontSize: 14, color: Colors.black87),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+        suffixIcon: required
+            ? const Padding(
+                padding: EdgeInsets.only(right: 4, top: 12),
+                child: Text(
+                  '*',
+                  style: TextStyle(color: Colors.red, fontSize: 16),
+                ),
+              )
             : null,
-      );
+        suffixIconConstraints: const BoxConstraints(
+          minWidth: 20,
+          minHeight: 20,
+        ),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: _darkGreen, width: 1.5),
+        ),
+        errorBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.red, width: 1),
+        ),
+        focusedErrorBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.red, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+        errorStyle: const TextStyle(fontSize: 10, height: 0.8),
+      ),
+      validator: required
+          ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
+          : null,
+    );
   }
 
   // ── Underline dropdown ──────────────────────────────────────────────────────
@@ -143,66 +140,80 @@ class _AddressScreenState extends State<AddressScreen> {
     bool required = true,
   }) {
     return DropdownButtonFormField<String>(
-        value: value,
-        isExpanded: true,
-        icon: const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 22),
-        style: const TextStyle(fontSize: 14, color: Colors.black87),
-        dropdownColor: Colors.white,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-          suffixIcon: required
-              ? const Padding(
-                  padding: EdgeInsets.only(right: 24, top: 12),
-                  child: Text(
-                    '*',
-                    style: TextStyle(color: Colors.red, fontSize: 16),
-                  ),
-                )
-              : null,
-          suffixIconConstraints: const BoxConstraints(
-            minWidth: 20,
-            minHeight: 20,
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
-          ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: _darkGreen, width: 1.5),
-          ),
-          errorBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.red, width: 1),
-          ),
-          focusedErrorBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.red, width: 1.5),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 10,
-            horizontal: 0,
-          ),
-          errorStyle: const TextStyle(fontSize: 10, height: 0.8),
-        ),
-        items: items
-            .map(
-              (e) => DropdownMenuItem(
-                value: e,
+      value: value,
+      isExpanded: true,
+      icon: const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 22),
+      style: const TextStyle(fontSize: 14, color: Colors.black87),
+      dropdownColor: Colors.white,
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+        suffixIcon: required
+            ? const Padding(
+                padding: EdgeInsets.only(right: 24, top: 12),
                 child: Text(
-                  e,
-                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+                  '*',
+                  style: TextStyle(color: Colors.red, fontSize: 16),
                 ),
-              ),
-            )
-            .toList(),
-        onChanged: onChanged,
-        validator: required
-            ? (v) => (v == null || v.isEmpty) ? 'Required' : null
+              )
             : null,
-      );
+        suffixIconConstraints: const BoxConstraints(
+          minWidth: 20,
+          minHeight: 20,
+        ),
+        enabledBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
+        ),
+        focusedBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: _darkGreen, width: 1.5),
+        ),
+        errorBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.red, width: 1),
+        ),
+        focusedErrorBorder: const UnderlineInputBorder(
+          borderSide: BorderSide(color: Colors.red, width: 1.5),
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0),
+        errorStyle: const TextStyle(fontSize: 10, height: 0.8),
+      ),
+      items: items
+          .map(
+            (e) => DropdownMenuItem(
+              value: e,
+              child: Text(
+                e,
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+            ),
+          )
+          .toList(),
+      onChanged: onChanged,
+      validator: required
+          ? (v) => (v == null || v.isEmpty) ? 'Required' : null
+          : null,
+    );
   }
 
   // ── Section divider ─────────────────────────────────────────────────────────
   Widget _divider() =>
       Divider(color: Colors.grey.shade200, thickness: 1, height: 16);
+
+  Future<void> _selectPickupDate() async {
+    final DateTime now = DateTime.now();
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: now,
+      firstDate: now,
+      lastDate: now.add(const Duration(days: 365)),
+    );
+
+    if (pickedDate != null) {
+      setState(() {
+        _pickupDateController.text =
+            '${pickedDate.day.toString().padLeft(2, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.year}';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -224,7 +235,6 @@ class _AddressScreenState extends State<AddressScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     // Full Name
-                    _buildField(controller: _nameController, hint: 'Full Name'),
 
                     // Contact Number
                     _buildField(
@@ -248,10 +258,25 @@ class _AddressScreenState extends State<AddressScreen> {
                       maxLines: 1,
                       required: false,
                     ),
+                    _buildField(
+                      controller: _pickupDateController,
+                      hint: 'Pickup Date',
+                      readOnly: true,
+                      onTap: _selectPickupDate,
+                    ),
 
                     _divider(),
 
                     // District
+                    _buildDropdown(
+                      hint: 'State',
+                      items: _state,
+                      value: _selectedState,
+                      onChanged: (v) => setState(() {
+                        _selectedState = v;
+                        _selectedDistrict = null;
+                      }),
+                    ),
                     _buildDropdown(
                       hint: 'District',
                       items: _districts,
@@ -289,25 +314,25 @@ class _AddressScreenState extends State<AddressScreen> {
                     ),
 
                     // Location
-                    _buildField(
-                      controller: _locationController,
-                      hint: 'Tap to pick location on map',
-                      required: false,
-                      readOnly: true,
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LocationPickerScreen(),
-                          ),
-                        );
-                        if (result != null && result is Map<String, dynamic>) {
-                          setState(() {
-                            _locationController.text = result['address'] ?? '';
-                          });
-                        }
-                      },
-                    ),
+                    // _buildField(
+                    //   controller: _locationController,
+                    //   hint: 'Tap to pick location on map',
+                    //   required: false,
+                    //   readOnly: true,
+                    //   onTap: () async {
+                    //     final result = await Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => const LocationPickerScreen(),
+                    //       ),
+                    //     );
+                    //     if (result != null && result is Map<String, dynamic>) {
+                    //       setState(() {
+                    //         _locationController.text = result['address'] ?? '';
+                    //       });
+                    //     }
+                    //   },
+                    // ),
 
                     // Submit button
                     SizedBox(
@@ -405,7 +430,10 @@ class _AddressScreenState extends State<AddressScreen> {
                     icon: Icons.home_rounded,
                     onTap: () {
                       Navigator.popUntil(context, (route) => route.isFirst);
-                      Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(0);
+                      Provider.of<HomeProvider>(
+                        context,
+                        listen: false,
+                      ).setSelectedIndex(0);
                     },
                   ),
                 ],

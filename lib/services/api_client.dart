@@ -8,7 +8,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 class ApiClient {
   static final Dio _dio = Dio(
     BaseOptions(
-      baseUrl: 'https://suchigoapi.pythonanywhere.com/api/',
+      baseUrl: 'https://suchigoapis.pythonanywhere.com/api/',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
     ),

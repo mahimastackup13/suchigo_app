@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/home_provider.dart';
+import 'package:suchigo_app/provider/profile_provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
@@ -42,7 +45,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   static const _headerGreen = Color(0xFF4CAF50);
   static const _bgGreen = Color(0xFFEFF9F1);
 
-  int _currentNavIndex = 0;
+  int _currentNavIndex = 3;
   String _selectedFilter = 'All';
 
   final List<String> _filters = ['All', 'Completed', 'Pending', 'Cancelled'];
@@ -110,16 +113,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
       : _orders.where((o) => o.status == _selectedFilter).toList();
 
   void _onNavTap(int index) {
-    if (index == _currentNavIndex) return;
-    setState(() => _currentNavIndex = index);
-    final destinations = [
-      const HomeScreen(),
-      const BillScreen(),
-      const SettingsScreen(),
-      const ProfileScreen(),
-    ];
+    Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(index);
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => destinations[index]),
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
       (route) => false,
     );
   }
@@ -221,10 +217,20 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 children: [
                   _headerIconBtn(
                     icon: Icons.arrow_back_ios_new_rounded,
-                    onTap: () => Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const HomeScreen()),
-                      (route) => false,
-                    ),
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        Provider.of<HomeProvider>(
+                          context,
+                          listen: false,
+                        ).setSelectedIndex(3);
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                          (route) => false,
+                        );
+                      }
+                    },
                   ),
                   const Expanded(
                     child: Text(
@@ -261,9 +267,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Text(
-                      'Welcome back, T! 👋',
-                      style: TextStyle(
+                    Text(
+                      'Welcome back, ${Provider.of<ProfileProvider>(context).username}! 👋',
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 17,
                         color: Colors.black87,

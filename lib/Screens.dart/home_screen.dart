@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:suchigo_app/provider/home_provider.dart';
+import 'package:suchigo_app/provider/profile_provider.dart';
 
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
@@ -22,15 +23,21 @@ class HomeScreen extends StatelessWidget {
 
     final List<BottomNavigationBarItem> bottomNavItems = [
       BottomNavigationBarItem(
-        icon: Image.asset('assets/icons/HOME (2).png', width: 26, height: 26),
+        icon: const ImageIcon(
+          AssetImage('assets/icons/HOME (2).png'),
+          size: 24,
+        ),
         label: 'Home',
       ),
       BottomNavigationBarItem(
-        icon: Image.asset('assets/icons/settings.png', width: 26, height: 26),
+        icon: const ImageIcon(
+          AssetImage('assets/icons/settings.png'),
+          size: 28,
+        ),
         label: 'Settings',
       ),
       BottomNavigationBarItem(
-        icon: Image.asset('assets/icons/person.png', width: 26, height: 26),
+        icon: const ImageIcon(AssetImage('assets/icons/Profile.png'), size: 24),
         label: 'Profile',
       ),
     ];
@@ -88,7 +95,7 @@ class HomeContent extends StatelessWidget {
                   children: [
                     // ── Search Bar (overlapping header) ──────────────────────
                     Transform.translate(
-                      offset: const Offset(0, -20),
+                      offset: const Offset(0, 12),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Container(
@@ -128,7 +135,7 @@ class HomeContent extends StatelessWidget {
 
                     // Negative margin to pull content up
                     Transform.translate(
-                      offset: const Offset(0, -14),
+                      offset: const Offset(0, 16),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(
@@ -399,6 +406,8 @@ class HomeContent extends StatelessWidget {
 class _GreenHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final profileProvider = Provider.of<ProfileProvider>(context);
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -421,20 +430,33 @@ class _GreenHeader extends StatelessWidget {
                     width: 46,
                     height: 46,
                     decoration: BoxDecoration(
+                      color: Colors.white,
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.6),
+                        width: 1.5,
+                      ),
                     ),
-                    child: const CircleAvatar(
-                      backgroundImage: AssetImage('assets/icons/pic.png'),
+                    child: Center(
+                      child: Text(
+                        profileProvider.username.isNotEmpty
+                            ? profileProvider.username[0].toUpperCase()
+                            : 'U',
+                        style: const TextStyle(
+                          color: Color(0xFF1E713D),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        "SACHIN",
-                        style: TextStyle(
+                      Text(
+                        profileProvider.username.toUpperCase(),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 17,
@@ -490,7 +512,7 @@ class _GreenHeader extends StatelessWidget {
                           ),
                           child: const Icon(
                             Icons.recycling_rounded,
-                            color:Color(0xFF4CAF50),
+                            color: Color(0xFF4CAF50),
                             size: 18,
                           ),
                         ),
@@ -533,154 +555,156 @@ class _GreenHeader extends StatelessWidget {
 class _AdBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 240,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/homesuchi2.png'),
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
+    return AspectRatio(
+      aspectRatio: 1215 / 864,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+          image: const DecorationImage(
+            image: AssetImage('assets/images/homesuchi2.png'),
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0xFF4CAF50).withValues(alpha: 64),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0xFF4CAF50).withValues(alpha: 64),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Background decorative circles
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.08),
+        child: Stack(
+          children: [
+            // Background decorative circles
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.08),
+                ),
               ),
             ),
-          ),
-          Positioned(
-            right: 30,
-            bottom: -30,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withOpacity(0.06),
+            Positioned(
+              right: 30,
+              bottom: -30,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.06),
+                ),
               ),
             ),
-          ),
 
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                // Text content
-                // Expanded(
-                // child: Column(
-                //   crossAxisAlignment: CrossAxisAlignment.start,
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                //   children: [
-                //     Container(
-                //       padding: const EdgeInsets.symmetric(
-                //         horizontal: 10,
-                //         vertical: 4,
-                //       ),
-                //       decoration: BoxDecoration(
-                //         color: Colors.white.withOpacity(0.2),
-                //         borderRadius: BorderRadius.circular(20),
-                //       ),
-                //       child: const Text(
-                //         "Coming Soon",
-                //         style: TextStyle(
-                //           color: Colors.white,
-                //           fontSize: 11,
-                //           fontWeight: FontWeight.w600,
-                //         ),
-                //       ),
-                //     ),
-                //     const SizedBox(height: 10),
-                //     const Text(
-                //       "Mark the Date\nSuchiGo...!\nis on the Way",
-                //       style: TextStyle(
-                //         color: Colors.white,
-                //         fontSize: 18,
-                //         fontWeight: FontWeight.bold,
-                //         height: 1.3,
-                //       ),
-                //     ),
-                //     const SizedBox(height: 10),
-                //     const Text(
-                //       "Whatever the waste,\nwhenever the time\nSuchiGo arrives right\non schedule.",
-                //       style: TextStyle(
-                //         color: Colors.white,
-                //         fontSize: 11,
-                //         height: 1.4,
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                // ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  // Text content
+                  // Expanded(
+                  // child: Column(
+                  //   crossAxisAlignment: CrossAxisAlignment.start,
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     Container(
+                  //       padding: const EdgeInsets.symmetric(
+                  //         horizontal: 10,
+                  //         vertical: 4,
+                  //       ),
+                  //       decoration: BoxDecoration(
+                  //         color: Colors.white.withOpacity(0.2),
+                  //         borderRadius: BorderRadius.circular(20),
+                  //       ),
+                  //       child: const Text(
+                  //         "Coming Soon",
+                  //         style: TextStyle(
+                  //           color: Colors.white,
+                  //           fontSize: 11,
+                  //           fontWeight: FontWeight.w600,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //     const SizedBox(height: 10),
+                  //     const Text(
+                  //       "Mark the Date\nSuchiGo...!\nis on the Way",
+                  //       style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 18,
+                  //         fontWeight: FontWeight.bold,
+                  //         height: 1.3,
+                  //       ),
+                  //     ),
+                  //     const SizedBox(height: 10),
+                  //     const Text(
+                  //       "Whatever the waste,\nwhenever the time\nSuchiGo arrives right\non schedule.",
+                  //       style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 11,
+                  //         height: 1.4,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // ),
 
-                // Right side illustration placeholder
-                // Container(
-                //   width: 110,
-                //   height: 160,
-                //   decoration: BoxDecoration(
-                //     color: Colors.white.withOpacity(0.15),
-                //     borderRadius: BorderRadius.circular(12),
-                //   ),
-                //   child: Column(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     children: [
-                //       // Truck icon
-                //       Container(
-                //         width: 60,
-                //         height: 36,
-                //         decoration: BoxDecoration(
-                //           color: const Color(0xFFFFCC00),
-                //           borderRadius: BorderRadius.circular(8),
-                //         ),
-                //         child: const Icon(
-                //           Icons.local_shipping_rounded,
-                //           color: Colors.white,
-                //           size: 22,
-                //         ),
-                //       ),
-                //       const SizedBox(height: 8),
-                //       // Bins
-                //       Row(
-                //         mainAxisAlignment: MainAxisAlignment.center,
-                //         children: [
-                //           _MiniBin(color: const Color(0xFF00BFAE)),
-                //           const SizedBox(width: 4),
-                //           _MiniBin(color: const Color(0xFFFF5252)),
-                //           const SizedBox(width: 4),
-                //           _MiniBin(color: const Color(0xFF64B5F6)),
-                //         ],
-                //       ),
-                //       const SizedBox(height: 8),
-                //       const Icon(
-                //         Icons.recycling_rounded,
-                //         color: Colors.white,
-                //         size: 20,
-                //       ),
-                //     ],
-                //   ),
-                // ),
-              ],
+                  // Right side illustration placeholder
+                  // Container(
+                  //   width: 110,
+                  //   height: 160,
+                  //   decoration: BoxDecoration(
+                  //     color: Colors.white.withOpacity(0.15),
+                  //     borderRadius: BorderRadius.circular(12),
+                  //   ),
+                  //   child: Column(
+                  //     mainAxisAlignment: MainAxisAlignment.center,
+                  //     children: [
+                  //       // Truck icon
+                  //       Container(
+                  //         width: 60,
+                  //         height: 36,
+                  //         decoration: BoxDecoration(
+                  //           color: const Color(0xFFFFCC00),
+                  //           borderRadius: BorderRadius.circular(8),
+                  //         ),
+                  //         child: const Icon(
+                  //           Icons.local_shipping_rounded,
+                  //           color: Colors.white,
+                  //           size: 22,
+                  //         ),
+                  //       ),
+                  //       const SizedBox(height: 8),
+                  //       // Bins
+                  //       Row(
+                  //         mainAxisAlignment: MainAxisAlignment.center,
+                  //         children: [
+                  //           _MiniBin(color: const Color(0xFF00BFAE)),
+                  //           const SizedBox(width: 4),
+                  //           _MiniBin(color: const Color(0xFFFF5252)),
+                  //           const SizedBox(width: 4),
+                  //           _MiniBin(color: const Color(0xFF64B5F6)),
+                  //         ],
+                  //       ),
+                  //       const SizedBox(height: 8),
+                  //       const Icon(
+                  //         Icons.recycling_rounded,
+                  //         color: Colors.white,
+                  //         size: 20,
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

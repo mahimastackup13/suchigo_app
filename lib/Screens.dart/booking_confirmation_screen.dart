@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/home_provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
@@ -119,26 +121,19 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     if (index == _currentNavIndex) return;
     setState(() => _currentNavIndex = index);
 
-    Widget destination;
-    switch (index) {
-      case 0:
-        destination = const HomeScreen();
-        break;
-      case 1:
-        destination = const BillScreen();
-        break;
-      case 2:
-        destination = const SettingsScreen();
-        break;
-      case 3:
-        destination = const ProfileScreen();
-        break;
-      default:
-        destination = const HomeScreen();
+    final homeProvider = Provider.of<HomeProvider>(context, listen: false);
+    if (index == 0) {
+      homeProvider.setSelectedIndex(0);
+    } else if (index == 1) {
+      homeProvider.setSelectedIndex(1);
+    } else if (index == 2) {
+      homeProvider.setSelectedIndex(2);
+    } else if (index == 3) {
+      homeProvider.setSelectedIndex(3);
     }
 
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => destination),
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
       (route) => false,
     );
   }
@@ -146,50 +141,61 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
   @override
   Widget build(BuildContext context) {
     final b = widget.bookingDetails;
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        backgroundColor: _greenSurface,
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                  child: FadeTransition(
-                    opacity: _cardFade,
-                    child: SlideTransition(
-                      position: _cardSlide,
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 8),
-                          _buildSuccessBadge(b),
-                          const SizedBox(height: 16),
-                          _buildDetailCard(b),
-                          const SizedBox(height: 14),
-                          _buildAddressCard(b),
-                          if (b.specialInstructions.isNotEmpty) ...[
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(0);
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (route) => false,
+        );
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+        ),
+        child: Scaffold(
+          backgroundColor: _greenSurface,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                    child: FadeTransition(
+                      opacity: _cardFade,
+                      child: SlideTransition(
+                        position: _cardSlide,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 8),
+                            _buildSuccessBadge(b),
+                            const SizedBox(height: 16),
+                            _buildDetailCard(b),
                             const SizedBox(height: 14),
-                            _buildInstructionsCard(b),
+                            _buildAddressCard(b),
+                            if (b.specialInstructions.isNotEmpty) ...[
+                              const SizedBox(height: 14),
+                              _buildInstructionsCard(b),
+                            ],
+                            const SizedBox(height: 14),
+                            _buildEnvironmentImpactCard(b),
+                            const SizedBox(height: 24),
+                            _buildActions(context),
                           ],
-                          const SizedBox(height: 14),
-                          _buildEnvironmentImpactCard(b),
-                          const SizedBox(height: 24),
-                          _buildActions(context),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          bottomNavigationBar: _buildBottomNav(),
         ),
-        bottomNavigationBar: _buildBottomNav(),
       ),
     );
   }
@@ -240,7 +246,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
               ),
             ],
           ),
-          const SizedBox(height: 4),
           const Text(
             'Your waste collection has been scheduled.',
             style: TextStyle(color: Color(0xFFB9DFB9), fontSize: 13),
@@ -474,10 +479,16 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
           width: double.infinity,
           height: 52,
           child: ElevatedButton.icon(
-            onPressed: () => Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (_) => const HomeScreen()),
-              (route) => false,
-            ),
+            onPressed: () {
+              Provider.of<HomeProvider>(
+                context,
+                listen: false,
+              ).setSelectedIndex(0);
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const HomeScreen()),
+                (route) => false,
+              );
+            },
             icon: const Icon(Icons.home_rounded, size: 20),
             label: const Text(
               'Back to Home',

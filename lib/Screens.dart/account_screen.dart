@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/home_provider.dart';
+import 'package:suchigo_app/provider/profile_provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
+import 'package:suchigo_app/Screens.dart/notification_preferences.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -17,18 +21,33 @@ class _AccountScreenState extends State<AccountScreen> {
   static const _headerGreen = Color(0xFF4CAF50);
   static const _bgGreen = Color(0xFFEFF9F1);
 
-  int _currentNavIndex = 0;
+  int _currentNavIndex = 3;
 
   // Form controllers
-  final _nameController = TextEditingController(text: 'Thariq R.');
-  final _emailController = TextEditingController(text: 'thariq@email.com');
-  final _phoneController = TextEditingController(text: '+91 98765 43210');
+  late final TextEditingController _nameController;
+  late final TextEditingController _emailController;
+  late final TextEditingController _phoneController;
   final _altPhoneController = TextEditingController();
   final _addressController = TextEditingController(
     text: '42, Rose Garden Rd, Palarivattom',
   );
   final _cityController = TextEditingController(text: 'Ernakulam');
   final _pincodeController = TextEditingController(text: '682025');
+
+  @override
+  void initState() {
+    super.initState();
+    final profileProvider = Provider.of<ProfileProvider>(
+      context,
+      listen: false,
+    );
+    _nameController = TextEditingController(text: profileProvider.username);
+    _emailController = TextEditingController(
+      text:
+          "${profileProvider.username.toLowerCase().replaceAll(' ', '')}@email.com",
+    );
+    _phoneController = TextEditingController(text: profileProvider.phoneNumber);
+  }
 
   bool _editMode = false;
 
@@ -45,22 +64,16 @@ class _AccountScreenState extends State<AccountScreen> {
   }
 
   void _onNavTap(int index) {
-    if (index == _currentNavIndex) return;
-    setState(() => _currentNavIndex = index);
-    final destinations = [
-      const HomeScreen(),
-      const BillScreen(),
-      const SettingsScreen(),
-      const ProfileScreen(),
-    ];
+    Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(index);
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => destinations[index]),
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
       (route) => false,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final profileProvider = Provider.of<ProfileProvider>(context);
     return Scaffold(
       backgroundColor: _bgGreen,
       body: Column(
@@ -91,35 +104,17 @@ class _AccountScreenState extends State<AccountScreen> {
                               ),
                             ],
                           ),
-                          child: const CircleAvatar(
+                          child: CircleAvatar(
                             radius: 44,
-                            backgroundColor: Color(0xFFE8F5E9),
+                            backgroundColor: const Color(0xFFE8F5E9),
                             child: Text(
-                              'T',
-                              style: TextStyle(
+                              profileProvider.username.isNotEmpty
+                                  ? profileProvider.username[0].toUpperCase()
+                                  : 'U',
+                              style: const TextStyle(
                                 fontSize: 36,
                                 fontWeight: FontWeight.bold,
                                 color: _green,
-                              ),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: GestureDetector(
-                            onTap: () {},
-                            child: Container(
-                              width: 28,
-                              height: 28,
-                              decoration: const BoxDecoration(
-                                color: _green,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.camera_alt_rounded,
-                                color: Colors.white,
-                                size: 15,
                               ),
                             ),
                           ),
@@ -300,29 +295,13 @@ class _AccountScreenState extends State<AccountScreen> {
                     color: const Color(0xFF1565C0),
                     onTap: () {},
                   ),
-                  const SizedBox(height: 8),
-                  _ActionTile(
-                    icon: Icons.notifications_outlined,
-                    label: 'Notification Preferences',
-                    color: const Color(0xFFF57C00),
-                    onTap: () {},
-                  ),
+
                   const SizedBox(height: 8),
                   _ActionTile(
                     icon: Icons.delete_outline_rounded,
                     label: 'Delete Account',
                     color: const Color(0xFFC62828),
                     onTap: () => _showDeleteDialog(),
-                  ),
-                  const SizedBox(height: 8),
-                  _ActionTile(
-                    icon: Icons.logout_rounded,
-                    label: 'Logout',
-                    color: Colors.grey.shade600,
-                    onTap: () => Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      (route) => false,
-                    ),
                   ),
                 ],
               ),
@@ -385,10 +364,20 @@ class _AccountScreenState extends State<AccountScreen> {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const HomeScreen()),
-                      (route) => false,
-                    ),
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        Provider.of<HomeProvider>(
+                          context,
+                          listen: false,
+                        ).setSelectedIndex(3);
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                          (route) => false,
+                        );
+                      }
+                    },
                     child: Container(
                       width: 36,
                       height: 36,
@@ -437,9 +426,9 @@ class _AccountScreenState extends State<AccountScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Text(
-                      'Welcome back, T! 👋',
-                      style: TextStyle(
+                    Text(
+                      'Welcome back, ${Provider.of<ProfileProvider>(context).username}! 👋',
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 17,
                         color: Colors.black87,
@@ -494,7 +483,7 @@ class _AccountScreenState extends State<AccountScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long_outlined),
-            label: 'Bill',
+            label: 'Book Now',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),

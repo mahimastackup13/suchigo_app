@@ -151,9 +151,7 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
                         /// ACCEPTED BUTTON (Clickable)
                         GestureDetector(
                           onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Accepted clicked")),
-                            );
+                            // Handle accepted click
                           },
                           child: Container(
                             height: 48,
@@ -235,9 +233,6 @@ class _SelectWardScreenState extends State<SelectWardScreen> {
           context,
           MaterialPageRoute(builder: (context) => const OrdersScreen()),
         );
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Clicked ${data['name']}")));
       },
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 10),

@@ -3,7 +3,9 @@ import 'package:provider/provider.dart';
 import 'package:suchigo_app/Screens.dart/collector_screen.dart';
 import 'package:suchigo_app/Screens.dart/register_screen.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
+import '../provider/home_provider.dart';
 import '../provider/login_provider.dart';
+import '../provider/profile_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -36,7 +38,8 @@ class _LoginPageState extends State<LoginScreen> {
   }
 
   void _checkFields() {
-    final active = _usernameController.text.isNotEmpty &&
+    final active =
+        _usernameController.text.isNotEmpty &&
         _passwordController.text.isNotEmpty;
     if (active != _isButtonActive) {
       setState(() => _isButtonActive = active);
@@ -56,6 +59,14 @@ class _LoginPageState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (isSuccess) {
+      // Set username in ProfileProvider
+      final username = _usernameController.text.trim();
+      Provider.of<ProfileProvider>(
+        context,
+        listen: false,
+      ).setUsername(username);
+      // Reset home provider selected tab back to Home (0)
+      Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(0);
       // ✅ Navigate to HomeScreen and remove all previous routes
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -68,8 +79,9 @@ class _LoginPageState extends State<LoginScreen> {
           content: Text(error),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), 
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
         ),
       );
       loginProvider.clearErrorMessage();
@@ -114,7 +126,9 @@ class _LoginPageState extends State<LoginScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                    vertical: 40, horizontal: 24),
+                  vertical: 40,
+                  horizontal: 24,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -144,7 +158,9 @@ class _LoginPageState extends State<LoginScreen> {
                       Text(
                         'Login to continue',
                         style: TextStyle(
-                            fontSize: 13, color: Colors.grey.shade500),
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                        ),
                       ),
 
                       const SizedBox(height: 28),
@@ -155,12 +171,13 @@ class _LoginPageState extends State<LoginScreen> {
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           hintText: 'Username',
-                          hintStyle:
-                              TextStyle(color: Colors.grey.shade400),
+                          hintStyle: TextStyle(color: Colors.grey.shade400),
                           filled: true,
                           fillColor: Colors.grey.shade100,
-                          suffixIcon: Icon(Icons.person_outline,
-                              color: Colors.grey.shade500),
+                          suffixIcon: Icon(
+                            Icons.person_outline,
+                            color: Colors.grey.shade500,
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -168,20 +185,28 @@ class _LoginPageState extends State<LoginScreen> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: primaryGreen, width: 1.5),
+                              color: primaryGreen,
+                              width: 1.5,
+                            ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Colors.red, width: 1),
+                              color: Colors.red,
+                              width: 1,
+                            ),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Colors.red, width: 1.5),
+                              color: Colors.red,
+                              width: 1.5,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
                         ),
                         validator: (v) => (v == null || v.trim().isEmpty)
                             ? 'Please enter your username'
@@ -196,13 +221,13 @@ class _LoginPageState extends State<LoginScreen> {
                         obscureText: _obscurePassword,
                         decoration: InputDecoration(
                           hintText: 'Password',
-                          hintStyle:
-                              TextStyle(color: Colors.grey.shade400),
+                          hintStyle: TextStyle(color: Colors.grey.shade400),
                           filled: true,
                           fillColor: Colors.grey.shade100,
                           suffixIcon: GestureDetector(
                             onTap: () => setState(
-                                () => _obscurePassword = !_obscurePassword),
+                              () => _obscurePassword = !_obscurePassword,
+                            ),
                             child: Icon(
                               _obscurePassword
                                   ? Icons.lock_outline
@@ -217,20 +242,28 @@ class _LoginPageState extends State<LoginScreen> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: primaryGreen, width: 1.5),
+                              color: primaryGreen,
+                              width: 1.5,
+                            ),
                           ),
                           errorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Colors.red, width: 1),
+                              color: Colors.red,
+                              width: 1,
+                            ),
                           ),
                           focusedErrorBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: const BorderSide(
-                                color: Colors.red, width: 1.5),
+                              color: Colors.red,
+                              width: 1.5,
+                            ),
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 16),
+                            horizontal: 16,
+                            vertical: 16,
+                          ),
                         ),
                         validator: (v) => (v == null || v.isEmpty)
                             ? 'Please enter your password'
@@ -249,19 +282,18 @@ class _LoginPageState extends State<LoginScreen> {
                           width: 220,
                           height: 58,
                           decoration: BoxDecoration(
-                            color: (_isButtonActive &&
-                                    !loginProvider.isLoading)
+                            color: (_isButtonActive && !loginProvider.isLoading)
                                 ? buttonGreen
                                 : Colors.grey.shade300,
                             borderRadius: BorderRadius.circular(30),
-                            boxShadow: (_isButtonActive &&
-                                    !loginProvider.isLoading)
+                            boxShadow:
+                                (_isButtonActive && !loginProvider.isLoading)
                                 ? [
                                     BoxShadow(
                                       color: buttonGreen.withOpacity(0.35),
                                       blurRadius: 12,
                                       offset: const Offset(0, 4),
-                                    )
+                                    ),
                                   ]
                                 : [],
                           ),
@@ -276,8 +308,7 @@ class _LoginPageState extends State<LoginScreen> {
                                     ),
                                   )
                                 : const Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.center,
+                                    mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
                                         'Login',
@@ -305,7 +336,8 @@ class _LoginPageState extends State<LoginScreen> {
                       TextButton(
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                              builder: (_) => const RegisterScreen()),
+                            builder: (_) => const RegisterScreen(),
+                          ),
                         ),
                         child: const Text(
                           "Don't have an account? Sign Up",

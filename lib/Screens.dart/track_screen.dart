@@ -7,6 +7,7 @@ import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 import 'package:suchigo_app/provider/AddressProvider.dart';
+import 'package:suchigo_app/provider/profile_provider.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int selectedIndex;
@@ -201,12 +202,12 @@ class _AddressScreen1State extends State<AddressScreen1> {
                             ),
                           ],
                         ),
-                        child: const Column(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Text(
-                              "Welcome back, T! 👋",
-                              style: TextStyle(
+                              "Welcome back, ${Provider.of<ProfileProvider>(context).username}! 👋",
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 18,
                                 color: Colors.black,

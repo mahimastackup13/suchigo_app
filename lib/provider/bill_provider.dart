@@ -1,38 +1,48 @@
 import 'package:flutter/material.dart';
 import 'package:suchigo_app/Screens.dart/address_screen.dart';
-import 'package:suchigo_app/Screens.dart/pickup_screen.dart';
 
 class BillProvider extends ChangeNotifier {
-  // --- State for the selected waste option ---
-  int? _selectedOption; 
+  // --- State for the selected waste options ---
+  final Set<int> _selectedOptions = {}; 
 
-  int? get selectedOption => _selectedOption;
+  Set<int> get selectedOptions => _selectedOptions;
 
-  // Map option values to human-readable strings (optional, but helpful)
+  // Map option values to human-readable strings
   final Map<int, String> wasteOptions = {
-    1: "Plastic waste",
-    2: "Organic waste",
-    3: "E-waste",
-    4: "Household items",
+    1: "Sanitary waste",
+    2: "Solid waste",
+    3: "Organic waste",
+    4: "E-waste",
+    5: "Industrial waste",
+    6: "Bulk waste",
+    7: "Chemical waste",
+    8: "Construction waste",
   };
 
-  String? get selectedWasteType => 
-      _selectedOption != null ? wasteOptions[_selectedOption] : null;
+  List<String> get selectedWasteTypes => 
+      _selectedOptions.map((opt) => wasteOptions[opt] ?? '').toList();
 
-  // --- Action to update the selected option ---
-  void setSelectedOption(int? value) {
-    _selectedOption = value;
+  // --- Action to toggle a selected option ---
+  void toggleOption(int value) {
+    if (_selectedOptions.contains(value)) {
+      _selectedOptions.remove(value);
+    } else {
+      _selectedOptions.add(value);
+    }
     notifyListeners(); // Important: Rebuilds widgets listening to this provider
+  }
+
+  // --- Clear all selections (useful if changing tabs) ---
+  void clearSelections() {
+    _selectedOptions.clear();
+    notifyListeners();
   }
 
   // --- Action triggered by the "CONTINUE" button ---
   void continueToPickup(BuildContext context) {
-    if (_selectedOption != null) {
-      // In a real app, you might save the selected type here (e.g., to a database)
-      print('Selected Waste Type: ${selectedWasteType}');
+    if (_selectedOptions.isNotEmpty) {
+      print('Selected Waste Types: $selectedWasteTypes');
       
-      // Navigate to the next screen (PickupScreen)
-      // Note: Assumes PickupScreen is correctly imported/accessible.
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const AddressScreen()),

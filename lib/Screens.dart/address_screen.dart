@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/home_provider.dart';
+import 'package:suchigo_app/provider/profile_provider.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/booking_confirmation_screen.dart';
 import 'home_screen.dart';
@@ -26,7 +29,6 @@ class _AddressScreenState extends State<AddressScreen> {
   String? _selectedLocalBody;
   String? _selectedWard;
 
-  static const Color _darkGreen = Color(0xFF1E713D);
   static const Color _headerGreen = Color(0xFF4CAF50);
 
   final List<String> _districts = [
@@ -71,28 +73,10 @@ class _AddressScreenState extends State<AddressScreen> {
     super.dispose();
   }
 
-  void _submitForm() {
-    if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Pickup scheduled successfully!'),
-          backgroundColor: _darkGreen,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-      );
-    }
-  }
-
-  // ── Underline text field ────────────────────────────────────────────────────
+  // ── Beautiful modern text field builder ──────────────────────────────────────
   Widget _buildField({
     required TextEditingController controller,
+    required String label,
     required String hint,
     bool required = true,
     int maxLines = 1,
@@ -100,56 +84,81 @@ class _AddressScreenState extends State<AddressScreen> {
     List<TextInputFormatter>? formatters,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: TextFormField(
-        controller: controller,
-        maxLines: maxLines,
-        keyboardType: keyboard,
-        inputFormatters: formatters,
-        style: const TextStyle(fontSize: 14, color: Colors.black87),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-          suffixIcon: required
-              ? const Padding(
-                  padding: EdgeInsets.only(right: 4, top: 12),
-                  child: Text(
-                    '*',
-                    style: TextStyle(color: Colors.red, fontSize: 16),
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              if (required) ...[
+                const SizedBox(width: 4),
+                const Text(
+                  '*',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                   ),
-                )
-              : null,
-          suffixIconConstraints: const BoxConstraints(
-            minWidth: 20,
-            minHeight: 20,
+                ),
+              ],
+            ],
           ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
+          const SizedBox(height: 8),
+          TextFormField(
+            controller: controller,
+            maxLines: maxLines,
+            keyboardType: keyboard,
+            inputFormatters: formatters,
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+              filled: true,
+              fillColor: const Color(0xFFF9FBF9),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: _headerGreen, width: 1.8),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 1.2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 1.8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 14,
+                horizontal: 16,
+              ),
+              errorStyle: const TextStyle(fontSize: 11, height: 1.0),
+            ),
+            validator: required
+                ? (v) => (v == null || v.trim().isEmpty)
+                      ? 'This field is required'
+                      : null
+                : null,
           ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: _darkGreen, width: 1.5),
-          ),
-          errorBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.red, width: 1),
-          ),
-          focusedErrorBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.red, width: 1.5),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 10,
-            horizontal: 0,
-          ),
-          errorStyle: const TextStyle(fontSize: 10, height: 0.8),
-        ),
-        validator: required
-            ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
-            : null,
+        ],
       ),
     );
   }
 
-  // ── Underline dropdown ──────────────────────────────────────────────────────
+  // ── Beautiful modern dropdown builder ────────────────────────────────────────
   Widget _buildDropdown({
+    required String label,
     required String hint,
     required List<String> items,
     required String? value,
@@ -157,238 +166,364 @@ class _AddressScreenState extends State<AddressScreen> {
     bool required = true,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: DropdownButtonFormField<String>(
-        value: value,
-        isExpanded: true,
-        icon: const Icon(Icons.arrow_drop_down, color: Colors.grey, size: 22),
-        style: const TextStyle(fontSize: 14, color: Colors.black87),
-        dropdownColor: Colors.white,
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(color: Colors.grey.shade500, fontSize: 14),
-          suffixIcon: required
-              ? const Padding(
-                  padding: EdgeInsets.only(right: 24, top: 12),
-                  child: Text(
-                    '*',
-                    style: TextStyle(color: Colors.red, fontSize: 16),
-                  ),
-                )
-              : null,
-          suffixIconConstraints: const BoxConstraints(
-            minWidth: 20,
-            minHeight: 20,
-          ),
-          enabledBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.grey.shade400, width: 1),
-          ),
-          focusedBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: _darkGreen, width: 1.5),
-          ),
-          errorBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.red, width: 1),
-          ),
-          focusedErrorBorder: const UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.red, width: 1.5),
-          ),
-          contentPadding: const EdgeInsets.symmetric(
-            vertical: 10,
-            horizontal: 0,
-          ),
-          errorStyle: const TextStyle(fontSize: 10, height: 0.8),
-        ),
-        items: items
-            .map(
-              (e) => DropdownMenuItem(
-                value: e,
-                child: Text(
-                  e,
-                  style: const TextStyle(fontSize: 14, color: Colors.black87),
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
-            )
-            .toList(),
-        onChanged: onChanged,
-        validator: required
-            ? (v) => (v == null || v.isEmpty) ? 'Required' : null
-            : null,
-      ),
-    );
-  }
-
-  // ── Section divider ─────────────────────────────────────────────────────────
-  Widget _divider() =>
-      Divider(color: Colors.grey.shade200, thickness: 1, height: 28);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Column(
-        children: [
-          // ── Green header ─────────────────────────────────────────────
-          _buildHeader(),
-
-          // ── Scrollable form ──────────────────────────────────────────
-          Expanded(
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Full Name
-                    _buildField(controller: _nameController, hint: 'Full Name'),
-
-                    // Contact Number
-                    _buildField(
-                      controller: _contactController,
-                      hint: 'Contact Number',
-                      keyboard: TextInputType.phone,
-                      formatters: [FilteringTextInputFormatter.digitsOnly],
-                    ),
-
-                    // Email
-                    _buildField(
-                      controller: _emailController,
-                      hint: 'Email Address',
-                      keyboard: TextInputType.emailAddress,
-                    ),
-
-                    // Pickup Address
-                    _buildField(
-                      controller: _addressController,
-                      hint: 'Pickup Address',
-                      maxLines: 2,
-                      required: false,
-                    ),
-
-                    _divider(),
-
-                    // District
-                    _buildDropdown(
-                      hint: 'District',
-                      items: _districts,
-                      value: _selectedDistrict,
-                      onChanged: (v) => setState(() {
-                        _selectedDistrict = v;
-                        _selectedLocalBody = null;
-                      }),
-                    ),
-
-                    // Local Body
-                    _buildDropdown(
-                      hint: 'Local Body',
-                      items: _localBodies,
-                      value: _selectedLocalBody,
-                      onChanged: (v) => setState(() => _selectedLocalBody = v),
-                    ),
-
-                    // Ward Name & Number
-                    _buildDropdown(
-                      hint: 'Ward Name & Number',
-                      items: _wards,
-                      value: _selectedWard,
-                      onChanged: (v) => setState(() => _selectedWard = v),
-                      required: false,
-                    ),
-
-                    // Secondary Number
-                    _buildField(
-                      controller: _secondaryController,
-                      hint: 'Secondary Number',
-                      keyboard: TextInputType.phone,
-                      formatters: [FilteringTextInputFormatter.digitsOnly],
-                      required: false,
-                    ),
-
-                    // Location
-                    _buildField(
-                      controller: _locationController,
-                      hint: 'Location',
-                      required: false,
-                    ),
-
-                    const SizedBox(height: 28),
-
-                    // Submit button
-                    SizedBox(
-                      width: double.infinity,
-                      height: 50,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => BookingConfirmationScreen(
-                                  bookingDetails: BookingDetails(
-                                    bookingId: 'WC-2026-08741',
-                                    wasteType: 'Mixed Household Waste',
-                                    collectionDate: 'Monday, 28 Apr 2026',
-                                    collectionTime: '09:00 AM – 12:00 PM',
-                                    address: _addressController.text,
-                                    city: _selectedDistrict ?? '',
-                                    pincode: '682025',
-                                    contactName: _nameController.text,
-                                    contactPhone: _contactController.text,
-                                    status: 'Confirmed',
-                                    estimatedWeight: 12.5,
-                                    specialInstructions:
-                                        'Please ring the bell twice. Gate is on the left side.',
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Color(0xFF4CAF50),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          'SUBMIT',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.8,
-                          ),
-                        ),
+              if (required) ...[
+                const SizedBox(width: 4),
+                const Text(
+                  '*',
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 8),
+          DropdownButtonFormField<String>(
+            value: value,
+            isExpanded: true,
+            icon: Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: Colors.grey.shade600,
+              size: 22,
+            ),
+            style: const TextStyle(fontSize: 14, color: Colors.black87),
+            dropdownColor: Colors.white,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+              filled: true,
+              fillColor: const Color(0xFFF9FBF9),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: _headerGreen, width: 1.8),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 1.2),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 1.8),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                vertical: 14,
+                horizontal: 16,
+              ),
+              errorStyle: const TextStyle(fontSize: 11, height: 1.0),
+            ),
+            items: items
+                .map(
+                  (e) => DropdownMenuItem(
+                    value: e,
+                    child: Text(
+                      e,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
                       ),
                     ),
-
-                    const SizedBox(height: 24),
-                  ],
-                ),
-              ),
-            ),
+                  ),
+                )
+                .toList(),
+            onChanged: onChanged,
+            validator: required
+                ? (v) => (v == null || v.isEmpty)
+                      ? 'Please select an option'
+                      : null
+                : null,
           ),
         ],
       ),
     );
   }
 
-  // ── Header widget ───────────────────────────────────────────────────────────
+  // ── Beautiful Card container for form sections ──────────────────────────────
+  Widget _buildFormSection({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: _headerGreen, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Divider(color: Color(0xFFF1F5F2), thickness: 1),
+          const SizedBox(height: 12),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(1);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+        );
+      },
+      child: Scaffold(
+        backgroundColor: const Color(0xFFF5F5F5),
+        body: Column(
+          children: [
+            // ── Header with gradient ─────────────────────────────────────────
+            _buildHeader(),
+
+            // ── Scrollable form ──────────────────────────────────────────────
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      // Section 1: Contact Info Card
+                      _buildFormSection(
+                        title: "Contact Information",
+                        icon: Icons.person_rounded,
+                        children: [
+                          _buildField(
+                            controller: _nameController,
+                            label: 'Full Name',
+                            hint: 'Enter your full name',
+                          ),
+                          _buildField(
+                            controller: _contactController,
+                            label: 'Contact Number',
+                            hint: 'Enter your contact number',
+                            keyboard: TextInputType.phone,
+                            formatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                          ),
+                          _buildField(
+                            controller: _emailController,
+                            label: 'Email Address',
+                            hint: 'Enter your email address',
+                            keyboard: TextInputType.emailAddress,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Section 2: Address Details Card
+                      _buildFormSection(
+                        title: "Pickup Location",
+                        icon: Icons.location_on_rounded,
+                        children: [
+                          _buildField(
+                            controller: _addressController,
+                            label: 'Pickup Address',
+                            hint: 'Enter your complete address',
+                            maxLines: 3,
+                            required: false,
+                          ),
+                          _buildDropdown(
+                            label: 'District',
+                            hint: 'Select your district',
+                            items: _districts,
+                            value: _selectedDistrict,
+                            onChanged: (v) => setState(() {
+                              _selectedDistrict = v;
+                              _selectedLocalBody = null;
+                            }),
+                          ),
+                          _buildDropdown(
+                            label: 'Local Body',
+                            hint: 'Select local body',
+                            items: _localBodies,
+                            value: _selectedLocalBody,
+                            onChanged: (v) =>
+                                setState(() => _selectedLocalBody = v),
+                          ),
+                          _buildDropdown(
+                            label: 'Ward Name & Number',
+                            hint: 'Select ward (optional)',
+                            items: _wards,
+                            value: _selectedWard,
+                            onChanged: (v) => setState(() => _selectedWard = v),
+                            required: false,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Section 3: Extra Info Card
+                      _buildFormSection(
+                        title: "Additional Details",
+                        icon: Icons.info_rounded,
+                        children: [
+                          _buildField(
+                            controller: _secondaryController,
+                            label: 'Secondary Number',
+                            hint: 'Enter alternative contact number',
+                            keyboard: TextInputType.phone,
+                            formatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
+                            required: false,
+                          ),
+                          _buildField(
+                            controller: _locationController,
+                            label: 'Location / Landmark',
+                            hint: 'Enter nearby landmark',
+                            required: false,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+
+                      // Submit Button Container with Gradient
+                      Container(
+                        width: double.infinity,
+                        height: 54,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF4CAF50), Color(0xFF00BCD4)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF4CAF50).withOpacity(0.4),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => BookingConfirmationScreen(
+                                    bookingDetails: BookingDetails(
+                                      bookingId: 'WC-2026-08741',
+                                      wasteType: 'Mixed Household Waste',
+                                      collectionDate: 'Monday, 28 Apr 2026',
+                                      collectionTime: '09:00 AM – 12:00 PM',
+                                      address:
+                                          _addressController.text.isNotEmpty
+                                          ? _addressController.text
+                                          : 'No address specified',
+                                      city: _selectedDistrict ?? '',
+                                      pincode: '682025',
+                                      contactName: _nameController.text,
+                                      contactPhone: _contactController.text,
+                                      status: 'Confirmed',
+                                      estimatedWeight: 12.5,
+                                      specialInstructions:
+                                          'Please ring the bell twice. Gate is on the left side.',
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Text(
+                            'SUBMIT',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Header widget with gradient ─────────────────────────────────────────────
   Widget _buildHeader() {
     return Container(
       decoration: const BoxDecoration(
-        color: _headerGreen,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF4CAF50), Color(0xFF00BCD4), Color(0xFF2ECC71)],
+        ),
         borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
+          bottomLeft: Radius.circular(32),
+          bottomRight: Radius.circular(32),
         ),
       ),
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
           child: Column(
             children: [
               // Top bar
@@ -397,61 +532,73 @@ class _AddressScreenState extends State<AddressScreen> {
                 children: [
                   _headerIconBtn(
                     icon: Icons.arrow_back_ios_new_rounded,
-                    onTap: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => const BillScreen()),
-                    ),
+                    onTap: () {
+                      Provider.of<HomeProvider>(
+                        context,
+                        listen: false,
+                      ).setSelectedIndex(1);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const HomeScreen()),
+                      );
+                    },
                   ),
                   const Text(
                     'Schedule Pickup',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
+                      fontSize: 19,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.3,
                     ),
                   ),
                   _headerIconBtn(
                     icon: Icons.home_rounded,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const HomeScreen()),
-                    ),
+                    onTap: () {
+                      Provider.of<HomeProvider>(
+                        context,
+                        listen: false,
+                      ).setSelectedIndex(0);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => const HomeScreen()),
+                      );
+                    },
                   ),
                 ],
               ),
 
-              const SizedBox(height: 14),
+              const SizedBox(height: 20),
 
               // Welcome card
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 18,
-                  vertical: 14,
+                  horizontal: 20,
+                  vertical: 16,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
                 child: Column(
                   children: [
-                    const Text(
-                      'Welcome back, T! 👋',
-                      style: TextStyle(
+                    Text(
+                      'Welcome back, ${Provider.of<ProfileProvider>(context).username}! 👋',
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
-                        fontSize: 17,
+                        fontSize: 18,
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
                       'Manage your waste collection and track your\nenvironmental impact',
                       textAlign: TextAlign.center,
@@ -475,10 +622,10 @@ class _AddressScreenState extends State<AddressScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 38,
+        height: 38,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.25),
+          color: Colors.white.withOpacity(0.2),
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: Colors.white, size: 16),

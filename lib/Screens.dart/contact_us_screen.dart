@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/home_provider.dart';
+import 'package:suchigo_app/provider/profile_provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
@@ -17,7 +20,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   static const _headerGreen = Color(0xFF4CAF50);
   static const _bgGreen = Color(0xFFEFF9F1);
 
-  int _currentNavIndex = 0;
+  int _currentNavIndex = 3;
 
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
@@ -49,16 +52,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
   }
 
   void _onNavTap(int index) {
-    if (index == _currentNavIndex) return;
-    setState(() => _currentNavIndex = index);
-    final destinations = [
-      const HomeScreen(),
-      const BillScreen(),
-      const SettingsScreen(),
-      const ProfileScreen(),
-    ];
+    Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(index);
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => destinations[index]),
+      MaterialPageRoute(builder: (_) => const HomeScreen()),
       (route) => false,
     );
   }
@@ -436,10 +432,20 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const HomeScreen()),
-                      (route) => false,
-                    ),
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      } else {
+                        Provider.of<HomeProvider>(
+                          context,
+                          listen: false,
+                        ).setSelectedIndex(3);
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const HomeScreen()),
+                          (route) => false,
+                        );
+                      }
+                    },
                     child: Container(
                       width: 36,
                       height: 36,
@@ -488,9 +494,9 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Text(
-                      'Welcome back, T! 👋',
-                      style: TextStyle(
+                    Text(
+                      'Welcome back, ${Provider.of<ProfileProvider>(context).username}! 👋',
+                      style: const TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 17,
                         color: Colors.black87,

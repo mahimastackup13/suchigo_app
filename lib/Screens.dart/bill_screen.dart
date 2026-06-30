@@ -186,21 +186,23 @@ class _BillScreenState extends State<BillScreen> {
                                   _TabButton(
                                     label: 'Residential',
                                     selected: _selectedTab == 0,
-                                    onTap: () =>
-                                        setState(() => _selectedTab = 0),
+                                    onTap: () {
+                                      setState(() => _selectedTab = 0);
+                                      billProvider.clearSelections();
+                                    },
                                   ),
                                   _TabButton(
                                     label: 'Commercial',
                                     selected: _selectedTab == 1,
-                                    onTap: () =>
-                                        setState(() => _selectedTab = 1),
+                                    onTap: () {
+                                      setState(() => _selectedTab = 1);
+                                      billProvider.clearSelections();
+                                    },
                                   ),
                                 ],
                               ),
                             ),
                           ),
-
-                          const SizedBox(height: 20),
 
                           // ── Waste Category Grid ──────────────────────
                           Padding(
@@ -218,13 +220,13 @@ class _BillScreenState extends State<BillScreen> {
                               itemCount: categories.length,
                               itemBuilder: (context, index) {
                                 final cat = categories[index];
-                                final isSelected =
-                                    billProvider.selectedOption == cat.value;
+                                final isSelected = billProvider.selectedOptions
+                                    .contains(cat.value);
                                 return _WasteCategoryCard(
                                   category: cat,
                                   isSelected: isSelected,
                                   onTap: () =>
-                                      billProvider.setSelectedOption(cat.value),
+                                      billProvider.toggleOption(cat.value),
                                 );
                               },
                             ),
@@ -246,7 +248,7 @@ class _BillScreenState extends State<BillScreen> {
                 right: 40,
                 child: Consumer<BillProvider>(
                   builder: (context, billProvider, _) {
-                    final enabled = billProvider.selectedOption != null;
+                    final enabled = billProvider.selectedOptions.isNotEmpty;
                     return AnimatedOpacity(
                       opacity: enabled ? 1.0 : 0.5,
                       duration: const Duration(milliseconds: 250),
@@ -255,7 +257,7 @@ class _BillScreenState extends State<BillScreen> {
                           borderRadius: BorderRadius.circular(30),
                           boxShadow: [
                             BoxShadow(
-                              color:Color(0xFF4CAF50).withOpacity(0.35),
+                              color: Color(0xFF4CAF50).withOpacity(0.35),
                               blurRadius: 20,
                               offset: const Offset(0, 8),
                             ),

@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
+import 'package:suchigo_app/Screens.dart/privacy_security.dart';
+import 'package:suchigo_app/Screens.dart/notification_preferences.dart';
+import 'package:suchigo_app/Screens.dart/language_screen.dart';
+import 'package:suchigo_app/Screens.dart/help_support_screen.dart';
+import 'package:suchigo_app/Screens.dart/about_app_screen.dart';
 import 'package:suchigo_app/provider/settings_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -10,6 +16,7 @@ class SettingsScreen extends StatelessWidget {
   Widget _buildSettingItem(
     BuildContext context,
     IconData icon,
+
     String title, {
     bool isLogout = false,
   }) {
@@ -50,10 +57,39 @@ class SettingsScreen extends StatelessWidget {
                 (Route<dynamic> route) => false,
               );
             }
-          } else {
-            ScaffoldMessenger.of(
+          } else if (title == "Privacy & Security") {
+            Navigator.push(
               context,
-            ).showSnackBar(SnackBar(content: Text("$title tapped!")));
+              MaterialPageRoute(
+                builder: (context) => const PrivacyAndSecurity(),
+              ),
+            );
+          } else if (title == "Notification Preferences") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NotificationPreferencesScreen(),
+              ),
+            );
+          } else if (title == "Language") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const LanguageScreen()),
+            );
+          } else if (title == "Help & Support") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const HelpSupportScreen(),
+              ),
+            );
+          } else if (title == "About App") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AboutAppScreen()),
+            );
+          } else {
+            // Handle other settings taps
           }
         },
       ),
@@ -62,17 +98,22 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFE6F4E6),
-      body: SafeArea(
-        child: Column(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFE6F4E6),
+        body: Column(
           children: [
             // --- Header Section ---
             Stack(
               children: [
                 Container(
                   width: double.infinity,
-                  height: 250,
+                  height: 250 + MediaQuery.of(context).padding.top,
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
                       colors: [Color(0xFF1E713D), Color(0xFF48A86E)],
@@ -84,42 +125,16 @@ class SettingsScreen extends StatelessWidget {
                       bottomRight: Radius.circular(40),
                     ),
                   ),
-                  child: const Center(
-                    child: Text(
-                      "Settings",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // --- Back to Home Button ---
-                Positioned(
-                  top: 12,
-                  left: 12,
-                  child: SafeArea(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: IconButton(
-                        icon: const Icon(Icons.arrow_back_rounded),
-                        color: Colors.white,
-                        iconSize: 28,
-                        tooltip: 'Back to Home',
-                        onPressed: () {
-                          if (Navigator.canPop(context)) {
-                            Navigator.pop(context);
-                          } else {
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const HomeScreen(),
-                              ),
-                            );
-                          }
-                        },
+                  child: const SafeArea(
+                    bottom: false,
+                    child: Center(
+                      child: Text(
+                        "Settings",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),

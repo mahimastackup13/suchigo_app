@@ -1,9 +1,8 @@
+// 
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
-import 'package:suchigo_app/Screens.dart/bill_screen.dart';
-import 'package:suchigo_app/Screens.dart/settings_screen.dart';
-import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:suchigo_app/provider/home_provider.dart';
 
@@ -38,6 +37,77 @@ class BookingDetails {
     this.estimatedWeight = 0,
     this.specialInstructions = '',
   });
+
+  /// Builds confirmation details directly from the two real backend
+  /// responses (POST /api/pickups/ and POST /api/addresses/), instead of
+  /// hardcoded placeholder values.
+  ///
+  /// [selectedTimeSlotLabel] is passed in separately because the backend's
+  /// pickups/ response only stores a single scheduled_date timestamp, not
+  /// a human-readable slot range like "9:00 AM – 12:00 PM".
+  factory BookingDetails.fromApiResponses({
+    required Map<String, dynamic> pickupJson,
+    required Map<String, dynamic> addressJson,
+    required String selectedTimeSlotLabel,
+    required String fallbackContactName,
+    required String fallbackContactPhone,
+  }) {
+    final pickupId = pickupJson['id'];
+    final bookingId = pickupId != null ? 'WC-$pickupId' : 'WC-PENDING';
+
+    final scheduledDateRaw = pickupJson['scheduled_date']?.toString();
+    final collectionDate = _formatCollectionDate(scheduledDateRaw);
+
+    final street = addressJson['street']?.toString() ?? '';
+    final cityVal = addressJson['city']?.toString() ?? '';
+    final zip = addressJson['zip_code']?.toString() ?? '';
+
+    final numberOfBagsRaw = addressJson['number_of_bags'];
+    final numberOfBags = numberOfBagsRaw is int
+        ? numberOfBagsRaw
+        : int.tryParse(numberOfBagsRaw?.toString() ?? '') ?? 0;
+
+    return BookingDetails(
+      bookingId: bookingId,
+      wasteType: pickupJson['items_description']?.toString().isNotEmpty == true
+          ? pickupJson['items_description'].toString()
+          : 'Mixed Household Waste',
+      collectionDate: collectionDate,
+      collectionTime: selectedTimeSlotLabel,
+      address: street.isNotEmpty ? street : (pickupJson['pickup_address']?.toString() ?? 'N/A'),
+      city: cityVal,
+      pincode: zip,
+      contactName: pickupJson['name']?.toString().isNotEmpty == true
+          ? pickupJson['name'].toString()
+          : fallbackContactName,
+      contactPhone: pickupJson['contact_number']?.toString().isNotEmpty == true
+          ? pickupJson['contact_number'].toString()
+          : fallbackContactPhone,
+      status: 'Confirmed',
+      // The backend doesn't return a weight estimate; approximate using
+      // the number of bags saved on the address record (0.5 bags ≈ 1kg
+      // is a placeholder ratio — adjust once the backend exposes a real figure).
+      estimatedWeight: numberOfBags > 0 ? numberOfBags * 2.5 : 0,
+      specialInstructions: pickupJson['landmark']?.toString().isNotEmpty == true
+          ? 'Landmark: ${pickupJson['landmark']}'
+          : '',
+    );
+  }
+
+  static String _formatCollectionDate(String? isoString) {
+    if (isoString == null || isoString.isEmpty) return 'Date pending confirmation';
+    final parsed = DateTime.tryParse(isoString);
+    if (parsed == null) return isoString;
+    const weekdays = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+    ];
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final local = parsed.toLocal();
+    return '${weekdays[local.weekday - 1]}, ${local.day} ${months[local.month - 1]} ${local.year}';
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -106,7 +176,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     super.dispose();
   }
 
-  // ── Theme colours ──────────────────────────
   static const _green = Color(0xFF2E7D32);
   static const _greenLight = Color(0xFF4CAF50);
   static const _greenSurface = Color(0xFFE8F5E9);
@@ -116,9 +185,8 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
   static const _textLight = Color(0xFF7A9480);
   static const _white = Colors.white;
 
-  // ── Bottom nav tap handler ─────────────────
   void _onNavTap(int index) {
-    if (index == _currentNavIndex) return;
+    if (index == _currentNavIndex && index != 0) return;
     setState(() => _currentNavIndex = index);
 
     Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(index);
@@ -179,7 +247,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     );
   }
 
-  // ── Top header ─────────────────────────────
   Widget _buildHeader() {
     return Container(
       width: double.infinity,
@@ -215,11 +282,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
                       color: _white.withOpacity(0.2),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
-                      Icons.check_rounded,
-                      color: _white,
-                      size: 26,
-                    ),
+                    child: const Icon(Icons.check_rounded, color: _white, size: 26),
                   ),
                 ),
               ),
@@ -235,7 +298,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     );
   }
 
-  // ── Booking ID + status badge ───────────────
   Widget _buildSuccessBadge(BookingDetails b) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
@@ -244,11 +306,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: _greenBorder),
         boxShadow: [
-          BoxShadow(
-            color: _green.withOpacity(0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: _green.withOpacity(0.06), blurRadius: 12, offset: const Offset(0, 4)),
         ],
       ),
       child: Row(
@@ -256,23 +314,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Booking ID',
-                style: TextStyle(
-                  fontSize: 11,
-                  color: _textLight,
-                  letterSpacing: 0.5,
-                ),
-              ),
+              const Text('Booking ID', style: TextStyle(fontSize: 11, color: _textLight, letterSpacing: 0.5)),
               const SizedBox(height: 2),
               Text(
                 b.bookingId,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: _textDark,
-                  letterSpacing: 0.8,
-                ),
+                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: _textDark, letterSpacing: 0.8),
               ),
             ],
           ),
@@ -287,23 +333,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 7,
-                  height: 7,
-                  decoration: const BoxDecoration(
-                    color: _greenLight,
-                    shape: BoxShape.circle,
-                  ),
-                ),
+                Container(width: 7, height: 7, decoration: const BoxDecoration(color: _greenLight, shape: BoxShape.circle)),
                 const SizedBox(width: 6),
-                Text(
-                  b.status,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: _green,
-                  ),
-                ),
+                Text(b.status, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: _green)),
               ],
             ),
           ),
@@ -312,71 +344,45 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     );
   }
 
-  // ── Collection detail card ──────────────────
   Widget _buildDetailCard(BookingDetails b) {
     return _SectionCard(
       title: 'Collection Details',
       icon: Icons.recycling_rounded,
       children: [
-        _DetailRow(
-          icon: Icons.delete_outline_rounded,
-          label: 'Waste Type',
-          value: b.wasteType,
-          highlight: true,
-        ),
+        _DetailRow(icon: Icons.delete_outline_rounded, label: 'Waste Type', value: b.wasteType, highlight: true),
         _RowDivider(),
-        _DetailRow(
-          icon: Icons.calendar_today_rounded,
-          label: 'Collection Date',
-          value: b.collectionDate,
-        ),
+        _DetailRow(icon: Icons.calendar_today_rounded, label: 'Collection Date', value: b.collectionDate),
         _RowDivider(),
-        _DetailRow(
-          icon: Icons.access_time_rounded,
-          label: 'Time Slot',
-          value: b.collectionTime,
-        ),
+        _DetailRow(icon: Icons.access_time_rounded, label: 'Time Slot', value: b.collectionTime),
         if (b.estimatedWeight > 0) ...[
           _RowDivider(),
-          _DetailRow(
-            icon: Icons.scale_rounded,
-            label: 'Est. Weight',
-            value: '${b.estimatedWeight.toStringAsFixed(1)} kg',
-          ),
+          _DetailRow(icon: Icons.scale_rounded, label: 'Est. Weight', value: '${b.estimatedWeight.toStringAsFixed(1)} kg'),
         ],
       ],
     );
   }
 
-  // ── Address card ────────────────────────────
   Widget _buildAddressCard(BookingDetails b) {
     return _SectionCard(
       title: 'Pickup Address',
       icon: Icons.location_on_rounded,
       children: [
-        _DetailRow(
-          icon: Icons.person_outline_rounded,
-          label: 'Contact',
-          value: b.contactName,
-        ),
+        _DetailRow(icon: Icons.person_outline_rounded, label: 'Contact', value: b.contactName),
         _RowDivider(),
-        _DetailRow(
-          icon: Icons.phone_outlined,
-          label: 'Phone',
-          value: b.contactPhone,
-        ),
+        _DetailRow(icon: Icons.phone_outlined, label: 'Phone', value: b.contactPhone),
         _RowDivider(),
         _DetailRow(
           icon: Icons.home_outlined,
           label: 'Address',
-          value: '${b.address},\n${b.city} – ${b.pincode}',
+          value: b.pincode.isNotEmpty
+              ? '${b.address},\n${b.city} – ${b.pincode}'
+              : '${b.address},\n${b.city}',
           multiLine: true,
         ),
       ],
     );
   }
 
-  // ── Special instructions card ───────────────
   Widget _buildInstructionsCard(BookingDetails b) {
     return _SectionCard(
       title: 'Special Instructions',
@@ -386,18 +392,13 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Text(
             b.specialInstructions,
-            style: const TextStyle(
-              fontSize: 13.5,
-              color: _textMid,
-              height: 1.5,
-            ),
+            style: const TextStyle(fontSize: 13.5, color: _textMid, height: 1.5),
           ),
         ),
       ],
     );
   }
 
-  // ── Environmental impact ────────────────────
   Widget _buildEnvironmentImpactCard(BookingDetails b) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -409,11 +410,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
-          BoxShadow(
-            color: _green.withOpacity(0.25),
-            blurRadius: 14,
-            offset: const Offset(0, 5),
-          ),
+          BoxShadow(color: _green.withOpacity(0.25), blurRadius: 14, offset: const Offset(0, 5)),
         ],
       ),
       child: Column(
@@ -423,14 +420,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
             children: [
               Icon(Icons.eco_rounded, color: Colors.white70, size: 18),
               SizedBox(width: 8),
-              Text(
-                'Your Environmental Impact',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
-              ),
+              Text('Your Environmental Impact', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 14)),
             ],
           ),
           const SizedBox(height: 14),
@@ -451,7 +441,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     );
   }
 
-  // ── Action buttons ──────────────────────────
   Widget _buildActions(BuildContext context) {
     return Column(
       children: [
@@ -467,17 +456,12 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
               );
             },
             icon: const Icon(Icons.home_rounded, size: 20),
-            label: const Text(
-              'Back to Home',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-            ),
+            label: const Text('Back to Home', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
             style: ElevatedButton.styleFrom(
               backgroundColor: _green,
               foregroundColor: _white,
               elevation: 0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
           ),
         ),
@@ -487,19 +471,15 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
           height: 52,
           child: OutlinedButton.icon(
             onPressed: () {
-              // TODO: Track booking logic
+              // TODO: Wire to a real "track booking" screen once the backend
+              // exposes a pickup-status endpoint by id.
             },
             icon: const Icon(Icons.my_location_rounded, size: 18),
-            label: const Text(
-              'Track My Booking',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-            ),
+            label: const Text('Track My Booking', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
             style: OutlinedButton.styleFrom(
               foregroundColor: _green,
               side: const BorderSide(color: _greenBorder, width: 1.5),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(14),
-              ),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
             ),
           ),
         ),
@@ -507,18 +487,11 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
     );
   }
 
-  // ── Bottom nav ──────────────────────────────
   Widget _buildBottomNav() {
     return Container(
       decoration: BoxDecoration(
         color: _white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 10, offset: const Offset(0, -2))],
       ),
       child: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
@@ -531,22 +504,10 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
         currentIndex: _currentNavIndex,
         onTap: _onNavTap,
         items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home_rounded),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.receipt_long_outlined),
-            label: 'Bill',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings_outlined),
-            label: 'Settings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline_rounded),
-            label: 'Profile',
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.home_rounded), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.receipt_long_outlined), label: 'Bill'),
+          BottomNavigationBarItem(icon: Icon(Icons.settings_outlined), label: 'Settings'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline_rounded), label: 'Profile'),
         ],
       ),
     );
@@ -562,11 +523,7 @@ class _SectionCard extends StatelessWidget {
   final IconData icon;
   final List<Widget> children;
 
-  const _SectionCard({
-    required this.title,
-    required this.icon,
-    required this.children,
-  });
+  const _SectionCard({required this.title, required this.icon, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -576,11 +533,7 @@ class _SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFC8E6C9)),
         boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF2E7D32).withOpacity(0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: const Color(0xFF2E7D32).withOpacity(0.05), blurRadius: 12, offset: const Offset(0, 4)),
         ],
       ),
       child: Column(
@@ -593,21 +546,11 @@ class _SectionCard extends StatelessWidget {
                 Container(
                   width: 32,
                   height: 32,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  decoration: BoxDecoration(color: const Color(0xFFE8F5E9), borderRadius: BorderRadius.circular(8)),
                   child: Icon(icon, color: const Color(0xFF2E7D32), size: 18),
                 ),
                 const SizedBox(width: 10),
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF1B2A1C),
-                  ),
-                ),
+                Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: Color(0xFF1B2A1C))),
               ],
             ),
           ),
@@ -642,18 +585,13 @@ class _DetailRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 7),
       child: Row(
-        crossAxisAlignment: multiLine
-            ? CrossAxisAlignment.start
-            : CrossAxisAlignment.center,
+        crossAxisAlignment: multiLine ? CrossAxisAlignment.start : CrossAxisAlignment.center,
         children: [
           Icon(icon, size: 16, color: const Color(0xFF7A9480)),
           const SizedBox(width: 10),
           SizedBox(
             width: 90,
-            child: Text(
-              label,
-              style: const TextStyle(fontSize: 12.5, color: Color(0xFF7A9480)),
-            ),
+            child: Text(label, style: const TextStyle(fontSize: 12.5, color: Color(0xFF7A9480))),
           ),
           Expanded(
             child: Text(
@@ -661,9 +599,7 @@ class _DetailRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13.5,
                 fontWeight: highlight ? FontWeight.w700 : FontWeight.w500,
-                color: highlight
-                    ? const Color(0xFF2E7D32)
-                    : const Color(0xFF1B2A1C),
+                color: highlight ? const Color(0xFF2E7D32) : const Color(0xFF1B2A1C),
                 height: 1.4,
               ),
               textAlign: TextAlign.end,
@@ -687,11 +623,7 @@ class _ImpactTile extends StatelessWidget {
   final String label;
   final String value;
 
-  const _ImpactTile({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
+  const _ImpactTile({required this.icon, required this.label, required this.value});
 
   @override
   Widget build(BuildContext context) {
@@ -700,18 +632,8 @@ class _ImpactTile extends StatelessWidget {
         children: [
           Text(icon, style: const TextStyle(fontSize: 22)),
           const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w800,
-              fontSize: 15,
-            ),
-          ),
-          Text(
-            label,
-            style: const TextStyle(color: Colors.white60, fontSize: 10.5),
-          ),
+          Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 15)),
+          Text(label, style: const TextStyle(color: Colors.white60, fontSize: 10.5)),
         ],
       ),
     );

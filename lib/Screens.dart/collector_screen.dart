@@ -1,16 +1,11 @@
-import 'dart:convert';
+// 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
 import 'package:suchigo_app/Screens.dart/AddOrder_Screen.dart';
 import 'package:suchigo_app/Screens.dart/select_ward_screen.dart';
-import 'package:suchigo_app/Screens.dart/login_screen.dart';
 import 'package:suchigo_app/provider/CollectorProvider.dart';
 import 'package:suchigo_app/Screens.dart/welcome_screen.dart';
 
-// ---------------------------------------------------------------------
-// COLLECTOR SCREEN
-// ---------------------------------------------------------------------
 class CollectorScreen extends StatefulWidget {
   const CollectorScreen({super.key});
 
@@ -22,7 +17,6 @@ class _CollectorScreenState extends State<CollectorScreen> {
   @override
   void initState() {
     super.initState();
-    // Fetch data from API when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CollectorProvider>().fetchCollectorData();
     });
@@ -34,9 +28,8 @@ class _CollectorScreenState extends State<CollectorScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      // --- ADDED SAVE BUTTON ---
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor:Color.fromARGB(239, 38, 82, 44),
+        backgroundColor: const Color.fromARGB(239, 38, 82, 44),
         onPressed: () async {
           bool success = await provider.updateCollectorData();
           if (mounted) {
@@ -45,7 +38,7 @@ class _CollectorScreenState extends State<CollectorScreen> {
                 content: Text(
                   success ? "Profile Saved!" : "Failed to save profile",
                 ),
-                backgroundColor: success ? Color(0xFF4CAF50) : Colors.red,
+                backgroundColor: success ? const Color(0xFF4CAF50) : Colors.red,
               ),
             );
           }
@@ -67,7 +60,7 @@ class _CollectorScreenState extends State<CollectorScreen> {
                   colors: [
                     Color.from(alpha: 1, red: 0.024, green: 0.035, blue: 0.106),
                     Color(0xFF4CAF50),
-                  ], // green to blue shade
+                  ],
                 ),
               ),
             ),
@@ -106,9 +99,7 @@ class _CollectorScreenState extends State<CollectorScreen> {
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 10),
-
                         buildInfoCard(
                           title: "Name :",
                           isTextField: true,
@@ -128,39 +119,29 @@ class _CollectorScreenState extends State<CollectorScreen> {
                           items: provider.districts,
                           onChanged: provider.updateDhDistrict,
                         ),
-                        // Added a controller to Localbody so it's editable via HTTP request
+                        // FIXED: Replaced inline instantiation with Provider Controller
                         buildInfoCard(
                           title: "DH Localbody :",
                           isTextField: true,
-                          controller:
-                              TextEditingController(
-                                  text: provider.selectedDhLocalbody,
-                                )
-                                ..selection = TextSelection.collapsed(
-                                  offset:
-                                      provider.selectedDhLocalbody?.length ?? 0,
-                                ),
+                          controller: provider.dhLocalbodyController,
                         ),
                         buildInfoCard(
                           title: "Ward :",
                           isTextField: true,
                           controller: provider.wardController,
                         ),
-
                         const SizedBox(height: 15),
                         sectionTitle("Sanitary Orders"),
                         orderButtonGrid(
                           context: context,
-                          color: Color.fromRGBO(156, 198, 158, 1),
+                          color: const Color.fromRGBO(156, 198, 158, 1),
                         ),
-
                         const SizedBox(height: 15),
                         sectionTitle("Scrap Orders"),
                         orderButtonGrid(
                           context: context,
                           color: const Color.fromRGBO(172, 192, 179, 1),
                         ),
-
                         const SizedBox(height: 30),
                       ],
                     ),
@@ -171,9 +152,6 @@ class _CollectorScreenState extends State<CollectorScreen> {
     );
   }
 
-  // ---------------------------------------------------------
-  // UPDATED INFO CARD WITH TEXTFIELD & DROPDOWN SUPPORT
-  // ---------------------------------------------------------
   Widget buildInfoCard({
     required String title,
     String? value,
@@ -215,51 +193,32 @@ class _CollectorScreenState extends State<CollectorScreen> {
                     ),
                   )
                 : isDropdown
-                ? DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      value: dropdownValue,
-                      isExpanded: true,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontSize: 15,
+                    ? DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: dropdownValue,
+                          isExpanded: true,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontSize: 15,
+                          ),
+                          items: items?.map((String val) {
+                            return DropdownMenuItem<String>(
+                              value: val,
+                              child: Text(val),
+                            );
+                          }).toList(),
+                          onChanged: onChanged,
+                        ),
+                      )
+                    : Text(
+                        value ?? "",
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
                       ),
-                      items: items?.map((String val) {
-                        return DropdownMenuItem<String>(
-                          value: val,
-                          child: Text(val),
-                        );
-                      }).toList(),
-                      onChanged: onChanged,
-                    ),
-                  )
-                : Text(
-                    value ?? "",
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
           ),
-          if (showChange)
-            InkWell(
-              onTap: onTap,
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: Color.fromARGB(255, 27, 47, 28),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Text(
-                  "Change",
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
         ],
       ),
     );
@@ -280,10 +239,7 @@ class _CollectorScreenState extends State<CollectorScreen> {
     );
   }
 
-  Widget orderButtonGrid({
-    required BuildContext context,
-    required Color color,
-  }) {
+  Widget orderButtonGrid({required BuildContext context, required Color color}) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
@@ -327,7 +283,12 @@ class _CollectorScreenState extends State<CollectorScreen> {
                   bgColor: color,
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const HistoryScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        appBar: AppBar(title: const Text('History')),
+                        body: const Center(child: Text('History screen')),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -338,7 +299,12 @@ class _CollectorScreenState extends State<CollectorScreen> {
                   bgColor: color,
                   onTap: () => Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const ReportScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        appBar: AppBar(title: const Text('Report')),
+                        body: const Center(child: Text('Report screen')),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -349,11 +315,7 @@ class _CollectorScreenState extends State<CollectorScreen> {
     );
   }
 
-  Widget orderButton({
-    required String title,
-    required Color bgColor,
-    required VoidCallback onTap,
-  }) {
+  Widget orderButton({required String title, required Color bgColor, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
@@ -382,43 +344,4 @@ class _CollectorScreenState extends State<CollectorScreen> {
       ),
     );
   }
-}
-
-// ---------------------------------------------------------------------
-// PLACEHOLDER SCREENS
-// ---------------------------------------------------------------------
-class ChangeScreen extends StatelessWidget {
-  const ChangeScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text("Change")),
-    body: const Center(child: Text("Change Details")),
-  );
-}
-
-class AddOrderScreen extends StatelessWidget {
-  const AddOrderScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text("Add Order")),
-    body: const Center(child: Text("Add Order Screen")),
-  );
-}
-
-class HistoryScreen extends StatelessWidget {
-  const HistoryScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text("History")),
-    body: const Center(child: Text("History Screen")),
-  );
-}
-
-class ReportScreen extends StatelessWidget {
-  const ReportScreen({super.key});
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text("Report")),
-    body: const Center(child: Text("Report Screen")),
-  );
 }

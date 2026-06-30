@@ -1,90 +1,106 @@
 
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-class CollectorProvider with ChangeNotifier {
+class CollectorProvider extends ChangeNotifier {
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  // Controllers for TextFields
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController dhLocalbodyController = TextEditingController();
   final TextEditingController wardController = TextEditingController();
 
+  // Dropdown states
   String? selectedScrapDistrict;
   String? selectedDhDistrict;
-  String? selectedDhLocalbody;
 
-  final List<String> districts = ["Thrissur", "Ernakulam"];
-  bool isLoading = false;
+  // Mock list for districts (Replace with actual data or API values if needed)
+  final List<String> districts = [
+    "Scrap District 1", 
+    "Scrap District 2", 
+    "DH District 1", 
+    "DH District 2"
+  ];
 
+  // Update Dropdown states
+  void updateScrapDistrict(String? value) {
+    selectedScrapDistrict = value;
+    notifyListeners();
+  }
+
+  void updateDhDistrict(String? value) {
+    selectedDhDistrict = value;
+    notifyListeners();
+  }
+
+  /// FETCH Initial Data (Optional template based on your code)
   Future<void> fetchCollectorData() async {
-    isLoading = true;
+    _isLoading = true;
     notifyListeners();
 
     try {
-      final response = await http.get(
-        Uri.parse("https://suchigo.pythonanywhere.com/api/locations/"),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        nameController.text = data['name'] ?? "";
-        // Ensure the value exists in our list or default to Ernakulam
-        selectedScrapDistrict = districts.contains(data['scrap_district'])
-            ? data['scrap_district']
-            : "Ernakulam";
-        selectedDhDistrict = districts.contains(data['dh_district'])
-            ? data['dh_district']
-            : "Ernakulam";
-        selectedDhLocalbody = data['dh_localbody'] ?? "Kalamassery";
-        wardController.text = data['ward'] ?? "";
-      }
+      // If you want to load initial data, place your GET request here
+      // For now, initializing with some sample empty text or defaults
+      nameController.text = "";
+      dhLocalbodyController.text = "";
+      wardController.text = "";
     } catch (e) {
       debugPrint("Error fetching data: $e");
     } finally {
-      isLoading = false;
+      _isLoading = false;
       notifyListeners();
     }
   }
 
-  void updateScrapDistrict(String? newValue) {
-    selectedScrapDistrict = newValue;
-    notifyListeners();
-  }
-
-  void updateDhDistrict(String? newValue) {
-    selectedDhDistrict = newValue;
-    notifyListeners();
-  }
-  // Add this method to your CollectorProvider class
+  /// POST / SAVE Data to your REST API
   Future<bool> updateCollectorData() async {
-    isLoading = true;
+    final url = Uri.parse('https://suchigo.pythonanywhere.com/api/locations/');
+    
+    _isLoading = true;
     notifyListeners();
+
+    // Prepare JSON Body matching your exact schema structure
+    final Map<String, dynamic> bodyData = {
+      "name": nameController.text.trim(),
+      "scrap_district": selectedScrapDistrict ?? "",
+      "dh_district": selectedDhDistrict ?? "",
+      "dh_localbody": dhLocalbodyController.text.trim(),
+      "ward": wardController.text.trim()
+    };
 
     try {
       final response = await http.post(
-        Uri.parse("https://suchigo.pythonanywhere.com/api/locations/"), // Replace with your update endpoint if different
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "name": nameController.text,
-          "scrap_district": selectedScrapDistrict,
-          "dh_district": selectedDhDistrict,
-          "dh_localbody": selectedDhLocalbody,
-          "ward": wardController.text,
-        }),
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: jsonEncode(bodyData),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        debugPrint("Data updated successfully");
+        debugPrint("Data Saved Successfully: ${response.body}");
         return true;
       } else {
-        debugPrint("Failed to update: ${response.body}");
+        debugPrint("Server Error (${response.statusCode}): ${response.body}");
         return false;
       }
     } catch (e) {
-      debugPrint("Error updating data: $e");
+      debugPrint("Network Exception context: $e");
       return false;
     } finally {
-      isLoading = false;
+      _isLoading = false;
       notifyListeners();
     }
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    dhLocalbodyController.dispose();
+    wardController.dispose();
+    super.dispose();
   }
 }

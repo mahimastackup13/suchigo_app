@@ -1,101 +1,107 @@
-// 
 // File: provider/login_provider.dart
 
-import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:suchigo_app/services/api_client.dart';
 import 'package:suchigo_app/services/secure_storage_service.dart';
 
 class LoginProvider extends ChangeNotifier {
-  // Your API endpoint for login.
-  static const String _loginUrl = 'https://suchigoapis.pythonanywhere.com/api/login/';
-  
+  static const String _loginPath = 'login/';
+
   bool _isLoading = false;
   String? _errorMessage;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
-  // Method to perform the login
   Future<bool> login(String username, String password) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
 
     try {
-      final response = await http.post(
-        Uri.parse(_loginUrl),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: jsonEncode(<String, String>{
-          // CRITICAL: Ensure 'username' and 'password' are the exact keys expected by the API
-          'username': username, 
-          'password': password,
-        }),
+      // ApiClient.instance is a Dio instance (not a wrapper), so we call
+      // Dio's own .post() directly. noAuth: true matters here -- there is
+      // no token yet, and skipAuthRedirect: true means if the backend ever
+      // sends back a 401 for bad credentials, the global interceptor won't
+      // force-navigate to /login (which would be a no-op/confusing loop
+      // since we're already on the login screen) -- it lets this catch
+      // block show the real error message instead.
+      final response = await ApiClient.instance.post(
+        _loginPath,
+        data: {'username': username, 'password': password},
+        options: Options(
+          extra: {'noAuth': true, 'skipAuthRedirect': true},
+        ),
       );
 
-      _isLoading = false;
+      final body = response.data is Map
+          ? response.data as Map<String, dynamic>
+          : <String, dynamic>{};
 
-      if (response.statusCode == 200) {
-        // Successful login
-        final responseBody = jsonDecode(response.body);
-        
-        String token = responseBody['token'] ?? responseBody['access'] ?? 'dummy_token_for_testing';
-        await SecureStorageService.saveToken(token);
-        
-        // Use the username from the API response if available, otherwise the entered one
-        String savedUsername = responseBody['username'] ?? username;
-        await SecureStorageService.saveUsername(savedUsername);
-
-        // Save phone number if provided
-        if (responseBody.containsKey('phone_number') && responseBody['phone_number'] != null) {
-          await SecureStorageService.savePhoneNumber(responseBody['phone_number']);
-        } else if (responseBody.containsKey('phone') && responseBody['phone'] != null) {
-          await SecureStorageService.savePhoneNumber(responseBody['phone']);
-        }
-
-        print('Login Successful: ${responseBody}');
-        notifyListeners();
-        return true;
-      } else {
-        // Handle login failure (e.g., 400 Bad Request, 401 Unauthorized)
-        
-        // Try to decode the body to get the specific error message
-        try {
-          final responseBody = jsonDecode(response.body);
-          
-          // 2. Adjust this logic based on your API's error response structure:
-          if (responseBody.containsKey('detail')) {
-            _errorMessage = responseBody['detail'];
-          } else if (responseBody.containsKey('non_field_errors')) {
-            _errorMessage = responseBody['non_field_errors'][0];
-          } else if (responseBody.containsKey('message')) {
-            _errorMessage = responseBody['message'];
-          } else {
-              // Fallback if the error format is unexpected
-            _errorMessage = 'Login failed (Status: ${response.statusCode}). Check credentials.';
-          }
-          
-        } catch (e) {
-          _errorMessage = 'Login failed (Status: ${response.statusCode}). Server response unreadable.';
-        }
-        
-        print('Login Failed: ${_errorMessage}');
+      final String? token = body['token'] ?? body['access'];
+      if (token == null || token.isEmpty) {
+        _isLoading = false;
+        _errorMessage = 'Login succeeded but no token was returned.';
         notifyListeners();
         return false;
       }
+
+      await SecureStorageService.saveToken(token);
+
+      // Many DRF token-login endpoints (e.g. drf-authtoken's
+      // ObtainAuthToken) return ONLY {"token": "..."} and nothing else.
+      // Don't assume display_name/phone are present here -- the real
+      // source of truth for those is GET /api/profile/, fetched right
+      // after login by ProfileProvider.refresh(). We save whatever the
+      // login response happens to include as a fast first paint, no more.
+      final String fallbackUsername = body['username'] ?? username;
+      await SecureStorageService.saveUsername(fallbackUsername);
+
+      final String? displayName = body['display_name'];
+      if (displayName != null && displayName.isNotEmpty) {
+        await SecureStorageService.saveDisplayName(displayName);
+      }
+
+      final String? phone = body['phone_number'] ?? body['phone'];
+      if (phone != null && phone.isNotEmpty) {
+        await SecureStorageService.savePhoneNumber(phone);
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on DioException catch (e) {
+      _isLoading = false;
+      _errorMessage = _extractErrorMessage(e);
+      debugPrint('Login failed: $_errorMessage');
+      notifyListeners();
+      return false;
     } catch (e) {
-      
       _isLoading = false;
       _errorMessage = 'Network error. Please check your internet connection.';
-      print('Error during login: $e');
+      debugPrint('Error during login: $e');
       notifyListeners();
       return false;
     }
   }
 
-  
+  String _extractErrorMessage(DioException e) {
+    final data = e.response?.data;
+    if (data is Map) {
+      if (data['detail'] != null) return data['detail'].toString();
+      if (data['non_field_errors'] is List &&
+          (data['non_field_errors'] as List).isNotEmpty) {
+        return data['non_field_errors'][0].toString();
+      }
+      if (data['message'] != null) return data['message'].toString();
+    }
+    final status = e.response?.statusCode;
+    if (status == 400) return 'Invalid username or password.';
+    if (status == 401) return 'Invalid credentials.';
+    return 'Login failed (Status: ${status ?? "network error"}).';
+  }
+
   void clearErrorMessage() {
     _errorMessage = null;
     notifyListeners();
@@ -103,7 +109,7 @@ class LoginProvider extends ChangeNotifier {
 
   Future<void> logout(BuildContext context) async {
     await SecureStorageService.clearAll();
-    // Use pushAndRemoveUntil to clear navigation stack
+    if (!context.mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
   }
 }

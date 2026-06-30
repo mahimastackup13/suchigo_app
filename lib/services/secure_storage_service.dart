@@ -2,9 +2,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class SecureStorageService {
   static const _storage = FlutterSecureStorage();
-  
+
   static const _tokenKey = 'auth_token';
   static const _usernameKey = 'auth_username';
+  static const _displayNameKey = 'auth_display_name';
 
   static Future<void> saveToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);
@@ -20,6 +21,14 @@ class SecureStorageService {
 
   static Future<String?> getUsername() async {
     return await _storage.read(key: _usernameKey);
+  }
+
+  static Future<void> saveDisplayName(String displayName) async {
+    await _storage.write(key: _displayNameKey, value: displayName);
+  }
+
+  static Future<String?> getDisplayName() async {
+    return await _storage.read(key: _displayNameKey);
   }
 
   static Future<void> savePhoneNumber(String phoneNumber) async {

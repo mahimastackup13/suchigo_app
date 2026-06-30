@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:suchigo_app/provider/home_provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:suchigo_app/provider/home_provider.dart';
@@ -199,50 +201,61 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
   @override
   Widget build(BuildContext context) {
     final b = widget.bookingDetails;
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      ),
-      child: Scaffold(
-        backgroundColor: _greenSurface,
-        body: SafeArea(
-          child: Column(
-            children: [
-              _buildHeader(),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
-                  child: FadeTransition(
-                    opacity: _cardFade,
-                    child: SlideTransition(
-                      position: _cardSlide,
-                      child: Column(
-                        children: [
-                          const SizedBox(height: 8),
-                          _buildSuccessBadge(b),
-                          const SizedBox(height: 16),
-                          _buildDetailCard(b),
-                          const SizedBox(height: 14),
-                          _buildAddressCard(b),
-                          if (b.specialInstructions.isNotEmpty) ...[
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(0);
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomeScreen()),
+          (route) => false,
+        );
+      },
+      child: AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+        ),
+        child: Scaffold(
+          backgroundColor: _greenSurface,
+          body: SafeArea(
+            child: Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                    child: FadeTransition(
+                      opacity: _cardFade,
+                      child: SlideTransition(
+                        position: _cardSlide,
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 8),
+                            _buildSuccessBadge(b),
+                            const SizedBox(height: 16),
+                            _buildDetailCard(b),
                             const SizedBox(height: 14),
-                            _buildInstructionsCard(b),
+                            _buildAddressCard(b),
+                            if (b.specialInstructions.isNotEmpty) ...[
+                              const SizedBox(height: 14),
+                              _buildInstructionsCard(b),
+                            ],
+                            const SizedBox(height: 14),
+                            _buildEnvironmentImpactCard(b),
+                            const SizedBox(height: 24),
+                            _buildActions(context),
                           ],
-                          const SizedBox(height: 14),
-                          _buildEnvironmentImpactCard(b),
-                          const SizedBox(height: 24),
-                          _buildActions(context),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
+          bottomNavigationBar: _buildBottomNav(),
         ),
-        bottomNavigationBar: _buildBottomNav(),
       ),
     );
   }
@@ -288,7 +301,6 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen>
               ),
             ],
           ),
-          const SizedBox(height: 4),
           const Text(
             'Your waste collection has been scheduled.',
             style: TextStyle(color: Color(0xFFB9DFB9), fontSize: 13),

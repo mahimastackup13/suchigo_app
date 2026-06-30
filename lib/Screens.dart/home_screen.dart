@@ -24,15 +24,21 @@ class HomeScreen extends StatelessWidget {
 
     final List<BottomNavigationBarItem> bottomNavItems = [
       BottomNavigationBarItem(
-        icon: Image.asset('assets/icons/HOME (2).png', width: 26, height: 26),
+        icon: const ImageIcon(
+          AssetImage('assets/icons/HOME (2).png'),
+          size: 24,
+        ),
         label: 'Home',
       ),
       BottomNavigationBarItem(
-        icon: Image.asset('assets/icons/settings.png', width: 26, height: 26),
+        icon: const ImageIcon(
+          AssetImage('assets/icons/settings.png'),
+          size: 28,
+        ),
         label: 'Settings',
       ),
       BottomNavigationBarItem(
-        icon: Image.asset('assets/icons/person.png', width: 26, height: 26),
+        icon: const ImageIcon(AssetImage('assets/icons/Profile.png'), size: 24),
         label: 'Profile',
       ),
     ];
@@ -45,7 +51,7 @@ class HomeScreen extends StatelessWidget {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
+              color: Colors.black.withOpacity(0.08),
               blurRadius: 12,
               offset: const Offset(0, -4),
             ),
@@ -92,268 +98,286 @@ class _HomeContentState extends State<HomeContent> {
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 15, left: 16, right: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ── Search Bar (Clickable) ──────────────────────
-                      GestureDetector(
-                        onTap: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const LocationPickerScreen(),
-                            ),
-                          );
-                          if (result != null &&
-                              result is Map<String, dynamic>) {
-                            setState(() {
-                              _selectedLocation =
-                                  result['address'] ?? "Location Selected";
-                            });
-                          }
-                        },
-                        child: Container(
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.08),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // ── Search Bar (overlapping header) ──────────────────────
+                    GestureDetector(
+                      onTap: () async {
+                        final result = await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const LocationPickerScreen(),
                           ),
+                        );
+                        if (result != null &&
+                            result is Map<String, dynamic>) {
+                          setState(() {
+                            _selectedLocation =
+                                result['address'] ?? "Location Selected";
+                          });
+                        }
+                      },
+                      child: Transform.translate(
+                        offset: const Offset(0, 12),
+                        child: Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.search_rounded,
-                                color: Colors.grey.shade500,
-                                size: 22,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  _selectedLocation,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: _selectedLocation == "Add location"
-                                        ? Colors.grey.shade500
-                                        : Colors.black87,
-                                    fontSize: 15,
-                                    fontWeight:
-                                        _selectedLocation == "Add location"
-                                        ? FontWeight.normal
-                                        : FontWeight.w500,
+                          child: Container(
+                            height: 52,
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(14),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: 0.08),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.search_rounded,
+                                  color: Colors.grey.shade500,
+                                  size: 22,
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Text(
+                                    _selectedLocation,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: _selectedLocation == "Add location"
+                                          ? Colors.grey.shade500
+                                          : Colors.black87,
+                                      fontSize: 15,
+                                      fontWeight:
+                                          _selectedLocation == "Add location"
+                                          ? FontWeight.normal
+                                          : FontWeight.w500,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
+                    ),
 
-                      const SizedBox(height: 25),
+                    // Negative margin to pull content up
+                    Transform.translate(
+                      offset: const Offset(0, 16),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // ── Ad Banner ─────────────────────────────────────
+                            _AdBanner(),
 
-                      // ── Ad Banner ─────────────────────────────────────
-                      _AdBanner(),
+                            const SizedBox(height: 20),
 
-                      const SizedBox(height: 20),
+                            // ── Waste Category Icons ──────────────────────────
+                            _WasteCategoryRow(),
 
-                      // ── Waste Category Icons ──────────────────────────
-                      _WasteCategoryRow(),
+                            const SizedBox(height: 20),
 
-                      const SizedBox(height: 20),
+                            // ── Stat Cards ────────────────────────────────────
+                            Row(
+                              children: [
+                                // Trees card
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 18,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE6F5EC),
+                                      borderRadius: BorderRadius.circular(18),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 44,
+                                          height: 44,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.black,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.park_rounded,
+                                            color: Colors.white,
+                                            size: 24,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        const Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              "Trees",
+                                              style: TextStyle(
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            SizedBox(height: 2),
+                                            Text(
+                                              "11,235",
+                                              style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
 
-                      // ── Stat Cards ────────────────────────────────────
-                      Row(
-                        children: [
-                          // Trees card
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 18,
-                              ),
+                                const SizedBox(width: 14),
+
+                                // 300 Pks card
+                                Expanded(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 18,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(18),
+                                      border: Border.all(
+                                        color: Colors.grey.shade200,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.04,
+                                          ),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.baseline,
+                                          textBaseline: TextBaseline.alphabetic,
+                                          children: [
+                                            Text(
+                                              "300",
+                                              style: TextStyle(
+                                                fontSize: 30,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                            SizedBox(width: 5),
+                                            Text(
+                                              "Pks",
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                color: Colors.black54,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          "50KG GIVES",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // ── Waste Activity Card ────────────────────────────
+                            Container(
+                              padding: const EdgeInsets.all(18),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFE6F5EC),
                                 borderRadius: BorderRadius.circular(18),
                               ),
                               child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Container(
-                                    width: 44,
-                                    height: 44,
-                                    decoration: const BoxDecoration(
-                                      color: Colors.black,
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.park_rounded,
-                                      color: Colors.white,
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 12),
-                                  const Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Trees",
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                      SizedBox(height: 2),
-                                      Text(
-                                        "11,235",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(width: 14),
-
-                          // 300 Pks card
-                          Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 18,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(18),
-                                border: Border.all(color: Colors.grey.shade200),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.04),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    crossAxisAlignment: CrossAxisAlignment.end,
-                                    children: [
-                                      Text(
-                                        "300",
-                                        style: TextStyle(
-                                          fontSize: 28,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
-                                          height: 1.0,
-                                        ),
-                                      ),
-                                      SizedBox(width: 5),
-                                      Padding(
-                                        padding: EdgeInsets.only(bottom: 2.0),
-                                        child: Text(
-                                          "Pks",
+                                  const Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Your waste activity",
                                           style: TextStyle(
-                                            fontSize: 14,
-                                            color: Colors.black54,
-                                            fontWeight: FontWeight.w500,
-                                            height: 1.0,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                            color: Colors.black,
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                        SizedBox(height: 6),
+                                        Text(
+                                          "Great job! You've received\n50kg this month!",
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: Colors.black87,
+                                            height: 1.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                  SizedBox(height: 8),
-                                  Text(
-                                    "50KG GIVES",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
+                                  SizedBox(
+                                    height: 60,
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.end,
+                                      children: const [
+                                        _Bar(height: 12),
+                                        SizedBox(width: 5),
+                                        _Bar(height: 22),
+                                        SizedBox(width: 5),
+                                        _Bar(height: 36),
+                                        SizedBox(width: 5),
+                                        _Bar(height: 50),
+                                      ],
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                          ),
-                        ],
-                      ),
 
-                      const SizedBox(height: 20),
-
-                      // ── Waste Activity Card ────────────────────────────
-                      Container(
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE6F5EC),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "Your waste activity",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                  SizedBox(height: 6),
-                                  Text(
-                                    "Great job! You've received\n50kg this month!",
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      color: Colors.black87,
-                                      height: 1.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            SizedBox(
-                              height: 60,
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: const [
-                                  _Bar(height: 12),
-                                  SizedBox(width: 5),
-                                  _Bar(height: 22),
-                                  SizedBox(width: 5),
-                                  _Bar(height: 36),
-                                  SizedBox(width: 5),
-                                  _Bar(height: 50),
-                                ],
-                              ),
-                            ),
+                            const SizedBox(height: 100),
                           ],
                         ),
                       ),
-
-                      const SizedBox(height: 100),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -418,7 +442,8 @@ class _HomeContentState extends State<HomeContent> {
 class _GreenHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final profileProvider = context.watch<ProfileProvider>();
+    final profileProvider = Provider.of<ProfileProvider>(context);
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -437,26 +462,37 @@ class _GreenHeader extends StatelessWidget {
               // Avatar + Name + Progress
               Row(
                 children: [
-                  // Container(
-                  //   width: 46,
-                  //   height: 46,
-                  //   decoration: BoxDecoration(
-                  //     shape: BoxShape.circle,
-                  //     border: Border.all(color: Colors.white, width: 2),
-                  //   ),
-                  //   child: const CircleAvatar(
-                  //     backgroundImage: AssetImage('assets/icons/pic.png'),
-                  //   ),
-                  // ),
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.6),
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        profileProvider.username.isNotEmpty
+                            ? profileProvider.username[0].toUpperCase()
+                            : 'U',
+                        style: const TextStyle(
+                          color: Color(0xFF1E713D),
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 12),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        profileProvider.username.isNotEmpty
-                            ? profileProvider.username
-                            : "User Name",
-                        style: TextStyle(
+                        profileProvider.username.toUpperCase(),
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 17,
@@ -469,7 +505,7 @@ class _GreenHeader extends StatelessWidget {
                         height: 5,
                         width: 90,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.3),
+                          color: Colors.white.withOpacity(0.3),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: FractionallySizedBox(
@@ -498,14 +534,14 @@ class _GreenHeader extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.15),
+                      color: Colors.white.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
                         Container(
-                          width: 36,
-                          height: 36,
+                          width: 30,
+                          height: 30,
                           decoration: const BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
@@ -513,8 +549,8 @@ class _GreenHeader extends StatelessWidget {
                           child: Center(
                             child: Image.asset(
                               'assets/images/logo.png',
-                              width: 26,
-                              height: 26,
+                              width: 22,
+                              height: 22,
                               fit: BoxFit.contain,
                             ),
                           ),
@@ -558,154 +594,156 @@ class _GreenHeader extends StatelessWidget {
 class _AdBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 240,
-      width: double.infinity,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(25),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/advt 01.jpg.jpeg'),
-          fit: BoxFit.cover,
-          alignment: Alignment.center,
+    return AspectRatio(
+      aspectRatio: 1215 / 864,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(25),
+          image: const DecorationImage(
+            image: AssetImage('assets/images/homesuchi2.png'),
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0xFF4CAF50).withValues(alpha: 64),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0xFF4CAF50).withValues(alpha: 64),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Stack(
-        children: [
-          // Background decorative circles
-          Positioned(
-            right: -20,
-            top: -20,
-            child: Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.08),
+        child: Stack(
+          children: [
+            // Background decorative circles
+            Positioned(
+              right: -20,
+              top: -20,
+              child: Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.08),
+                ),
               ),
             ),
-          ),
-          Positioned(
-            right: 30,
-            bottom: -30,
-            child: Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.06),
+            Positioned(
+              right: 30,
+              bottom: -30,
+              child: Container(
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withOpacity(0.06),
+                ),
               ),
             ),
-          ),
 
-          // Content
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                // Text content
-                // Expanded(
-                // child: Column(
-                //   crossAxisAlignment: CrossAxisAlignment.start,
-                //   mainAxisAlignment: MainAxisAlignment.center,
-                //   children: [
-                //     Container(
-                //       padding: const EdgeInsets.symmetric(
-                //         horizontal: 10,
-                //         vertical: 4,
-                //       ),
-                //       decoration: BoxDecoration(
-                //         color: Colors.white.withValues(alpha: 0.2),
-                //         borderRadius: BorderRadius.circular(20),
-                //       ),
-                //       child: const Text(
-                //         "Coming Soon",
-                //         style: TextStyle(
-                //           color: Colors.white,
-                //           fontSize: 11,
-                //           fontWeight: FontWeight.w600,
-                //         ),
-                //       ),
-                //     ),
-                //     const SizedBox(height: 10),
-                //     const Text(
-                //       "Mark the Date\nSuchiGo...!\nis on the Way",
-                //       style: TextStyle(
-                //         color: Colors.white,
-                //         fontSize: 18,
-                //         fontWeight: FontWeight.bold,
-                //         height: 1.3,
-                //       ),
-                //     ),
-                //     const SizedBox(height: 10),
-                //     const Text(
-                //       "Whatever the waste,\nwhenever the time\nSuchiGo arrives right\non schedule.",
-                //       style: TextStyle(
-                //         color: Colors.white,
-                //         fontSize: 11,
-                //         height: 1.4,
-                //       ),
-                //     ),
-                //   ],
-                // ),
-                // ),
+            // Content
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Row(
+                children: [
+                  // Text content
+                  // Expanded(
+                  // child: Column(
+                  //   crossAxisAlignment: CrossAxisAlignment.start,
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     Container(
+                  //       padding: const EdgeInsets.symmetric(
+                  //         horizontal: 10,
+                  //         vertical: 4,
+                  //       ),
+                  //       decoration: BoxDecoration(
+                  //         color: Colors.white.withOpacity(0.2),
+                  //         borderRadius: BorderRadius.circular(20),
+                  //       ),
+                  //       child: const Text(
+                  //         "Coming Soon",
+                  //         style: TextStyle(
+                  //           color: Colors.white,
+                  //           fontSize: 11,
+                  //           fontWeight: FontWeight.w600,
+                  //         ),
+                  //       ),
+                  //     ),
+                  //     const SizedBox(height: 10),
+                  //     const Text(
+                  //       "Mark the Date\nSuchiGo...!\nis on the Way",
+                  //       style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 18,
+                  //         fontWeight: FontWeight.bold,
+                  //         height: 1.3,
+                  //       ),
+                  //     ),
+                  //     const SizedBox(height: 10),
+                  //     const Text(
+                  //       "Whatever the waste,\nwhenever the time\nSuchiGo arrives right\non schedule.",
+                  //       style: TextStyle(
+                  //         color: Colors.white,
+                  //         fontSize: 11,
+                  //         height: 1.4,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // ),
 
-                // Right side illustration placeholder
-                // Container(
-                //   width: 110,
-                //   height: 160,
-                //   decoration: BoxDecoration(
-                //     color: Colors.white.withValues(alpha: 0.15),
-                //     borderRadius: BorderRadius.circular(12),
-                //   ),
-                //   child: Column(
-                //     mainAxisAlignment: MainAxisAlignment.center,
-                //     children: [
-                //       // Truck icon
-                //       Container(
-                //         width: 60,
-                //         height: 36,
-                //         decoration: BoxDecoration(
-                //           color: const Color(0xFFFFCC00),
-                //           borderRadius: BorderRadius.circular(8),
-                //         ),
-                //         child: const Icon(
-                //           Icons.local_shipping_rounded,
-                //           color: Colors.white,
-                //           size: 22,
-                //         ),
-                //       ),
-                //       const SizedBox(height: 8),
-                //       // Bins
-                //       Row(
-                //         mainAxisAlignment: MainAxisAlignment.center,
-                //         children: [
-                //           _MiniBin(color: const Color(0xFF00BFAE)),
-                //           const SizedBox(width: 4),
-                //           _MiniBin(color: const Color(0xFFFF5252)),
-                //           const SizedBox(width: 4),
-                //           _MiniBin(color: const Color(0xFF64B5F6)),
-                //         ],
-                //       ),
-                //       const SizedBox(height: 8),
-                //       const Icon(
-                //         Icons.recycling_rounded,
-                //         color: Colors.white,
-                //         size: 20,
-                //       ),
-                //     ],
-                //   ),
-                // ),
-              ],
+                  // Right side illustration placeholder
+                  // Container(
+                  //   width: 110,
+                  //   height: 160,
+                  //   decoration: BoxDecoration(
+                  //     color: Colors.white.withOpacity(0.15),
+                  //     borderRadius: BorderRadius.circular(12),
+                  //   ),
+                  //   child: Column(
+                  //     mainAxisAlignment: MainAxisAlignment.center,
+                  //     children: [
+                  //       // Truck icon
+                  //       Container(
+                  //         width: 60,
+                  //         height: 36,
+                  //         decoration: BoxDecoration(
+                  //           color: const Color(0xFFFFCC00),
+                  //           borderRadius: BorderRadius.circular(8),
+                  //         ),
+                  //         child: const Icon(
+                  //           Icons.local_shipping_rounded,
+                  //           color: Colors.white,
+                  //           size: 22,
+                  //         ),
+                  //       ),
+                  //       const SizedBox(height: 8),
+                  //       // Bins
+                  //       Row(
+                  //         mainAxisAlignment: MainAxisAlignment.center,
+                  //         children: [
+                  //           _MiniBin(color: const Color(0xFF00BFAE)),
+                  //           const SizedBox(width: 4),
+                  //           _MiniBin(color: const Color(0xFFFF5252)),
+                  //           const SizedBox(width: 4),
+                  //           _MiniBin(color: const Color(0xFF64B5F6)),
+                  //         ],
+                  //       ),
+                  //       const SizedBox(height: 8),
+                  //       const Icon(
+                  //         Icons.recycling_rounded,
+                  //         color: Colors.white,
+                  //         size: 20,
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -782,7 +820,7 @@ class _WasteCategoryRow extends StatelessWidget {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
+                            color: Colors.black.withOpacity(0.05),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

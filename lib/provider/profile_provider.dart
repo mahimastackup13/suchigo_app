@@ -25,6 +25,13 @@ class ProfileProvider extends ChangeNotifier {
   String get profileImagePath => _profileImagePath;
   bool get isLoading => _isLoading;
 
+  void setUsername(String name) {
+    if (name.isNotEmpty) {
+      _username = name;
+      notifyListeners();
+    }
+  }
+
   int _selectedIndex = 3;
   int get selectedIndex => _selectedIndex;
 
@@ -163,8 +170,6 @@ class ProfileProvider extends ChangeNotifier {
   }
 
   void handleProfileItemTap(BuildContext context, String text) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text("$text tapped!")));
+    // Handle profile item tap
   }
 }

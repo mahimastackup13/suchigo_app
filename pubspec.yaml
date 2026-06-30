@@ -74,7 +74,8 @@ flutter:
     - assets/images/background.jpg
     - assets/images/tree (2).png
     - assets/images/waste.png
-    # - assets/images/homesuchi2.png
+    - assets/images/homesuchi2.png
+    - assets/images/homesuchi1.jpeg
     - assets/images/haza.png
     - assets/images/advt 01.jpg.jpeg
 
@@ -89,5 +90,6 @@ flutter:
     - assets/icons/HOME (2).png
     - assets/icons/bill.png
     - assets/icons/person.png
+    - assets/icons/Profile.png
     - assets/icons/settings.png
     - assets/icons/suchigologo.png

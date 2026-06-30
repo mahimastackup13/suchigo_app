@@ -15,7 +15,9 @@ import 'package:suchigo_app/Screens.dart/collector_screen.dart';
 import 'package:suchigo_app/Screens.dart/register_screen.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/provider/profile_provider.dart';
+import '../provider/home_provider.dart';
 import '../provider/login_provider.dart';
+import '../provider/profile_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -69,13 +71,14 @@ class _LoginPageState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (isSuccess) {
-      // Fetch the real profile (display_name, phone) now that we have a
-      // valid token, so HomeScreen/ProfileScreen show the correct name on
-      // first paint instead of a placeholder or stale cached value.
-      await Provider.of<ProfileProvider>(context, listen: false).refresh();
-
-      if (!mounted) return;
-
+      // Set username in ProfileProvider
+      final username = _usernameController.text.trim();
+      Provider.of<ProfileProvider>(
+        context,
+        listen: false,
+      ).setUsername(username);
+      // Reset home provider selected tab back to Home (0)
+      Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(0);
       // ✅ Navigate to HomeScreen and remove all previous routes
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeScreen()),

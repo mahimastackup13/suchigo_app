@@ -551,7 +551,7 @@ class _ContactUsScreenState extends State<ContactUsScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.receipt_long_outlined),
-            label: 'Bill',
+            label: 'Book Now',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_outlined),

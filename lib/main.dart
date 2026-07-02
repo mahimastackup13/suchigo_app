@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:suchigo_app/firebase_options.dart';
+import 'package:suchigo_app/services/notification_service.dart';
 
 import 'package:suchigo_app/Screens.dart/AddOrder_Screen.dart';
 import 'package:suchigo_app/Screens.dart/collector_screen.dart';
@@ -27,9 +29,13 @@ import 'package:suchigo_app/provider/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.instance.init();
+  await NotificationService.instance.requestPermissions();
 
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e, stack) {
     debugPrint("Firebase initialization failed: $e");
     debugPrint("$stack");

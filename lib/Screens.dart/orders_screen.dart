@@ -366,12 +366,16 @@ class _OrdersScreenState extends State<OrdersScreen> {
       errorMessage = '';
     });
 
+    print('[http] REQUEST: GET $_apiBaseUrl');
     try {
       final response = await http
           .get(Uri.parse(_apiBaseUrl))
           .timeout(const Duration(seconds: 15));
 
       if (!mounted) return;
+
+      print('[http] RESPONSE: ${response.statusCode} GET $_apiBaseUrl');
+      print('[http] RESPONSE Data: ${response.body}');
 
       if (response.statusCode == 200) {
         final dynamic decoded = json.decode(response.body);
@@ -401,6 +405,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         });
       }
     } catch (e) {
+      print('[http] ERROR: GET $_apiBaseUrl -> $e');
       if (!mounted) return;
       setState(() {
         errorMessage =

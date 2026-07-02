@@ -1,4 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:suchigo_app/services/pickup_api_service.dart';
+import 'package:suchigo_app/services/secure_storage_service.dart';
+import 'package:intl/intl.dart';
 
 class WalletScreen extends StatefulWidget {
   const WalletScreen({super.key});
@@ -11,39 +15,158 @@ class _WalletScreenState extends State<WalletScreen> {
   static const Color _primaryGreen = Color(0xFF1E713D);
   static const Color _backgroundGrey = Color(0xFFF5F5F5);
 
-  double _balance = 450.00;
+  double _balance = 0.0;
   final TextEditingController _amountController = TextEditingController();
 
-  final List<Map<String, dynamic>> _transactions = [
-    {
-      'title': 'Organic Waste Bonus',
-      'type': 'credit',
-      'amount': 50.00,
-      'date': 'Today, 10:30 AM',
-      'category': 'Bonus',
-    },
-    {
-      'title': 'Booking Ref #250916',
-      'type': 'debit',
-      'amount': 120.00,
-      'date': 'Yesterday, 04:15 PM',
-      'category': 'Payment',
-    },
-    {
-      'title': 'E-waste Recycling Incentive',
-      'type': 'credit',
-      'amount': 150.00,
-      'date': '26 Jun 2026, 11:00 AM',
-      'category': 'Incentive',
-    },
-    {
-      'title': 'Added via UPI',
-      'type': 'credit',
-      'amount': 370.00,
-      'date': '24 Jun 2026, 09:20 AM',
-      'category': 'Load',
-    },
-  ];
+  List<Map<String, dynamic>> _transactions = [];
+  bool _isLoading = true;
+  String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWalletData();
+  }
+
+  Future<void> _loadWalletData() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final pickups = await PickupApiService.fetchPickups();
+      
+      // Load custom refill transactions from secure storage
+      final refillsJson = await SecureStorageService.getRefills();
+      List<Map<String, dynamic>> customRefills = [];
+      if (refillsJson != null) {
+        final decoded = jsonDecode(refillsJson);
+        if (decoded is List) {
+          customRefills = List<Map<String, dynamic>>.from(decoded);
+        }
+      }
+
+      // Generate dynamic transactions based on pickups
+      final List<Map<String, dynamic>> generatedTransactions = [];
+      double computedBalance = 0.0;
+
+      // First add refills to computedBalance and generated list
+      for (var refill in customRefills) {
+        computedBalance += (double.tryParse(refill['amount'].toString()) ?? 0.0);
+        generatedTransactions.add({
+          'title': refill['title'] ?? 'Added via Wallet Refill',
+          'type': 'credit',
+          'amount': double.tryParse(refill['amount'].toString()) ?? 0.0,
+          'date': refill['date'] ?? 'Just now',
+          'category': refill['category'] ?? 'Load',
+          'timestamp': DateTime.tryParse(refill['timestamp']?.toString() ?? '') ?? DateTime.now(),
+        });
+      }
+
+      // Now add pickups incentives and fees
+      for (var item in pickups) {
+        final id = item['id']?.toString() ?? '';
+        final wasteType = item['waste_type']?.toString() ?? 'Mixed Waste';
+        final dateStr = item['pickup_date']?.toString() ?? item['scheduled_date']?.toString() ?? '';
+        final status = item['status']?.toString() ?? 'Pending';
+        
+        double weight = 5.0; 
+        if (item['estimated_weight'] != null) {
+          weight = double.tryParse(item['estimated_weight'].toString()) ?? 5.0;
+        } else if (item['number_of_bags'] != null) {
+          weight = (double.tryParse(item['number_of_bags'].toString()) ?? 2) * 2.5;
+        }
+        
+        final dt = DateTime.tryParse(dateStr) ?? DateTime.now();
+
+        if (status.toLowerCase() == 'completed' || status.toLowerCase() == 'confirmed' || status.toLowerCase() == 'success') {
+          final incentive = weight * 15.0;
+          final fee = 40.0;
+
+          generatedTransactions.add({
+            'title': '$wasteType Recycling Incentive',
+            'type': 'credit',
+            'amount': incentive,
+            'date': _formatDateLabel(dt),
+            'category': 'Incentive',
+            'timestamp': dt,
+          });
+
+          generatedTransactions.add({
+            'title': 'Collection Service Fee #$id',
+            'type': 'debit',
+            'amount': fee,
+            'date': _formatDateLabel(dt),
+            'category': 'Payment',
+            'timestamp': dt,
+          });
+
+          computedBalance += (incentive - fee);
+        } else {
+          generatedTransactions.add({
+            'title': 'Pending Collection Ref #$id',
+            'type': 'pending',
+            'amount': 0.0,
+            'date': _formatDateLabel(dt),
+            'category': 'Hold',
+            'timestamp': dt,
+          });
+        }
+      }
+
+      // If they have no completed pickups or refills, give them a welcome balance
+      if (computedBalance <= 0 && customRefills.isEmpty) {
+        computedBalance = 200.0;
+        generatedTransactions.add({
+          'title': 'Welcome Gift Incentive',
+          'type': 'credit',
+          'amount': 200.0,
+          'date': 'Account Opening',
+          'category': 'Bonus',
+          'timestamp': DateTime.now().subtract(const Duration(days: 5)),
+        });
+      }
+
+      // Sort all transactions by timestamp descending
+      generatedTransactions.sort((a, b) {
+        final tA = a['timestamp'] as DateTime;
+        final tB = b['timestamp'] as DateTime;
+        return tB.compareTo(tA);
+      });
+
+      if (mounted) {
+        setState(() {
+          _balance = computedBalance;
+          _transactions = generatedTransactions;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  String _formatDateLabel(DateTime dt) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+    final checkDate = DateTime(dt.year, dt.month, dt.day);
+
+    if (checkDate == today) {
+      return 'Today, ${DateFormat('hh:mm a').format(dt)}';
+    } else if (checkDate == yesterday) {
+      return 'Yesterday, ${DateFormat('hh:mm a').format(dt)}';
+    } else {
+      return DateFormat('dd MMM yyyy, hh:mm a').format(dt);
+    }
+  }
 
   @override
   void dispose() {
@@ -51,27 +174,33 @@ class _WalletScreenState extends State<WalletScreen> {
     super.dispose();
   }
 
-  void _addMoney(double amount) {
+  void _addMoney(double amount) async {
     if (amount <= 0) return;
-    setState(() {
-      _balance += amount;
-      _transactions.insert(0, {
-        'title': 'Added via Wallet Refill',
-        'type': 'credit',
-        'amount': amount,
-        'date': 'Just now',
-        'category': 'Load',
-      });
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Successfully added ₹${amount.toStringAsFixed(2)} to wallet!',
-        ),
-        backgroundColor: _primaryGreen,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    
+    // Save to Secure Storage
+    final refillsJson = await SecureStorageService.getRefills();
+    List<Map<String, dynamic>> customRefills = [];
+    if (refillsJson != null) {
+      final decoded = jsonDecode(refillsJson);
+      if (decoded is List) {
+        customRefills = List<Map<String, dynamic>>.from(decoded);
+      }
+    }
+
+    final newRefill = {
+      'title': 'Added via Wallet Refill',
+      'type': 'credit',
+      'amount': amount,
+      'date': 'Just now',
+      'category': 'Load',
+      'timestamp': DateTime.now().toIso8601String(),
+    };
+    customRefills.add(newRefill);
+
+    await SecureStorageService.saveRefills(jsonEncode(customRefills));
+
+    // Reload the wallet data dynamically
+    _loadWalletData();
   }
 
   void _showAddMoneyBottomSheet() {
@@ -237,39 +366,80 @@ class _WalletScreenState extends State<WalletScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: Column(
-        children: [
-          // Elegant balance presentation container
-          _buildBalanceBanner(),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: _primaryGreen))
+          : _errorMessage != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.red, fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadWalletData,
+                          style: ElevatedButton.styleFrom(backgroundColor: _primaryGreen),
+                          child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Column(
+                  children: [
+                    // Elegant balance presentation container
+                    _buildBalanceBanner(),
 
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 24, 16, 10),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Transaction History",
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 24, 16, 10),
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          "Transaction History",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: _loadWalletData,
+                        color: _primaryGreen,
+                        child: _transactions.isEmpty
+                            ? const SingleChildScrollView(
+                                physics: AlwaysScrollableScrollPhysics(),
+                                child: Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(40.0),
+                                    child: Text(
+                                      "No transactions yet.",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : ListView.builder(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
+                                itemCount: _transactions.length,
+                                itemBuilder: (context, index) {
+                                  final tx = _transactions[index];
+                                  return _buildTransactionCard(tx);
+                                },
+                              ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ),
-          ),
-
-          Expanded(
-            child: ListView.builder(
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: _transactions.length,
-              itemBuilder: (context, index) {
-                final tx = _transactions[index];
-                return _buildTransactionCard(tx);
-              },
-            ),
-          ),
-        ],
-      ),
     );
   }
 

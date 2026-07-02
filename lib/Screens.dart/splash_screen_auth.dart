@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/welcome_screen.dart';
+import 'package:suchigo_app/provider/profile_provider.dart';
 import 'package:suchigo_app/services/secure_storage_service.dart';
 
 class SplashScreenAuth extends StatefulWidget {
@@ -20,12 +22,13 @@ class _SplashScreenAuthState extends State<SplashScreenAuth> {
   Future<void> _checkAuthStatus() async {
     // Add a slight delay for splash screen visibility
     await Future.delayed(const Duration(seconds: 2));
-    
+
     final token = await SecureStorageService.getToken();
-    
+
     if (!mounted) return;
 
     if (token != null && token.isNotEmpty) {
+      Provider.of<ProfileProvider>(context, listen: false).refresh();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -49,12 +52,8 @@ class _SplashScreenAuthState extends State<SplashScreenAuth> {
             Image.asset(
               'assets/images/logo.png', // Fallback to icon if logo doesn't exist
               width: 200,
-              errorBuilder: (context, error, stackTrace) => 
-                Image.asset('assets/icons/suchigologo.png', width: 150),
-            ),
-            const SizedBox(height: 20),
-            const CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E713D)),
+              errorBuilder: (context, error, stackTrace) =>
+                  Image.asset('assets/icons/suchigologo.png', width: 150),
             ),
           ],
         ),

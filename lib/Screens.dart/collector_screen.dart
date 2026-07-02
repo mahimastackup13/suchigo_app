@@ -1,4 +1,4 @@
-// 
+//
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:suchigo_app/Screens.dart/AddOrder_Screen.dart';
@@ -57,6 +57,7 @@ class _CollectorScreenState extends State<CollectorScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
+
                   colors: [
                     Color.from(alpha: 1, red: 0.024, green: 0.035, blue: 0.106),
                     Color(0xFF4CAF50),
@@ -193,31 +194,31 @@ class _CollectorScreenState extends State<CollectorScreen> {
                     ),
                   )
                 : isDropdown
-                    ? DropdownButtonHideUnderline(
-                        child: DropdownButton<String>(
-                          value: dropdownValue,
-                          isExpanded: true,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            fontSize: 15,
-                          ),
-                          items: items?.map((String val) {
-                            return DropdownMenuItem<String>(
-                              value: val,
-                              child: Text(val),
-                            );
-                          }).toList(),
-                          onChanged: onChanged,
-                        ),
-                      )
-                    : Text(
-                        value ?? "",
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
-                        ),
+                ? DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: dropdownValue,
+                      isExpanded: true,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                        fontSize: 15,
                       ),
+                      items: items?.map((String val) {
+                        return DropdownMenuItem<String>(
+                          value: val,
+                          child: Text(val),
+                        );
+                      }).toList(),
+                      onChanged: onChanged,
+                    ),
+                  )
+                : Text(
+                    value ?? "",
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
           ),
         ],
       ),
@@ -239,7 +240,10 @@ class _CollectorScreenState extends State<CollectorScreen> {
     );
   }
 
-  Widget orderButtonGrid({required BuildContext context, required Color color}) {
+  Widget orderButtonGrid({
+    required BuildContext context,
+    required Color color,
+  }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 14),
@@ -315,7 +319,11 @@ class _CollectorScreenState extends State<CollectorScreen> {
     );
   }
 
-  Widget orderButton({required String title, required Color bgColor, required VoidCallback onTap}) {
+  Widget orderButton({
+    required String title,
+    required Color bgColor,
+    required VoidCallback onTap,
+  }) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),

@@ -83,6 +83,31 @@ class _AddressScreen1State extends State<AddressScreen1> {
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+        final addressProvider = Provider.of<AddressProvider>(context, listen: false);
+        
+        if (addressProvider.name.isEmpty) {
+          if (profileProvider.displayName.isNotEmpty) {
+            addressProvider.setName(profileProvider.displayName);
+          } else if (profileProvider.username.isNotEmpty && profileProvider.username != 'User') {
+            addressProvider.setName(profileProvider.username);
+          }
+        }
+        if (addressProvider.contact.isEmpty && profileProvider.phoneNumber.isNotEmpty) {
+          addressProvider.setContact(profileProvider.phoneNumber);
+        }
+        if (addressProvider.email.isEmpty && profileProvider.email.isNotEmpty) {
+          addressProvider.setEmail(profileProvider.email);
+        }
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final addressProvider = Provider.of<AddressProvider>(context, listen: true);
 
@@ -368,6 +393,7 @@ class _AddressScreen1State extends State<AddressScreen1> {
     required String hint,
   }) {
     return TextFormField(
+      key: ValueKey(initialValue),
       initialValue: initialValue.isNotEmpty ? initialValue : null,
       onChanged: onChanged,
       decoration: inputDecoration(hint),

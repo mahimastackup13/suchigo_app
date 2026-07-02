@@ -133,6 +133,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:suchigo_app/services/secure_storage_service.dart';
 
 class RegisterProvider with ChangeNotifier {
   // -----------------------------------------------------------
@@ -198,21 +199,29 @@ class RegisterProvider with ChangeNotifier {
       return false;
     }
 
+    final requestBody = jsonEncode(<String, String>{
+      'username': _username,
+      'email': _email,
+      'password': _password,
+      'first_name': _firstName,
+      'last_name': _lastName,
+      'phone_number': _phone,
+    });
+    print('[http] REQUEST: POST $_registerUrl');
+    print('[http] REQUEST Headers: {Content-Type: application/json; charset=UTF-8}');
+    print('[http] REQUEST Data: $requestBody');
+
     try {
       final response = await http.post(
         Uri.parse(_registerUrl),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
-        body: jsonEncode(<String, String>{
-          'username': _username,
-          'email': _email,
-          'password': _password,
-          'first_name': _firstName,
-          'last_name': _lastName,
-          'phone_number': _phone,
-        }),
+        body: requestBody,
       );
+
+      print('[http] RESPONSE: ${response.statusCode} POST $_registerUrl');
+      print('[http] RESPONSE Data: ${response.body}');
 
       _isLoading = false;
 
@@ -220,6 +229,15 @@ class RegisterProvider with ChangeNotifier {
         // Successful registration
         final responseBody = jsonDecode(response.body);
         print('Registration Successful: $responseBody');
+        
+        // Cache the registration details locally so they can be retrieved after login
+        await SecureStorageService.saveEmail(_email);
+        await SecureStorageService.savePhoneNumber(_phone);
+        await SecureStorageService.saveUsername(_username);
+        if (_firstName.isNotEmpty || _lastName.isNotEmpty) {
+          await SecureStorageService.saveDisplayName('$_firstName $_lastName'.trim());
+        }
+
         notifyListeners();
         return true;
       } else {
@@ -268,6 +286,7 @@ class RegisterProvider with ChangeNotifier {
         return false;
       }
     } catch (e) {
+      print('[http] ERROR: POST $_registerUrl -> $e');
       // Handle network errors
       _isLoading = false;
       _errorMessage = 'Network error. Could not connect to the server.';

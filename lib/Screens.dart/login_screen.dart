@@ -73,10 +73,14 @@ class _LoginPageState extends State<LoginScreen> {
     if (isSuccess) {
       // Set username in ProfileProvider
       final username = _usernameController.text.trim();
-      Provider.of<ProfileProvider>(
+      final profileProvider = Provider.of<ProfileProvider>(
         context,
         listen: false,
-      ).setUsername(username);
+      );
+      profileProvider.setUsername(username);
+      profileProvider
+          .refresh(); // Fetch user profile and cache details (email, phone, etc.)
+
       // Reset home provider selected tab back to Home (0)
       Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(0);
       // ✅ Navigate to HomeScreen and remove all previous routes
@@ -345,12 +349,20 @@ class _LoginPageState extends State<LoginScreen> {
                             builder: (_) => const RegisterScreen(),
                           ),
                         ),
-                        child: const Text(
-                          "Don't have an account? Sign Up",
-                          style: TextStyle(
-                            color: buttonGreen,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                        child: const Text.rich(
+                          TextSpan(
+                            text: "Don't have an account? ",
+                            style: TextStyle(
+                              color: buttonGreen,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: "Sign Up",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
                         ),
                       ),

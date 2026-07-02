@@ -8,6 +8,7 @@ import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/login_screen.dart';
 import 'package:suchigo_app/Screens.dart/notification_preferences.dart';
+import 'package:suchigo_app/services/pickup_api_service.dart';
 
 class AccountScreen extends StatefulWidget {
   const AccountScreen({super.key});
@@ -23,16 +24,20 @@ class _AccountScreenState extends State<AccountScreen> {
 
   int _currentNavIndex = 3;
 
+  // Dynamic stats
+  int _totalPickups = 0;
+  double _totalWeight = 0.0;
+  int _treesEquiv = 0;
+  bool _statsLoading = true;
+
   // Form controllers
   late final TextEditingController _nameController;
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   final _altPhoneController = TextEditingController();
-  final _addressController = TextEditingController(
-    text: '42, Rose Garden Rd, Palarivattom',
-  );
-  final _cityController = TextEditingController(text: 'Ernakulam');
-  final _pincodeController = TextEditingController(text: '682025');
+  final _addressController = TextEditingController(text: '');
+  final _cityController = TextEditingController(text: '');
+  final _pincodeController = TextEditingController(text: '');
 
   @override
   void initState() {
@@ -42,11 +47,38 @@ class _AccountScreenState extends State<AccountScreen> {
       listen: false,
     );
     _nameController = TextEditingController(text: profileProvider.username);
-    _emailController = TextEditingController(
-      text:
-          "${profileProvider.username.toLowerCase().replaceAll(' ', '')}@email.com",
-    );
+    _emailController = TextEditingController(text: profileProvider.email);
     _phoneController = TextEditingController(text: profileProvider.phoneNumber);
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    try {
+      final rawPickups = await PickupApiService.fetchPickups();
+      double weight = 0.0;
+      for (var item in rawPickups) {
+        if (item['estimated_weight'] != null) {
+          weight += double.tryParse(item['estimated_weight'].toString()) ?? 0.0;
+        } else if (item['number_of_bags'] != null) {
+          weight +=
+              (double.tryParse(item['number_of_bags'].toString()) ?? 0.0) * 2.5;
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _totalPickups = rawPickups.length;
+          _totalWeight = weight;
+          _treesEquiv = (weight * 0.3).round();
+          _statsLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _statsLoading = false;
+        });
+      }
+    }
   }
 
   bool _editMode = false;
@@ -152,19 +184,21 @@ class _AccountScreenState extends State<AccountScreen> {
                     children: [
                       _StatCard(
                         icon: Icons.recycling_rounded,
-                        value: '12',
+                        value: _statsLoading ? '...' : '$_totalPickups',
                         label: 'Total\nPickups',
                       ),
                       const SizedBox(width: 12),
                       _StatCard(
                         icon: Icons.scale_rounded,
-                        value: '84.5 kg',
+                        value: _statsLoading
+                            ? '...'
+                            : '${_totalWeight.toStringAsFixed(1)} kg',
                         label: 'Waste\nCollected',
                       ),
                       const SizedBox(width: 12),
                       _StatCard(
                         icon: Icons.eco_rounded,
-                        value: '28',
+                        value: _statsLoading ? '...' : '$_treesEquiv',
                         label: 'Trees\nEquiv.',
                       ),
                     ],
@@ -264,6 +298,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         controller: _addressController,
                         editable: _editMode,
                         maxLines: 2,
+                        hint: 'Add Address',
                       ),
                       _Divider(),
                       _AccountField(
@@ -271,6 +306,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         label: 'City',
                         controller: _cityController,
                         editable: _editMode,
+                        hint: 'Add City',
                       ),
                       _Divider(),
                       _AccountField(
@@ -279,6 +315,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         controller: _pincodeController,
                         editable: _editMode,
                         keyboard: TextInputType.number,
+                        hint: 'Add Pincode',
                       ),
                     ],
                   ),
@@ -665,10 +702,22 @@ class _AccountField extends StatelessWidget {
                           ),
                         ),
                       )
+                    : controller.text.isEmpty && hint != null
+                    ? Row(
+                        children: [
+                          Text(
+                            hint!,
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              color: Colors.orange.shade700,
+                              fontWeight: FontWeight.w500,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      )
                     : Text(
-                        controller.text.isEmpty
-                            ? (hint ?? '—')
-                            : controller.text,
+                        controller.text.isEmpty ? '—' : controller.text,
                         style: TextStyle(
                           fontSize: 13.5,
                           color: controller.text.isEmpty

@@ -4,10 +4,12 @@ import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:provider/provider.dart';
 import 'package:suchigo_app/provider/home_provider.dart';
 import 'package:suchigo_app/provider/profile_provider.dart';
+import 'package:suchigo_app/provider/bill_provider.dart';
 import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/booking_confirmation_screen.dart';
 import 'package:suchigo_app/services/address_api_service.dart';
 import 'package:suchigo_app/services/pickup_api_service.dart';
+import 'package:suchigo_app/services/notification_service.dart';
 import 'home_screen.dart';
 
 class AddressScreen extends StatefulWidget {
@@ -62,6 +64,27 @@ class _AddressScreenState extends State<AddressScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+        if (profileProvider.displayName.isNotEmpty) {
+          _nameController.text = profileProvider.displayName;
+        } else if (profileProvider.username.isNotEmpty && profileProvider.username != 'User') {
+          _nameController.text = profileProvider.username;
+        }
+        if (profileProvider.phoneNumber.isNotEmpty) {
+          _contactController.text = profileProvider.phoneNumber;
+        }
+        if (profileProvider.email.isNotEmpty) {
+          _emailController.text = profileProvider.email;
+        }
+      }
+    });
+  }
+
+  @override
   void dispose() {
     _nameController.dispose();
     _pickupDateController.dispose();
@@ -79,11 +102,20 @@ class _AddressScreenState extends State<AddressScreen> {
 
   String _buildScheduledDateIso() {
     final date = _selectedDate!;
-    final hour = _timeSlots.firstWhere(
-      (slot) => slot['label'] == _selectedTimeSlot,
-    )['hour'] as int;
+    final hour =
+        _timeSlots.firstWhere(
+              (slot) => slot['label'] == _selectedTimeSlot,
+            )['hour']
+            as int;
 
-    final utcDateTime = DateTime.utc(date.year, date.month, date.day, hour, 0, 0);
+    final utcDateTime = DateTime.utc(
+      date.year,
+      date.month,
+      date.day,
+      hour,
+      0,
+      0,
+    );
     return utcDateTime.toIso8601String().replaceFirst('.000Z', 'Z');
   }
 
@@ -149,31 +181,55 @@ class _AddressScreenState extends State<AddressScreen> {
     });
 
     try {
-      final addressResponse = await AddressApiService.createAddress(
-        street: _addressController.text.trim(),
-        city: _cityController.text.trim(),
-        state: (_selectedState ?? '').toLowerCase(),
-        district: (_selectedDistrict ?? '').toLowerCase(),
-        zipCode: _zipController.text.trim(),
-        ward: (_selectedWard ?? '').toUpperCase().replaceAll(' ', ''),
-        localBody: _selectedLocalBody ?? '',
-        numberOfBags: int.tryParse(_bagsController.text.trim()) ?? 1,
-        isDefault: true,
-      );
+      final dateStr = _selectedDate != null
+          ? "${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}"
+          : "";
+
+      final billProvider = Provider.of<BillProvider>(context, listen: false);
+      final wasteTypeVal = billProvider.selectedWasteTypes.isNotEmpty
+          ? billProvider.selectedWasteTypes.join(', ')
+          : 'Mixed Household Waste';
 
       final pickupResponse = await PickupApiService.createPickup(
-        name: _nameController.text.trim(),
+        fullName: _nameController.text.trim(),
         email: _emailController.text.trim(),
         contactNumber: _contactController.text.trim(),
-        pickupAddress: _addressController.text.trim(),
-        scheduledDate: _buildScheduledDateIso(),
+        street: _addressController.text.trim(),
+        city: _cityController.text.trim(),
+        zipCode: _zipController.text.trim(),
+        state: _selectedState ?? '',
+        district: _selectedDistrict ?? '',
+        localBody: _selectedLocalBody ?? '',
+        wardName: _selectedWard ?? '',
+        pickupDate: dateStr,
+        pickupTimeSlot: _selectedTimeSlot ?? '',
         itemsDescription: _secondaryController.text.trim().isNotEmpty
             ? _secondaryController.text.trim()
             : 'General household waste',
+        wasteType: wasteTypeVal,
         landmark: _landmarkController.text.trim().isNotEmpty
             ? _landmarkController.text.trim()
             : null,
       );
+
+      final addressResponse = <String, dynamic>{
+        'street': _addressController.text.trim(),
+        'city': _cityController.text.trim(),
+        'zip_code': _zipController.text.trim(),
+        'number_of_bags': int.tryParse(_bagsController.text.trim()) ?? 1,
+      };
+
+      final pickupId = int.tryParse(pickupResponse['id']?.toString() ?? '') ?? 0;
+      if (_selectedDate != null && pickupId > 0) {
+        try {
+          await NotificationService.instance.schedulePickupReminders(
+            pickupId: pickupId,
+            pickupDate: _selectedDate!,
+          );
+        } catch (e) {
+          debugPrint('[AddressScreen] Failed to schedule notification reminders: $e');
+        }
+      }
 
       if (!mounted) return;
 
@@ -182,7 +238,9 @@ class _AddressScreenState extends State<AddressScreen> {
           content: Text('Pickup scheduled successfully!'),
           backgroundColor: _darkGreen,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
         ),
       );
 
@@ -200,8 +258,6 @@ class _AddressScreenState extends State<AddressScreen> {
           ),
         ),
       );
-    } on AddressSubmissionException catch (e) {
-      setState(() => _submitError = 'Address error — ${e.message}');
     } on PickupSubmissionException catch (e) {
       setState(() => _submitError = 'Pickup error — ${e.message}');
     } catch (e) {
@@ -353,9 +409,11 @@ class _AddressScreenState extends State<AddressScreen> {
               ),
               errorStyle: const TextStyle(fontSize: 11, height: 1.0),
             ),
-            validator: customValidator ?? (required
-                ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
-                : null),
+            validator:
+                customValidator ??
+                (required
+                    ? (v) => (v == null || v.trim().isEmpty) ? 'Required' : null
+                    : null),
           ),
         ],
       ),
@@ -370,95 +428,336 @@ class _AddressScreenState extends State<AddressScreen> {
     required ValueChanged<String?> onChanged,
     bool required = true,
   }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return FormField<String>(
+      initialValue: value,
+      validator: required
+          ? (v) => (v == null || v.isEmpty) ? 'Please select an option' : null
+          : null,
+      builder: (state) {
+        final hasError = state.hasError;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              if (required) ...[
-                const SizedBox(width: 4),
-                const Text(
-                  '*',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ],
-          ),
-          const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            value: value,
-            isExpanded: true,
-            icon: Icon(
-              Icons.keyboard_arrow_down_rounded,
-              color: Colors.grey.shade600,
-              size: 22,
-            ),
-            style: const TextStyle(fontSize: 14, color: Colors.black87),
-            dropdownColor: Colors.white,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
-              filled: true,
-              fillColor: const Color(0xFFF9FBF9),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: Colors.grey.shade200, width: 1.5),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: _headerGreen, width: 1.8),
-              ),
-              errorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.red, width: 1.2),
-              ),
-              focusedErrorBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Colors.red, width: 1.8),
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                vertical: 14,
-                horizontal: 16,
-              ),
-              errorStyle: const TextStyle(fontSize: 11, height: 1.0),
-            ),
-            items: items
-                .map(
-                  (e) => DropdownMenuItem(
-                    value: e,
-                    child: Text(
-                      e,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Colors.black87,
-                      ),
+              Row(
+                children: [
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
                     ),
                   ),
-                )
-                .toList(),
-            onChanged: onChanged,
-            validator: required
-                ? (v) => (v == null || v.isEmpty)
-                      ? 'Please select an option'
-                      : null
-                : null,
+                  if (required) ...[
+                    const SizedBox(width: 4),
+                    const Text(
+                      '*',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 8),
+              InkWell(
+                onTap: () => _showSelectionBottomSheet(
+                  title: label,
+                  items: items,
+                  selectedValue: value,
+                  onSelected: (val) {
+                    onChanged(val);
+                    state.didChange(val);
+                  },
+                ),
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF9FBF9),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: hasError
+                          ? Colors.red
+                          : (value != null ? _headerGreen.withOpacity(0.5) : Colors.grey.shade200),
+                      width: hasError ? 1.2 : 1.5,
+                    ),
+                    boxShadow: [
+                      if (value != null && !hasError)
+                        BoxShadow(
+                          color: _headerGreen.withOpacity(0.05),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          value ?? hint,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: value != null ? Colors.black87 : Colors.grey.shade400,
+                            fontWeight: value != null ? FontWeight.w500 : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                      Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        color: hasError
+                            ? Colors.red
+                            : (value != null ? _headerGreen : Colors.grey.shade600),
+                        size: 22,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              if (hasError)
+                Padding(
+                  padding: const EdgeInsets.only(top: 6, left: 16),
+                  child: Text(
+                    state.errorText ?? '',
+                    style: const TextStyle(
+                      color: Colors.red,
+                      fontSize: 11,
+                      height: 1.0,
+                    ),
+                  ),
+                ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
+    );
+  }
+
+  void _showSelectionBottomSheet({
+    required String title,
+    required List<String> items,
+    required String? selectedValue,
+    required ValueChanged<String?> onSelected,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        String searchQuery = "";
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final filteredItems = items
+                .where((item) => item.toLowerCase().contains(searchQuery.toLowerCase()))
+                .toList();
+
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                height: MediaQuery.of(context).size.height * 0.65,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    Container(
+                      width: 40,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2.5),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Select $title',
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.grey.shade100,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.close_rounded, size: 20, color: Colors.black54),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade100,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.search_rounded, color: Colors.grey.shade500, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: TextField(
+                                onChanged: (val) => setModalState(() => searchQuery = val),
+                                style: const TextStyle(fontSize: 14),
+                                decoration: InputDecoration(
+                                  hintText: 'Search $title...',
+                                  hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+                                  border: InputBorder.none,
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                                ),
+                              ),
+                            ),
+                            if (searchQuery.isNotEmpty)
+                              GestureDetector(
+                                onTap: () => setModalState(() => searchQuery = ""),
+                                child: Icon(Icons.clear_rounded, color: Colors.grey.shade500, size: 18),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: filteredItems.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade300),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'No results found',
+                                    style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : ListView.builder(
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                              itemCount: filteredItems.length,
+                              itemBuilder: (context, index) {
+                                final item = filteredItems[index];
+                                final isSelected = item == selectedValue;
+
+                                Widget leadingWidget;
+                                if (title.toLowerCase().contains("ward")) {
+                                  final numberOnly = item.replaceAll(RegExp(r'[^0-9]'), '');
+                                  leadingWidget = Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? _darkGreen : Colors.green.shade50,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        numberOnly.isNotEmpty ? numberOnly : '#',
+                                        style: TextStyle(
+                                          color: isSelected ? Colors.white : _darkGreen,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  leadingWidget = Container(
+                                    width: 32,
+                                    height: 32,
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? _darkGreen.withOpacity(0.1) : Colors.grey.shade100,
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.location_city_rounded,
+                                      color: isSelected ? _darkGreen : Colors.grey.shade600,
+                                      size: 16,
+                                    ),
+                                  );
+                                }
+
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 8),
+                                  child: InkWell(
+                                    onTap: () {
+                                      onSelected(item);
+                                      Navigator.pop(context);
+                                    },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? _darkGreen.withOpacity(0.05)
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? _darkGreen.withOpacity(0.3)
+                                              : Colors.grey.shade100,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          leadingWidget,
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              item,
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                                                color: isSelected ? _darkGreen : Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                          if (isSelected)
+                                            const Icon(
+                                              Icons.check_circle_rounded,
+                                              color: _darkGreen,
+                                              size: 20,
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -544,12 +843,19 @@ class _AddressScreenState extends State<AddressScreen> {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Icon(Icons.error_outline, color: Colors.red.shade700, size: 18),
+                              Icon(
+                                Icons.error_outline,
+                                color: Colors.red.shade700,
+                                size: 18,
+                              ),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   _submitError!,
-                                  style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                                  style: TextStyle(
+                                    color: Colors.red.shade700,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
                             ],
@@ -572,10 +878,14 @@ class _AddressScreenState extends State<AddressScreen> {
                             label: 'Contact Number',
                             hint: 'Enter your contact number',
                             keyboard: TextInputType.phone,
-                            formatters: [FilteringTextInputFormatter.digitsOnly],
+                            formatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             customValidator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'Required';
-                              if (v.trim().length < 7) return 'Enter a valid phone number';
+                              if (v == null || v.trim().isEmpty)
+                                return 'Required';
+                              if (v.trim().length < 7)
+                                return 'Enter a valid phone number';
                               return null;
                             },
                           ),
@@ -585,9 +895,13 @@ class _AddressScreenState extends State<AddressScreen> {
                             hint: 'Enter your email address',
                             keyboard: TextInputType.emailAddress,
                             customValidator: (v) {
-                              if (v == null || v.trim().isEmpty) return 'Required';
-                              final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                              if (!emailRegex.hasMatch(v.trim())) return 'Enter a valid email';
+                              if (v == null || v.trim().isEmpty)
+                                return 'Required';
+                              final emailRegex = RegExp(
+                                r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                              );
+                              if (!emailRegex.hasMatch(v.trim()))
+                                return 'Enter a valid email';
                               return null;
                             },
                           ),
@@ -616,7 +930,8 @@ class _AddressScreenState extends State<AddressScreen> {
                             hint: 'Select state',
                             items: _state,
                             value: _selectedState,
-                            onChanged: (v) => setState(() => _selectedState = v),
+                            onChanged: (v) =>
+                                setState(() => _selectedState = v),
                           ),
                           _buildDropdown(
                             label: 'District',
@@ -633,7 +948,8 @@ class _AddressScreenState extends State<AddressScreen> {
                             hint: 'Select local body',
                             items: _localBodies,
                             value: _selectedLocalBody,
-                            onChanged: (v) => setState(() => _selectedLocalBody = v),
+                            onChanged: (v) =>
+                                setState(() => _selectedLocalBody = v),
                           ),
                           _buildDropdown(
                             label: 'Ward Name & Number',
@@ -648,7 +964,9 @@ class _AddressScreenState extends State<AddressScreen> {
                             label: 'Zip / Postal Code',
                             hint: 'Enter zip code',
                             keyboard: TextInputType.number,
-                            formatters: [FilteringTextInputFormatter.digitsOnly],
+                            formatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                           ),
                         ],
                       ),
@@ -669,16 +987,21 @@ class _AddressScreenState extends State<AddressScreen> {
                           _buildDropdown(
                             label: 'Pickup Time Slot',
                             hint: 'Select time slot',
-                            items: _timeSlots.map((e) => e['label'] as String).toList(),
+                            items: _timeSlots
+                                .map((e) => e['label'] as String)
+                                .toList(),
                             value: _selectedTimeSlot,
-                            onChanged: (v) => setState(() => _selectedTimeSlot = v),
+                            onChanged: (v) =>
+                                setState(() => _selectedTimeSlot = v),
                           ),
                           _buildField(
                             controller: _bagsController,
                             label: 'Number of Bags',
                             hint: 'Enter number of bags',
                             keyboard: TextInputType.number,
-                            formatters: [FilteringTextInputFormatter.digitsOnly],
+                            formatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                           ),
                         ],
                       ),
@@ -694,7 +1017,9 @@ class _AddressScreenState extends State<AddressScreen> {
                             label: 'Secondary Number',
                             hint: 'Enter alternative contact number',
                             keyboard: TextInputType.phone,
-                            formatters: [FilteringTextInputFormatter.digitsOnly],
+                            formatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                            ],
                             required: false,
                           ),
                           _buildField(
@@ -741,7 +1066,10 @@ class _AddressScreenState extends State<AddressScreen> {
                               ? const SizedBox(
                                   width: 24,
                                   height: 24,
-                                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
                                 )
                               : const Text(
                                   'SUBMIT',
@@ -753,16 +1081,7 @@ class _AddressScreenState extends State<AddressScreen> {
                                 ),
                         ),
                       ),
-                      if (kDebugMode) ...[
-                        const SizedBox(height: 16),
-                        TextButton(
-                          onPressed: _previewConfirmationScreenWithMockData,
-                          child: const Text(
-                            'DEBUG: Preview Confirmation Screen',
-                            style: TextStyle(color: _headerGreen, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                      ],
+                      if (kDebugMode) ...[const SizedBox(height: 16)],
                       const SizedBox(height: 32),
                     ],
                   ),
@@ -800,7 +1119,10 @@ class _AddressScreenState extends State<AddressScreen> {
                   _headerIconBtn(
                     icon: Icons.arrow_back_ios_new_rounded,
                     onTap: () {
-                      Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(1);
+                      Provider.of<HomeProvider>(
+                        context,
+                        listen: false,
+                      ).setSelectedIndex(1);
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -819,7 +1141,10 @@ class _AddressScreenState extends State<AddressScreen> {
                   _headerIconBtn(
                     icon: Icons.home_rounded,
                     onTap: () {
-                      Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(0);
+                      Provider.of<HomeProvider>(
+                        context,
+                        listen: false,
+                      ).setSelectedIndex(0);
                       Navigator.pushReplacement(
                         context,
                         MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -832,7 +1157,10 @@ class _AddressScreenState extends State<AddressScreen> {
               // Welcome card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
@@ -858,7 +1186,11 @@ class _AddressScreenState extends State<AddressScreen> {
                     Text(
                       'Manage your waste collection and track your\nenvironmental impact',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 12, color: Colors.grey.shade600, height: 1.5),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        height: 1.5,
+                      ),
                     ),
                   ],
                 ),

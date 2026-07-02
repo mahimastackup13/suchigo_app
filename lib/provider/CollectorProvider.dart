@@ -70,6 +70,9 @@ class CollectorProvider extends ChangeNotifier {
       "ward": wardController.text.trim()
     };
 
+    print('[http] REQUEST: POST $url');
+    print('[http] REQUEST Headers: {Content-Type: application/json, Accept: application/json}');
+    print('[http] REQUEST Data: ${jsonEncode(bodyData)}');
     try {
       final response = await http.post(
         url,
@@ -80,6 +83,9 @@ class CollectorProvider extends ChangeNotifier {
         body: jsonEncode(bodyData),
       );
 
+      print('[http] RESPONSE: ${response.statusCode} POST $url');
+      print('[http] RESPONSE Data: ${response.body}');
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         debugPrint("Data Saved Successfully: ${response.body}");
         return true;
@@ -88,6 +94,7 @@ class CollectorProvider extends ChangeNotifier {
         return false;
       }
     } catch (e) {
+      print('[http] ERROR: POST $url -> $e');
       debugPrint("Network Exception context: $e");
       return false;
     } finally {

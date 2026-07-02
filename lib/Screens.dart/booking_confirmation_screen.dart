@@ -57,38 +57,34 @@ class BookingDetails {
     final pickupId = pickupJson['id'];
     final bookingId = pickupId != null ? 'WC-$pickupId' : 'WC-PENDING';
 
-    final scheduledDateRaw = pickupJson['scheduled_date']?.toString();
+    final scheduledDateRaw = pickupJson['scheduled_date']?.toString() ?? pickupJson['pickup_date']?.toString();
     final collectionDate = _formatCollectionDate(scheduledDateRaw);
 
-    final street = addressJson['street']?.toString() ?? '';
-    final cityVal = addressJson['city']?.toString() ?? '';
-    final zip = addressJson['zip_code']?.toString() ?? '';
+    final street = addressJson['street']?.toString() ?? pickupJson['street']?.toString() ?? '';
+    final cityVal = addressJson['city']?.toString() ?? pickupJson['city']?.toString() ?? '';
+    final zip = addressJson['zip_code']?.toString() ?? pickupJson['zip_code']?.toString() ?? '';
 
     final numberOfBagsRaw = addressJson['number_of_bags'];
     final numberOfBags = numberOfBagsRaw is int
         ? numberOfBagsRaw
         : int.tryParse(numberOfBagsRaw?.toString() ?? '') ?? 0;
 
+    final nameVal = pickupJson['full_name']?.toString() ?? pickupJson['name']?.toString() ?? '';
+    final phoneVal = pickupJson['contact_number']?.toString() ?? pickupJson['contactNumber']?.toString() ?? '';
+
     return BookingDetails(
       bookingId: bookingId,
-      wasteType: pickupJson['items_description']?.toString().isNotEmpty == true
+      wasteType: pickupJson['waste_type']?.toString() ?? (pickupJson['items_description']?.toString().isNotEmpty == true
           ? pickupJson['items_description'].toString()
-          : 'Mixed Household Waste',
+          : 'Mixed Household Waste'),
       collectionDate: collectionDate,
-      collectionTime: selectedTimeSlotLabel,
-      address: street.isNotEmpty ? street : (pickupJson['pickup_address']?.toString() ?? 'N/A'),
+      collectionTime: pickupJson['pickup_time_slot']?.toString() ?? selectedTimeSlotLabel,
+      address: street.isNotEmpty ? street : 'N/A',
       city: cityVal,
       pincode: zip,
-      contactName: pickupJson['name']?.toString().isNotEmpty == true
-          ? pickupJson['name'].toString()
-          : fallbackContactName,
-      contactPhone: pickupJson['contact_number']?.toString().isNotEmpty == true
-          ? pickupJson['contact_number'].toString()
-          : fallbackContactPhone,
+      contactName: nameVal.isNotEmpty ? nameVal : fallbackContactName,
+      contactPhone: phoneVal.isNotEmpty ? phoneVal : fallbackContactPhone,
       status: 'Confirmed',
-      // The backend doesn't return a weight estimate; approximate using
-      // the number of bags saved on the address record (0.5 bags ≈ 1kg
-      // is a placeholder ratio — adjust once the backend exposes a real figure).
       estimatedWeight: numberOfBags > 0 ? numberOfBags * 2.5 : 0,
       specialInstructions: pickupJson['landmark']?.toString().isNotEmpty == true
           ? 'Landmark: ${pickupJson['landmark']}'

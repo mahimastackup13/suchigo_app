@@ -9,6 +9,7 @@ class ProfileProvider extends ChangeNotifier {
   String _displayName = "";
   String _username = "";
   String _phoneNumber = "";
+  String _email = "";
   String _profileImagePath = "";
   bool _isLoading = false;
 
@@ -21,7 +22,9 @@ class ProfileProvider extends ChangeNotifier {
     return "User";
   }
 
+  String get displayName => _displayName;
   String get phoneNumber => _phoneNumber;
+  String get email => _email;
   String get profileImagePath => _profileImagePath;
   bool get isLoading => _isLoading;
 
@@ -64,6 +67,7 @@ class ProfileProvider extends ChangeNotifier {
     final localDisplayName = await SecureStorageService.getDisplayName();
     final localUsername = await SecureStorageService.getUsername();
     final localPhone = await SecureStorageService.getPhoneNumber();
+    final localEmail = await SecureStorageService.getEmail();
 
     bool changed = false;
     if (localDisplayName != null && localDisplayName.isNotEmpty) {
@@ -76,6 +80,10 @@ class ProfileProvider extends ChangeNotifier {
     }
     if (localPhone != null && localPhone.isNotEmpty) {
       _phoneNumber = localPhone;
+      changed = true;
+    }
+    if (localEmail != null && localEmail.isNotEmpty) {
+      _email = localEmail;
       changed = true;
     }
     if (changed) notifyListeners();
@@ -123,6 +131,7 @@ class ProfileProvider extends ChangeNotifier {
         final String? apiUsername = data['username'] as String?;
         final String? apiPhone =
             (data['phone_number'] ?? data['phone']) as String?;
+        final String? apiEmail = data['email'] as String?;
 
         if (apiDisplayName != null && apiDisplayName.isNotEmpty) {
           _displayName = apiDisplayName;
@@ -135,6 +144,10 @@ class ProfileProvider extends ChangeNotifier {
         if (apiPhone != null && apiPhone.isNotEmpty) {
           _phoneNumber = apiPhone;
           await SecureStorageService.savePhoneNumber(apiPhone);
+        }
+        if (apiEmail != null && apiEmail.isNotEmpty) {
+          _email = apiEmail;
+          await SecureStorageService.saveEmail(apiEmail);
         }
 
         notifyListeners();

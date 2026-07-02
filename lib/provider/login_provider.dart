@@ -68,6 +68,11 @@ class LoginProvider extends ChangeNotifier {
         await SecureStorageService.savePhoneNumber(phone);
       }
 
+      final String? email = body['email'];
+      if (email != null && email.isNotEmpty) {
+        await SecureStorageService.saveEmail(email);
+      }
+
       _isLoading = false;
       notifyListeners();
       return true;

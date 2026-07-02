@@ -5,8 +5,9 @@ import 'package:suchigo_app/Screens.dart/home_screen.dart';
 import 'package:suchigo_app/Screens.dart/order_history_screen.dart';
 import 'package:suchigo_app/Screens.dart/account_screen.dart';
 import 'package:suchigo_app/Screens.dart/contact_us_screen.dart';
-import 'package:suchigo_app/Screens.dart/wallet_screen.dart';
 import 'package:suchigo_app/Screens.dart/rewards_screen.dart';
+import 'package:suchigo_app/Screens.dart/wallet_screen.dart';
+
 import 'package:suchigo_app/provider/profile_provider.dart';
 
 class ProfileScreen extends StatelessWidget {

@@ -23,6 +23,8 @@ dependencies:
 
   # --- Date Formatting ---
   intl: ^0.20.2 
+  flutter_local_notifications: ^17.2.1
+  timezone: ^0.9.4
   
   # --- Firebase (Core and Auth) ---
   firebase_core: ^3.0.0 
@@ -76,6 +78,7 @@ flutter:
     - assets/images/waste.png
     - assets/images/homesuchi2.png
     - assets/images/homesuchi1.jpeg
+    - assets/images/banner_logo.png
     - assets/images/haza.png
     - assets/images/advt 01.jpg.jpeg
 

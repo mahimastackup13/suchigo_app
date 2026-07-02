@@ -20,15 +20,17 @@ class AddressProvider with ChangeNotifier {
   
   void setName(String value) {
     _name = value;
-   
+    notifyListeners();
   }
 
   void setEmail(String value) {
     _email = value;
+    notifyListeners();
   }
 
   void setContact(String value) {
     _contact = value;
+    notifyListeners();
   }
 
   void setDate(String value) {

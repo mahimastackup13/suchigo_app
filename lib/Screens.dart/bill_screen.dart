@@ -507,86 +507,90 @@ class _WasteCategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isClickable = category.value == 1;
     return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
-        constraints: const BoxConstraints(minWidth: 120, maxWidth: 180),
-        decoration: BoxDecoration(
-          color: isSelected ? Color(0xFF4CAF50) : Colors.white,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isSelected ? Color(0xFF4CAF50) : Colors.grey.shade200,
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: isSelected
-                  ? Color(0xFF4CAF50).withOpacity(0.25)
-                  : Colors.black.withOpacity(0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+      onTap: isClickable ? onTap : null,
+      child: Opacity(
+        opacity: isClickable ? 1.0 : 0.45,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 18),
+          constraints: const BoxConstraints(minWidth: 120, maxWidth: 180),
+          decoration: BoxDecoration(
+            color: isSelected ? Color(0xFF4CAF50) : Colors.white,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: isSelected ? Color(0xFF4CAF50) : Colors.grey.shade200,
+              width: 1.5,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Icon circle
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
+            boxShadow: [
+              BoxShadow(
                 color: isSelected
-                    ? Colors.white.withOpacity(0.2)
-                    : const Color(0xFFF1F8F2),
-                shape: BoxShape.circle,
+                    ? Color(0xFF4CAF50).withOpacity(0.25)
+                    : Colors.black.withOpacity(0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-              child: Icon(
-                category.icon,
-                size: 26,
-                color: isSelected ? Colors.white : Color(0xFF4CAF50),
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            // Title
-            Flexible(
-              child: Text(
-                category.title,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.4,
-                  color: isSelected ? Colors.white : Colors.black87,
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 5),
-
-            // Subtitle
-            Flexible(
-              child: Text(
-                category.subtitle,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 10,
+            ],
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Icon circle
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
                   color: isSelected
-                      ? Colors.white.withOpacity(0.8)
-                      : Colors.grey.shade500,
-                  height: 1.4,
+                      ? Colors.white.withOpacity(0.2)
+                      : const Color(0xFFF1F8F2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  category.icon,
+                  size: 26,
+                  color: isSelected ? Colors.white : Color(0xFF4CAF50),
                 ),
               ),
-            ),
-          ],
+  
+              const SizedBox(height: 10),
+  
+              // Title
+              Flexible(
+                child: Text(
+                  category.title,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.4,
+                    color: isSelected ? Colors.white : Colors.black87,
+                  ),
+                ),
+              ),
+  
+              const SizedBox(height: 5),
+  
+              // Subtitle
+              Flexible(
+                child: Text(
+                  category.subtitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: isSelected
+                        ? Colors.white.withOpacity(0.8)
+                        : Colors.grey.shade500,
+                    height: 1.4,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

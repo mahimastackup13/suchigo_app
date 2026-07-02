@@ -17,42 +17,6 @@ class WelcomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    // children: [
-                    //   Image.asset(
-                    //   'assets/images/logo.png',
-                    //   height: 80,
-                    //   ),
-                    //   const SizedBox(width: 8),
-
-                    // ],
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
-                      );
-                    },
-                    child: const Text(
-                      "Skip",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
-
               Center(
                 child: Image.asset(
                   'assets/images/tree (2).png',
@@ -110,7 +74,7 @@ class WelcomeScreen extends StatelessWidget {
                       ),
                     );
                   },
-                  
+
                   child: const Text(
                     "Get started",
                     style: TextStyle(
@@ -145,7 +109,6 @@ class WelcomeScreen extends StatelessWidget {
               //     ),
               //   ),
               // ),
-
               const SizedBox(height: 10),
             ],
           ),

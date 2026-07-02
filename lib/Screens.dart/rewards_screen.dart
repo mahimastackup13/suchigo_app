@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:suchigo_app/services/pickup_api_service.dart';
 
 class RewardsScreen extends StatefulWidget {
   const RewardsScreen({super.key});
@@ -13,25 +14,27 @@ class _RewardsScreenState extends State<RewardsScreen> {
   static const Color _accentGreen = Color(0xFF4CAF50);
   static const Color _backgroundGrey = Color(0xFFF5F5F5);
 
-  final int _totalPoints = 320;
+  int _totalPoints = 0;
   final int _nextMilestone = 500;
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  final List<Map<String, dynamic>> _vouchers = [
+  List<Map<String, dynamic>> _vouchers = [
     {
       'title': '₹100 Bill Discount',
       'desc': 'Get ₹100 off your next garbage collection bill.',
       'code': 'CLEAN100',
       'minPoints': 200,
-      'unlocked': true,
-      'expiry': 'Expires 31 Jul 2026',
+      'unlocked': false,
+      'expiry': 'Locked',
     },
     {
       'title': 'Free Organic Compost Kit',
       'desc': 'Get a 2kg pack of organic home composting starter kit.',
       'code': 'COMPOSTFREE',
       'minPoints': 300,
-      'unlocked': true,
-      'expiry': 'Expires 15 Aug 2026',
+      'unlocked': false,
+      'expiry': 'Locked',
     },
     {
       'title': '15% Off GreenPartner Store',
@@ -42,6 +45,68 @@ class _RewardsScreenState extends State<RewardsScreen> {
       'expiry': 'Locked',
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRewardsData();
+  }
+
+  Future<void> _loadRewardsData() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final rawPickups = await PickupApiService.fetchPickups();
+      double completedWeight = 0.0;
+      for (var item in rawPickups) {
+        final status = item['status']?.toString() ?? '';
+        if (status.toLowerCase() == 'completed' || status.toLowerCase() == 'confirmed' || status.toLowerCase() == 'success') {
+          double weight = 5.0;
+          if (item['estimated_weight'] != null) {
+            weight = double.tryParse(item['estimated_weight'].toString()) ?? 5.0;
+          } else if (item['number_of_bags'] != null) {
+            weight = (double.tryParse(item['number_of_bags'].toString()) ?? 2) * 2.5;
+          }
+          completedWeight += weight;
+        }
+      }
+
+      int points = (completedWeight * 10).round();
+      if (points <= 0) {
+        points = 50; // Welcome reward points
+      }
+
+      // Update vouchers unlocked status dynamically
+      final List<Map<String, dynamic>> updatedVouchers = _vouchers.map((v) {
+        final int minPoints = v['minPoints'] as int;
+        final bool unlocked = points >= minPoints;
+        return {
+          ...v,
+          'unlocked': unlocked,
+          'expiry': unlocked ? 'Expires 31 Aug 2026' : 'Locked',
+        };
+      }).toList();
+
+      if (mounted) {
+        setState(() {
+          _totalPoints = points;
+          _vouchers = updatedVouchers;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   void _copyToClipboard(String code) {
     Clipboard.setData(ClipboardData(text: code));
@@ -58,6 +123,7 @@ class _RewardsScreenState extends State<RewardsScreen> {
   @override
   Widget build(BuildContext context) {
     double progress = _totalPoints / _nextMilestone;
+    if (progress > 1.0) progress = 1.0;
 
     return Scaffold(
       backgroundColor: _backgroundGrey,
@@ -76,33 +142,61 @@ class _RewardsScreenState extends State<RewardsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Summary Card with Progress
-            _buildProgressCard(progress),
-            const SizedBox(height: 24),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: _primaryGreen))
+          : _errorMessage != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          _errorMessage!,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: Colors.red, fontSize: 14),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _loadRewardsData,
+                          style: ElevatedButton.styleFrom(backgroundColor: _primaryGreen),
+                          child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _loadRewardsData,
+                  color: _primaryGreen,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Summary Card with Progress
+                        _buildProgressCard(progress),
+                        const SizedBox(height: 24),
 
-            const Text(
-              "Your Eco Vouchers",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 12),
+                        const Text(
+                          "Your Eco Vouchers",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
 
-            // Vouchers List
-            ..._vouchers.map((v) => _buildVoucherCard(v)),
+                        // Vouchers List
+                        ..._vouchers.map((v) => _buildVoucherCard(v)),
 
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
+                        const SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+                ),
     );
   }
 
@@ -201,7 +295,9 @@ class _RewardsScreenState extends State<RewardsScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            "Earn ${500 - _totalPoints} more points to unlock the next level and unlock GreenPartner discounts!",
+            _totalPoints >= 500
+                ? "You have reached the maximum milestone! More vouchers coming soon."
+                : "Earn ${500 - _totalPoints} more points to unlock the next level and unlock GreenPartner discounts!",
             style: const TextStyle(
               color: Colors.white60,
               fontSize: 11,

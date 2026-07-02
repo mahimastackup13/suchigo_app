@@ -1,16 +1,3 @@
-// 
-
-// File: services/pickup_api_service.dart
-//
-// Talks directly to https://suchigoapis.pythonanywhere.com/api/pickups/
-// using the shared ApiClient (Dio) with exact backend payload key requirements.
-//
-// This endpoint requires NO authentication — every request is marked
-// `noAuth: true` so ApiClient never attaches an Authorization header here.
-// `skipAuthRedirect: true` is kept as a safety net: if the backend ever
-// does return a 401 for some other reason, the caller (AddressScreen)
-// gets to show an inline error instead of being force-navigated to /login.
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:suchigo_app/services/api_client.dart';
@@ -28,59 +15,62 @@ class PickupApiService {
   static const String _path = 'pickups/';
 
   /// Creates a pickup request on the backend.
-  /// Returns the decoded JSON response map containing created model parameters.
   static Future<Map<String, dynamic>> createPickup({
-    required String name,
+    required String fullName,
     required String email,
     required String contactNumber,
-    required String pickupAddress,
-    required String scheduledDate,
+    required String street,
+    required String city,
+    required String zipCode,
+    required String state,
+    required String district,
+    required String localBody,
+    required String wardName,
+    required String pickupDate,
+    required String pickupTimeSlot,
     required String itemsDescription,
+    required String wasteType,
     String? landmark,
   }) async {
-    final body = _toJson(
-      name: name,
-      email: email,
-      contactNumber: contactNumber,
-      pickupAddress: pickupAddress,
-      scheduledDate: scheduledDate,
-      itemsDescription: itemsDescription,
-      landmark: landmark,
-    );
+    final body = <String, dynamic>{
+      'full_name': fullName,
+      'email': email,
+      'contact_number': contactNumber,
+      'street': street,
+      'city': city,
+      'zip_code': zipCode,
+      'state': state,
+      'district': district,
+      'localbody': localBody,
+      'ward_name': wardName,
+      'pickup_date': pickupDate,
+      'pickup_time_slot': pickupTimeSlot,
+      'items_description': itemsDescription,
+      'waste_type': wasteType,
+      if (landmark != null && landmark.isNotEmpty) 'landmark': landmark,
+    };
 
     try {
-      if (kDebugMode) {
-        debugPrint('[PickupApiService] POST pickups/ body: $body');
-      }
+      print('[PickupApiService] POST pickups/ body: $body');
 
       final response = await ApiClient.instance.post(
         _path,
         data: body,
         options: Options(
           extra: {
-            // pickups/ is a public endpoint — never attach a token.
-            'noAuth': true,
-            // Safety net: if the backend still returns a 401 for some
-            // other reason, let this screen show an inline error instead
-            // of being force-navigated to /login.
             'skipAuthRedirect': true,
           },
         ),
       );
 
-      if (kDebugMode) {
-        debugPrint('[PickupApiService] SUCCESS ${response.statusCode}: ${response.data}');
-      }
+      print('[PickupApiService] SUCCESS ${response.statusCode}: ${response.data}');
 
       final data = response.data;
       if (data is Map<String, dynamic>) return data;
       return {'raw': data};
     } on DioException catch (e) {
-      if (kDebugMode) {
-        debugPrint('[PickupApiService] FAILED status=${e.response?.statusCode}');
-        debugPrint('[PickupApiService] FAILED body=${e.response?.data}');
-        debugPrint('[PickupApiService] FAILED request headers=${e.requestOptions.headers}');
-      }
+      print('[PickupApiService] FAILED status=${e.response?.statusCode}');
+      print('[PickupApiService] FAILED body=${e.response?.data}');
       throw _toFriendlyException(e);
     }
   }
@@ -90,7 +80,7 @@ class PickupApiService {
     try {
       final response = await ApiClient.instance.get(
         _path,
-        options: Options(extra: {'noAuth': true, 'skipAuthRedirect': true}),
+        options: Options(extra: {'skipAuthRedirect': true}),
       );
       final data = response.data;
 
@@ -106,32 +96,10 @@ class PickupApiService {
     }
   }
 
-  // ── Production JSON Field-Name Payload Mapping ─────────────────────
-  static Map<String, dynamic> _toJson({
-    required String name,
-    required String email,
-    required String contactNumber,
-    required String pickupAddress,
-    required String scheduledDate,
-    required String itemsDescription,
-    String? landmark,
-  }) {
-    return <String, dynamic>{
-      'name': name,
-      'email': email,
-      'contact_number': contactNumber,
-      'pickup_address': pickupAddress,
-      'scheduled_date': scheduledDate,
-      'items_description': itemsDescription,
-      if (landmark != null && landmark.isNotEmpty) 'landmark': landmark,
-    };
-  }
-
   static PickupSubmissionException _toFriendlyException(DioException e) {
     final status = e.response?.statusCode;
     final data = e.response?.data;
 
-    // Django REST Framework Form Field Validation Parser
     if (status == 400 && data is Map<String, dynamic>) {
       final firstField = data.keys.isNotEmpty ? data.keys.first : null;
       final firstError = firstField != null && data[firstField] is List
@@ -144,8 +112,6 @@ class PickupApiService {
     }
 
     if (status == 401) {
-      // With noAuth:true this should not normally happen. If it does, the
-      // backend itself is requiring auth on a path we expected to be public.
       if (data is Map && data.isNotEmpty) {
         final detail = data['detail'] ?? data.values.first;
         return PickupSubmissionException(

@@ -23,30 +23,46 @@ class WasteProvider extends ChangeNotifier {
   Future<void> fetchWasteEntries() async {
     _setLoading(true);
 
-    final response = await http.get(Uri.parse(baseUrl));
+    print('[http] REQUEST: GET $baseUrl');
+    try {
+      final response = await http.get(Uri.parse(baseUrl));
+      print('[http] RESPONSE: ${response.statusCode} GET $baseUrl');
+      print('[http] RESPONSE Data: ${response.body}');
 
-    if (response.statusCode == 200) {
-      final List data = jsonDecode(response.body);
-      wasteList = data.map((e) => WasteModel.fromJson(e)).toList();
+      if (response.statusCode == 200) {
+        final List data = jsonDecode(response.body);
+        wasteList = data.map((e) => WasteModel.fromJson(e)).toList();
+      }
+    } catch (e) {
+      print('[http] ERROR: GET $baseUrl -> $e');
+      rethrow;
+    } finally {
+      _setLoading(false);
     }
-
-    _setLoading(false);
   }
 
   Future<bool> addWasteEntry(Map<String, dynamic> payload) async {
     _setLoading(true);
+    print('[http] REQUEST: POST $baseUrl');
+    print('[http] REQUEST Headers: {Content-Type: application/json}');
+    print('[http] REQUEST Data: ${jsonEncode(payload)}');
     try {
       final response = await http.post(
         Uri.parse(baseUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode(payload),
       );
+      print('[http] RESPONSE: ${response.statusCode} POST $baseUrl');
+      print('[http] RESPONSE Data: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         return true;
       } else {
         throw Exception("Server Error: ${response.body}");
       }
+    } catch (e) {
+      print('[http] ERROR: POST $baseUrl -> $e');
+      rethrow;
     } finally {
       _setLoading(false);
     }

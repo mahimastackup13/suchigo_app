@@ -3,9 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:suchigo_app/provider/home_provider.dart';
 import 'package:suchigo_app/provider/profile_provider.dart';
 import 'package:suchigo_app/Screens.dart/home_screen.dart';
-import 'package:suchigo_app/Screens.dart/bill_screen.dart';
-import 'package:suchigo_app/Screens.dart/settings_screen.dart';
-import 'package:suchigo_app/Screens.dart/profile_screen.dart';
+import 'package:suchigo_app/services/pickup_api_service.dart';
 
 // ── Data Model ────────────────────────────────────────────────────────────────
 class OrderHistory {
@@ -50,67 +48,137 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   final List<String> _filters = ['All', 'Completed', 'Pending', 'Cancelled'];
 
-  final List<OrderHistory> _orders = const [
-    OrderHistory(
-      orderId: 'WC-2026-08741',
-      wasteType: 'Sanitary Waste',
-      date: '22 Apr 2026',
-      timeSlot: '09:00 AM – 12:00 PM',
-      address: '42, Rose Garden Rd, Palarivattom',
-      weight: 12.5,
-      status: 'Completed',
-      statusColor: Color(0xFF2E7D32),
-      statusIcon: Icons.check_circle_rounded,
-    ),
-    OrderHistory(
-      orderId: 'WC-2026-07892',
-      wasteType: 'Solid Waste',
-      date: '15 Apr 2026',
-      timeSlot: '01:00 PM – 04:00 PM',
-      address: '12, MG Road, Kochi',
-      weight: 8.0,
-      status: 'Completed',
-      statusColor: Color(0xFF2E7D32),
-      statusIcon: Icons.check_circle_rounded,
-    ),
-    OrderHistory(
-      orderId: 'WC-2026-09120',
-      wasteType: 'E-Waste',
-      date: '28 Apr 2026',
-      timeSlot: '09:00 AM – 12:00 PM',
-      address: '7, Hill View Colony, Thrissur',
-      weight: 5.2,
-      status: 'Pending',
-      statusColor: Color(0xFFF57C00),
-      statusIcon: Icons.hourglass_top_rounded,
-    ),
-    OrderHistory(
-      orderId: 'WC-2026-06543',
-      wasteType: 'Organic Waste',
-      date: '10 Apr 2026',
-      timeSlot: '10:00 AM – 01:00 PM',
-      address: '3, Nehru Nagar, Kollam',
-      weight: 20.0,
-      status: 'Cancelled',
-      statusColor: Color(0xFFC62828),
-      statusIcon: Icons.cancel_rounded,
-    ),
-    OrderHistory(
-      orderId: 'WC-2026-05210',
-      wasteType: 'Bulk Waste',
-      date: '02 Apr 2026',
-      timeSlot: '08:00 AM – 11:00 AM',
-      address: '88, Park Street, Ernakulam',
-      weight: 35.0,
-      status: 'Completed',
-      statusColor: Color(0xFF2E7D32),
-      statusIcon: Icons.check_circle_rounded,
-    ),
-  ];
+  List<OrderHistory> _orders = [];
+  bool _isLoading = true;
+  String? _errorMessage;
 
-  List<OrderHistory> get _filteredOrders => _selectedFilter == 'All'
-      ? _orders
-      : _orders.where((o) => o.status == _selectedFilter).toList();
+  @override
+  void initState() {
+    super.initState();
+    _loadBookings();
+  }
+
+  Future<void> _loadBookings() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final rawPickups = await PickupApiService.fetchPickups();
+      final List<OrderHistory> loadedOrders = rawPickups.map((item) => _mapToOrderHistory(item)).toList();
+
+      if (mounted) {
+        setState(() {
+          _orders = loadedOrders;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  String _formatDate(String? dateStr) {
+    if (dateStr == null || dateStr.isEmpty) return 'Pending';
+    final parsed = DateTime.tryParse(dateStr);
+    if (parsed == null) return dateStr;
+    const months = [
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+    ];
+    final local = parsed.toLocal();
+    return '${local.day} ${months[local.month - 1]} ${local.year}';
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'confirmed':
+      case 'success':
+        return const Color(0xFF2E7D32);
+      case 'cancelled':
+      case 'failed':
+        return const Color(0xFFC62828);
+      case 'pending':
+      default:
+        return const Color(0xFFF57C00);
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'confirmed':
+      case 'success':
+        return Icons.check_circle_rounded;
+      case 'cancelled':
+      case 'failed':
+        return Icons.cancel_rounded;
+      case 'pending':
+      default:
+        return Icons.hourglass_top_rounded;
+    }
+  }
+
+  OrderHistory _mapToOrderHistory(Map<String, dynamic> json) {
+    final id = json['id']?.toString() ?? 'PENDING';
+    final wasteType = json['waste_type']?.toString() ?? (json['items_description']?.toString().isNotEmpty == true ? json['items_description'].toString() : 'Mixed Household Waste');
+    final date = _formatDate(json['pickup_date']?.toString() ?? json['scheduled_date']?.toString());
+    final timeSlot = json['pickup_time_slot']?.toString() ?? 'N/A';
+    final street = json['street']?.toString() ?? '';
+    final city = json['city']?.toString() ?? '';
+    final address = [street, city].where((e) => e.isNotEmpty).join(', ');
+    final status = json['status']?.toString() ?? 'Pending';
+    
+    double weight = 0.0;
+    if (json['estimated_weight'] != null) {
+      weight = double.tryParse(json['estimated_weight'].toString()) ?? 0.0;
+    } else if (json['number_of_bags'] != null) {
+      weight = (double.tryParse(json['number_of_bags'].toString()) ?? 0.0) * 2.5;
+    }
+    
+    return OrderHistory(
+      orderId: 'WC-$id',
+      wasteType: wasteType,
+      date: date,
+      timeSlot: timeSlot,
+      address: address.isNotEmpty ? address : 'N/A',
+      weight: weight,
+      status: status,
+      statusColor: _getStatusColor(status),
+      statusIcon: _getStatusIcon(status),
+    );
+  }
+
+  List<OrderHistory> get _filteredOrders {
+    if (_selectedFilter == 'All') {
+      return _orders;
+    }
+    return _orders.where((o) {
+      if (_selectedFilter == 'Pending') {
+        return o.status.toLowerCase() != 'completed' &&
+            o.status.toLowerCase() != 'confirmed' &&
+            o.status.toLowerCase() != 'success' &&
+            o.status.toLowerCase() != 'cancelled' &&
+            o.status.toLowerCase() != 'failed';
+      } else if (_selectedFilter == 'Completed') {
+        return o.status.toLowerCase() == 'completed' ||
+            o.status.toLowerCase() == 'confirmed' ||
+            o.status.toLowerCase() == 'success';
+      } else if (_selectedFilter == 'Cancelled') {
+        return o.status.toLowerCase() == 'cancelled' ||
+            o.status.toLowerCase() == 'failed';
+      }
+      return o.status.toLowerCase() == _selectedFilter.toLowerCase();
+    }).toList();
+  }
 
   void _onNavTap(int index) {
     Provider.of<HomeProvider>(context, listen: false).setSelectedIndex(index);
@@ -180,16 +248,53 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
           // ── Order list ───────────────────────────────────
           Expanded(
-            child: _filteredOrders.isEmpty
-                ? _buildEmpty()
-                : ListView.separated(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: _filteredOrders.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 12),
-                    itemBuilder: (context, i) =>
-                        _OrderCard(order: _filteredOrders[i]),
-                  ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: _green))
+                : _errorMessage != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24.0),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _errorMessage!,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(color: Colors.red, fontSize: 14),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _loadBookings,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: _green,
+                                ),
+                                child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _loadBookings,
+                        color: _green,
+                        child: _filteredOrders.isEmpty
+                            ? SingleChildScrollView(
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                child: Container(
+                                  height: MediaQuery.of(context).size.height * 0.5,
+                                  alignment: Alignment.center,
+                                  child: _buildEmpty(),
+                                ),
+                              )
+                            : ListView.separated(
+                                padding: const EdgeInsets.fromLTRB(16, 0, 16, 20),
+                                physics: const AlwaysScrollableScrollPhysics(),
+                                itemCount: _filteredOrders.length,
+                                separatorBuilder: (_, __) => const SizedBox(height: 12),
+                                itemBuilder: (context, i) =>
+                                    _OrderCard(order: _filteredOrders[i]),
+                              ),
+                      ),
           ),
         ],
       ),

@@ -38,51 +38,43 @@ class ApiClient {
       _dio.interceptors.add(
         InterceptorsWrapper(
           onRequest: (options, handler) async {
+            print('[ApiClient] REQUEST: ${options.method} ${options.baseUrl}${options.path}');
+            if (options.queryParameters.isNotEmpty) {
+              print('[ApiClient] REQUEST QueryParams: ${options.queryParameters}');
+            }
+            print('[ApiClient] REQUEST Headers: ${options.headers}');
+            print('[ApiClient] REQUEST Data: ${options.data}');
             final isNoAuth = options.extra['noAuth'] == true;
 
             if (!isNoAuth) {
               final token = await SecureStorageService.getToken();
               if (token != null && token.isNotEmpty) {
-                // *** THE FIX ***
-                // was: options.headers['Authorization'] = 'Bearer $token';
                 options.headers['Authorization'] = 'Token $token';
               }
             }
 
             return handler.next(options);
           },
+          onResponse: (response, handler) {
+            print('[ApiClient] RESPONSE: ${response.statusCode} ${response.requestOptions.method} ${response.requestOptions.baseUrl}${response.requestOptions.path}');
+            print('[ApiClient] RESPONSE Data: ${response.data}');
+            return handler.next(response);
+          },
           onError: (DioException e, handler) async {
             final statusCode = e.response?.statusCode;
-
-            if (kDebugMode) {
-              debugPrint(
-                '[ApiClient] ERROR ${e.requestOptions.method} '
-                '${e.requestOptions.path} -> status=$statusCode '
-                'body=${e.response?.data}',
-              );
-            }
+            print('[ApiClient] ERROR: ${e.requestOptions.method} ${e.requestOptions.path} -> status=$statusCode');
+            print('[ApiClient] ERROR Response Body: ${e.response?.data}');
 
             final skipRedirect =
                 e.requestOptions.extra['skipAuthRedirect'] == true;
 
             if (statusCode == 401 && !skipRedirect) {
-              if (kDebugMode) {
-                debugPrint(
-                  '[ApiClient] 401 with no skip flag — clearing session and redirecting to /login',
-                );
-              }
               await SecureStorageService.clearAll();
 
               if (navigatorKey.currentState != null) {
                 navigatorKey.currentState!.pushNamedAndRemoveUntil(
                   '/login',
                   (route) => false,
-                );
-              }
-            } else if (statusCode == 401 && skipRedirect) {
-              if (kDebugMode) {
-                debugPrint(
-                  '[ApiClient] 401 with skipAuthRedirect=true — NOT redirecting, letting caller handle it',
                 );
               }
             }

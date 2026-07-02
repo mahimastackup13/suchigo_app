@@ -7,6 +7,7 @@ import 'package:suchigo_app/Screens.dart/bill_screen.dart';
 import 'package:suchigo_app/Screens.dart/profile_screen.dart';
 import 'package:suchigo_app/Screens.dart/settings_screen.dart';
 import 'package:suchigo_app/Screens.dart/location_picker_screen.dart';
+import 'package:suchigo_app/Screens.dart/notifications_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -102,72 +103,72 @@ class _HomeContentState extends State<HomeContent> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // ── Search Bar (overlapping header) ──────────────────────
-                    GestureDetector(
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const LocationPickerScreen(),
-                          ),
-                        );
-                        if (result != null &&
-                            result is Map<String, dynamic>) {
-                          setState(() {
-                            _selectedLocation =
-                                result['address'] ?? "Location Selected";
-                          });
-                        }
-                      },
-                      child: Transform.translate(
-                        offset: const Offset(0, 12),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Container(
-                            height: 52,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(14),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.08),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.search_rounded,
-                                  color: Colors.grey.shade500,
-                                  size: 22,
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    _selectedLocation,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: _selectedLocation == "Add location"
-                                          ? Colors.grey.shade500
-                                          : Colors.black87,
-                                      fontSize: 15,
-                                      fontWeight:
-                                          _selectedLocation == "Add location"
-                                          ? FontWeight.normal
-                                          : FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                    // GestureDetector(
+                    //   onTap: () async {
+                    //     final result = await Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) =>
+                    //             const LocationPickerScreen(),
+                    //       ),
+                    //     );
+                    //     if (result != null &&
+                    //         result is Map<String, dynamic>) {
+                    //       setState(() {
+                    //         _selectedLocation =
+                    //             result['address'] ?? "Location Selected";
+                    //       });
+                    //     }
+                    //   },
+                    //   child: Transform.translate(
+                    //     offset: const Offset(0, 12),
+                    //     child: Padding(
+                    //       padding: const EdgeInsets.symmetric(horizontal: 16),
+                    //       child: Container(
+                    //         height: 52,
+                    //         padding: const EdgeInsets.symmetric(horizontal: 16),
+                    //         decoration: BoxDecoration(
+                    //           color: Colors.white,
+                    //           borderRadius: BorderRadius.circular(14),
+                    //           boxShadow: [
+                    //             BoxShadow(
+                    //               color: Colors.black.withValues(alpha: 0.08),
+                    //               blurRadius: 12,
+                    //               offset: const Offset(0, 4),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //         child: Row(
+                    //           children: [
+                    //             Icon(
+                    //               Icons.search_rounded,
+                    //               color: Colors.grey.shade500,
+                    //               size: 22,
+                    //             ),
+                    //             const SizedBox(width: 10),
+                    //             Expanded(
+                    //               child: Text(
+                    //                 _selectedLocation,
+                    //                 maxLines: 1,
+                    //                 overflow: TextOverflow.ellipsis,
+                    //                 style: TextStyle(
+                    //                   color: _selectedLocation == "Add location"
+                    //                       ? Colors.grey.shade500
+                    //                       : Colors.black87,
+                    //                   fontSize: 15,
+                    //                   fontWeight:
+                    //                       _selectedLocation == "Add location"
+                    //                       ? FontWeight.normal
+                    //                       : FontWeight.w500,
+                    //                 ),
+                    //               ),
+                    //             ),
+                    //           ],
+                    //         ),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
 
                     // Negative margin to pull content up
                     Transform.translate(
@@ -524,60 +525,80 @@ class _GreenHeader extends StatelessWidget {
                 ],
               ),
 
-              // SuchiGo Logo area
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
+              // Notification Button + SuchiGo Logo area
+              Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
+                  IconButton(
+                    icon: const Icon(
+                      Icons.notifications_none_rounded,
+                      color: Colors.white,
+                      size: 26,
                     ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: const BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Center(
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              width: 22,
-                              height: 22,
-                              fit: BoxFit.contain,
-                            ),
-                          ),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const NotificationsScreen(),
                         ),
-                        const SizedBox(width: 6),
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      );
+                    },
+                  ),
+                  const SizedBox(width: 4),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
                           children: [
-                            Text(
-                              "SuchiGo",
-                              style: TextStyle(
+                            Container(
+                              width: 30,
+                              height: 30,
+                              decoration: const BoxDecoration(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  width: 22,
+                                  height: 22,
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             ),
-                            Text(
-                              "Schedule. Collect. Sustain",
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 8,
-                              ),
+                            const SizedBox(width: 6),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "SuchiGo",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                Text(
+                                  "Schedule. Collect. Sustain",
+                                  style: TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 8,
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -601,7 +622,7 @@ class _AdBanner extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(25),
           image: const DecorationImage(
-            image: AssetImage('assets/images/homesuchi2.png'),
+            image: AssetImage('assets/images/banner_logo.png'),
             fit: BoxFit.cover,
             alignment: Alignment.center,
           ),
